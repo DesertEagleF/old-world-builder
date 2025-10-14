@@ -14,6 +14,8 @@ import { useLanguage } from "../../utils/useLanguage";
 import { setLists } from "../../state/lists";
 
 import { nameMap } from "../magic";
+import { mergePatch } from "../../utils/patch";
+import PatchSelector from '../../components/patch-selector/PatchSelector';
 
 import "./NewList.css";
 
@@ -33,10 +35,80 @@ export const NewList = ({ isMobile }) => {
   const [points, setPoints] = useState(2000);
   const [armyComposition, setArmyComposition] = useState("empire-of-man");
   const [redirect, setRedirect] = useState(null);
-  const armies = gameSystems
-    .filter(({ id }) => id === game)[0]
-    .armies.sort((a, b) => a.id.localeCompare(b.id));
-  const journalArmies = armies.find(({ id }) => army === id)?.armyComposition;
+  // applied patch objects (each: { id, type, data, locale, displayName }) provided by PatchSelector
+  const [appliedPatchObjects, setAppliedPatchObjects] = useState([]);
+  // Localized name map, merged from base and patch locales (PatchSelector will update this)
+  const [localizedNameMap, setLocalizedNameMap] = useState(nameMap);
+
+  // PatchSelector handles patch loading, locales and selection. NewList receives applied patch objects
+
+  // Merge all patches/full into the entire gameSystems, then select the army and mark composition sources
+  function getMergedGameSystemsWithSources(gameSystems, patchList, gameId) {
+    // Find the base system
+    const baseSystem = gameSystems.find(({ id }) => id === gameId);
+    if (!baseSystem) return { armies: [], compositionSourcesMap: {} };
+
+    // Deep copy armies
+    let mergedArmies = baseSystem.armies.map(a => ({ ...a }));
+    let compositionSourcesMap = {};
+
+    for (const { id: patchId, type, data } of patchList) {
+      if (!data.armies) continue;
+      if (type === "patch") {
+        // Patch: merge each army by id
+        data.armies.forEach(patchArmy => {
+          const idx = mergedArmies.findIndex(a => a.id === patchArmy.id);
+          if (idx !== -1) {
+            // Record $append source
+            if (patchArmy.armyComposition) {
+              Object.entries(patchArmy.armyComposition).forEach(([op, arr]) => {
+                if (op === "$append") {
+                  arr.forEach(item => {
+                    if (!compositionSourcesMap[patchArmy.id]) compositionSourcesMap[patchArmy.id] = {};
+                    compositionSourcesMap[patchArmy.id][item] = patchId;
+                  });
+                }
+              });
+            }
+            mergedArmies[idx] = mergePatch(mergedArmies[idx], patchArmy);
+          }
+        });
+      } else if (type === "full") {
+        // Full: replace all matching armies
+        data.armies.forEach(fullArmy => {
+          const idx = mergedArmies.findIndex(a => a.id === fullArmy.id);
+          if (idx !== -1) {
+            mergedArmies[idx] = { ...fullArmy };
+            // All composition from this patch
+            if (fullArmy.armyComposition) {
+              if (!compositionSourcesMap[fullArmy.id]) compositionSourcesMap[fullArmy.id] = {};
+              fullArmy.armyComposition.forEach(item => {
+                compositionSourcesMap[fullArmy.id][item] = patchId;
+              });
+            }
+          }
+        });
+      }
+    }
+    // Mark base for items not from patch/full
+    mergedArmies.forEach(army => {
+      if (army.armyComposition) {
+        if (!compositionSourcesMap[army.id]) compositionSourcesMap[army.id] = {};
+        army.armyComposition.forEach(item => {
+          if (!compositionSourcesMap[army.id][item]) compositionSourcesMap[army.id][item] = "base";
+        });
+      }
+    });
+    return { armies: mergedArmies, compositionSourcesMap };
+  }
+
+  // Use merged armies and sources from applied (confirmed) patches only
+  const { armies: mergedArmies, compositionSourcesMap } = getMergedGameSystemsWithSources(gameSystems, appliedPatchObjects, game);
+  const armies = mergedArmies.sort((a, b) => a.id.localeCompare(b.id));
+  const baseArmy = armies.find(({ id }) => army === id);
+  let journalArmies = baseArmy?.armyComposition || [];
+  let compositionSources = compositionSourcesMap[baseArmy?.id] || {};
+
   const compositionRules = [
     {
       id: "open-war",
@@ -64,10 +136,10 @@ export const NewList = ({ isMobile }) => {
     const newList = {
       name:
         name ||
-        nameMap[armyComposition]?.[`name_${language}`] ||
-        nameMap[armyComposition]?.name_en ||
-        (nameMap[army] && nameMap[army][`name_${language}`]) ||
-        nameMap[army]?.name_en ||
+        localizedNameMap[armyComposition]?.[`name_${language}`] ||
+        localizedNameMap[armyComposition]?.name_en ||
+        (localizedNameMap[army] && localizedNameMap[army][`name_${language}`]) ||
+        localizedNameMap[army]?.name_en ||
         army,
       description: description,
       game: game,
@@ -82,6 +154,8 @@ export const NewList = ({ isMobile }) => {
       id: newId,
       armyComposition,
       compositionRule,
+      // persist applied (confirmed) patches (ids + lightweight meta)
+      patches: (appliedPatchObjects || []).map(p => ({ id: p.id, type: p.type || 'patch', displayName: p.displayName || p.id })),
     };
     const newLists = [newList, ...lists];
 
@@ -149,6 +223,7 @@ export const NewList = ({ isMobile }) => {
           />
         )}
         <form onSubmit={handleSubmit} className="new-list">
+          <PatchSelector onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} />
           {gameSystems.map(({ name, id }, index) => (
             <div
               className={classNames(
@@ -184,25 +259,33 @@ export const NewList = ({ isMobile }) => {
             spaceBottom
             required
           />
-          {journalArmies ? (
+          {journalArmies && journalArmies.length > 0 ? (
             <>
               <label htmlFor="arcane-journal">
                 <FormattedMessage id="new.armyComposition" />
               </label>
               <Select
                 id="arcane-journal"
-                options={[
-                  ...journalArmies.map((journalArmy) => ({
-                    id: journalArmy,
-                    name_en:
-                      journalArmy === army
-                        ? intl.formatMessage({ id: "new.grandArmy" })
-                        : nameMap[journalArmy].name_en,
-                  })),
-                ]}
+                options={journalArmies.map((journalArmy) => ({
+                  id: journalArmy,
+                  name_en:
+                    journalArmy === army
+                      ? intl.formatMessage({ id: "new.grandArmy" })
+                      : localizedNameMap[journalArmy]?.[`name_${language}`] || journalArmy,
+                  source: compositionSources[journalArmy],
+                  // Show patch source in label if not base
+                  label:
+                    (journalArmy === army
+                      ? intl.formatMessage({ id: "new.grandArmy" })
+                      : localizedNameMap[journalArmy]?.[`name_${language}`] || journalArmy) +
+                    (compositionSources[journalArmy] && compositionSources[journalArmy] !== "base"
+                      ? ` (from patch: ${compositionSources[journalArmy]})`
+                      : ""),
+                }))}
                 onChange={handleArcaneJournalChange}
                 selected={army}
                 spaceBottom
+                getOptionLabel={option => option.label || option.name_en}
               />
             </>
           ) : null}

@@ -1,0 +1,94 @@
+{
+    "von-carstein": {
+        "characters": {
+            "maxPercent": 50,
+            "units": [
+                {
+                    "ids": [
+                        "vampire-count"
+
+                    ],
+                    "min": 0,
+                    "max": 1
+                },
+                {
+                    "ids": [
+                        "baron",
+                        "prophetess",
+                        "sir-cecil-gastonne-the-wyrm-slayer",
+                        "lady-élisse-duachaard"
+                    ],
+                    "min": 1
+                }
+            ]
+        },
+        "core": {
+            "minPercent": 25,
+            "units": [
+                {
+                    "ids": [
+                        "knights-of-the-realm",
+                        "mounted-knights-of-the-realm"
+                    ],
+                    "min": 1
+                },
+                {
+                    "ids": [
+                        "men-at-arms",
+                        "peasant-bowmen"
+                    ],
+                    "min": 1
+                },
+                {
+                    "ids": [
+                        "knights-errant"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "requiresType": "core",
+                    "requires": [
+                        "knights-of-the-realm",
+                        "mounted-knights-of-the-realm"
+                    ],
+                    "perUnit": true
+                }
+            ]
+        },
+        "special": {
+            "maxPercent": 50,
+            "units": [
+                {
+                    "ids": [
+                        "battle-pilgrims"
+                    ],
+                    "min": 0,
+                    "max": 2,
+                    "points": 1000
+                }
+            ]
+        },
+        "rare": {
+            "maxPercent": 25,
+            "units": [
+                {
+                    "ids": [
+                        "field-trebuchet"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "points": 1000
+                }
+            ]
+        },
+        "mercenaries": {
+            "maxPercent": 20
+        },
+        "allies": {
+            "maxPercent": 25
+        }
+    },
+    "lahmian": {},
+    "blood-dragon": {},
+    "necrarch": {},
+    "strigoi": {}
+}

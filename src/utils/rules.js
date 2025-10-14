@@ -1,3 +1,5 @@
+import patchManager from "./patchManager";
+
 export const rules = {
   "grand-army": {
     lords: { maxPercent: 25 },
@@ -4018,6 +4020,81 @@ export const rules = {
     },
   },
 };
+
+// Keep a snapshot of the original base rules so we can synchronously revert
+const _originalRulesSnapshot = JSON.parse(JSON.stringify(rules));
+
+// Initialize patchManager with base snapshot so it can compute merges later
+try {
+  patchManager.initBaseSnapshot(rules);
+} catch (e) {
+  // ignore
+}
+
+/**
+ * Return merged rules combining the base rules and any external patches.
+ * Use forceReload=true to bypass cache.
+ */
+export async function getRules(forceReload = false) {
+  // Use patchManager to get merged rules for current selection (or base if no selection)
+  try {
+    // Ensure manager has a base snapshot
+    patchManager.initBaseSnapshot(rules);
+    return await patchManager.getMergedRulesForSelection([]);
+  } catch (e) {
+    // fallback to base rules
+    return rules;
+  }
+}
+
+/**
+ * Apply patches to the exported `rules` object in-place so existing synchronous
+ * imports that reference `rules` will see the patched values once loaded.
+ * Call with forceReload=true to bypass cache.
+ */
+/**
+ * Apply selected patch ids to the exported `rules` object in-place.
+ * selectedIds: array of patch ids. If empty, reverts to base rules.
+ */
+export async function applySelectedRulePatches(selectedIds = []) {
+  try {
+    patchManager.initBaseSnapshot(rules);
+    const merged = await patchManager.getMergedRulesForSelection(selectedIds);
+    // Replace keys in-place: remove keys not present and copy new values
+    for (const key of Object.keys(rules)) {
+      if (!Object.prototype.hasOwnProperty.call(merged, key)) {
+        delete rules[key];
+      }
+    }
+    for (const key of Object.keys(merged)) {
+      rules[key] = merged[key];
+    }
+    return merged;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('applySelectedRulePatches failed:', e);
+    return rules;
+  }
+}
+
+/**
+ * Revert the exported `rules` object back to the original base rules (no patches).
+ */
+export function revertToBaseRules() {
+  try {
+    // Synchronously restore the original snapshot taken at module init.
+    for (const key of Object.keys(rules)) {
+      if (!Object.prototype.hasOwnProperty.call(_originalRulesSnapshot, key)) {
+        delete rules[key];
+      }
+    }
+    for (const key of Object.keys(_originalRulesSnapshot)) {
+      rules[key] = JSON.parse(JSON.stringify(_originalRulesSnapshot[key]));
+    }
+  } catch (e) {
+    // noop
+  }
+}
 
 export const getMaxPercentData = ({
   type,

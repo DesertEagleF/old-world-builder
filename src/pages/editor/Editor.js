@@ -21,6 +21,7 @@ import { validateList } from "../../utils/validation";
 import { removeFromLocalList, updateLocalList } from "../../utils/list";
 import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
+import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 
 import "./Editor.css";
 
@@ -75,6 +76,21 @@ export const Editor = ({ isMobile }) => {
       );
 
       updateLocalList(list);
+      // Apply any stored patches for this list so rules reflect the list's selected patches
+      (async () => {
+        try {
+          if (list.patches && Array.isArray(list.patches) && list.patches.length>0) {
+            const ids = list.patches.map(p => p.id);
+            await applySelectedRulePatches(ids);
+          } else {
+            // no patches -> ensure base rules
+            revertToBaseRules();
+          }
+        } catch (e) {
+          // swallow - avoid breaking editor load on patch errors
+          // console.warn('Failed to apply list patches', e);
+        }
+      })();
     }
   }, [list, dispatch, language, intl]);
 

@@ -1,0 +1,18 @@
+{
+  "id": "yefeng-patch",
+  "name": "TOW Yefeng Patch",
+  "armies": [
+    {
+      "id": "vampire-counts",
+      "armyComposition": {
+        "$append": [
+          "von-carstein",
+          "lahmian",
+          "blood-dragon",
+          "necrarch",
+          "strigoi"
+        ]
+      }
+    }
+  ]
+}
