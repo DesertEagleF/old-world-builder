@@ -79,7 +79,7 @@ export const Editor = ({ isMobile }) => {
       // Apply any stored patches for this list so rules reflect the list's selected patches
       (async () => {
         try {
-          if (list.patches && Array.isArray(list.patches) && list.patches.length>0) {
+          if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
             const ids = list.patches.map(p => p.id);
             await applySelectedRulePatches(ids);
           } else {

@@ -25,6 +25,7 @@ import { CustomDatasets } from "./pages/custom-datasets";
 import { setLists } from "./state/lists";
 import { setSettings } from "./state/settings";
 import { Header, Main } from "./components/page";
+import PatchPanel from "./components/patch-panel/PatchPanel";
 
 import "./App.css";
 
@@ -124,6 +125,10 @@ export const App = () => {
                   </Route>
                   <Route path="/editor/:listId/add/:type">{<Add />}</Route>
                   <Route path="/editor/:listId/:type/:unitId">{<Unit />}</Route>
+                  {/* When creating a new list, show the PatchPanel in the third column */}
+                  <Route path="/new/patches">
+                    <PatchPanel />
+                  </Route>
                 </Switch>
               </section>
               <section className="column">

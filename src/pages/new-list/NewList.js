@@ -16,6 +16,7 @@ import { setLists } from "../../state/lists";
 import { nameMap } from "../magic";
 import { mergePatch } from "../../utils/patch";
 import PatchSelector from '../../components/patch-selector/PatchSelector';
+import { useHistory } from 'react-router-dom';
 
 import "./NewList.css";
 
@@ -39,6 +40,7 @@ export const NewList = ({ isMobile }) => {
   const [appliedPatchObjects, setAppliedPatchObjects] = useState([]);
   // Localized name map, merged from base and patch locales (PatchSelector will update this)
   const [localizedNameMap, setLocalizedNameMap] = useState(nameMap);
+  const history = useHistory();
 
   // PatchSelector handles patch loading, locales and selection. NewList receives applied patch objects
 
@@ -223,7 +225,7 @@ export const NewList = ({ isMobile }) => {
           />
         )}
         <form onSubmit={handleSubmit} className="new-list">
-          <PatchSelector onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} />
+          <PatchSelector onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} onShowPanel={() => history.push('/new/patches')} />
           {gameSystems.map(({ name, id }, index) => (
             <div
               className={classNames(

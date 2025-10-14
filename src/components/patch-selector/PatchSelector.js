@@ -1,16 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Button } from '../button';
-import { listAvailablePatches, loadPatchIndex, reloadPatchIndex } from '../../utils/patch';
+import { loadPatchIndex, reloadPatchIndex } from '../../utils/patch';
+import patchState from '../../utils/patchState';
 
 // PatchSelector props:
 // - onAppliedChange(appliedPatchObjects: Array)
 // - onLocaleMapChange(localeMap: object)
-export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapChange = () => {} }) {
+export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapChange = () => {}, onShowPanel = null, startExpanded = false }) {
   const [available, setAvailable] = useState([]);
   const [selection, setSelection] = useState({ ids: [], order: [] });
   const [appliedIds, setAppliedIds] = useState([]);
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(!startExpanded);
   const [isReloading, setIsReloading] = useState(false);
 
   // Load index & patch metadata (displayName) and locales
@@ -56,6 +57,38 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // keep a ref to available for subscription handlers
+  const availableRef = useRef(available);
+  useEffect(() => { availableRef.current = available; }, [available]);
+
+  // sync selection with global patchState so different instances stay consistent
+  useEffect(() => {
+    const unsub = patchState.subscribeApplied((objs) => {
+      const list = objs || [];
+      // filter to available ids and keep full objects
+      const filteredObjects = list.filter(o => (availableRef.current || []).find(a => a.id === o.id));
+      const filteredIds = filteredObjects.map(o => o.id);
+      // Always mirror the authoritative applied set from patchState (Confirm is authoritative)
+      // This ensures that an applied empty set ("(none)") clears any other selections.
+      setSelection({ ids: filteredIds.slice(), order: filteredIds.slice() });
+      setAppliedIds(filteredIds.slice());
+      // notify local consumer (e.g. NewList) asynchronously with full objects
+      // schedule as macrotask to avoid re-entrant updates across subscribers
+      setTimeout(() => {
+        try { onAppliedChange(filteredObjects); } catch (e) {}
+      }, 0);
+    });
+    // also reconcile initial
+    // Initialize selection to current applied set (may be empty) so instances stay consistent
+    const initial = patchState.getApplied() || [];
+    const ids = (initial || []).map(o => o.id);
+    const filtered = ids.filter(id => (availableRef.current || []).find(a => a.id === id));
+    setSelection({ ids: filtered.slice(), order: filtered.slice() });
+    setAppliedIds(filtered.slice());
+    return unsub;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Helpers for deps
   const getDeps = (entry) => (entry.meta && entry.meta.dependencies ? entry.meta.dependencies : (entry.dependencies || []));
 
@@ -87,17 +120,20 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
   function togglePatch(id) {
     const cur = new Set(selection.ids);
     if (cur.has(id)) {
+      // unselect id and any dependents
       cur.delete(id);
-      // also remove dependents
       for (const a of available) {
         const deps = getDeps(a) || [];
         if (deps.includes(id) && cur.has(a.id)) cur.delete(a.id);
       }
     } else {
+      // add the selected one and its dependencies
       cur.add(id);
       const entry = available.find(a => a.id === id);
       const deps = getDeps(entry) || [];
-      for (const d of deps) cur.add(d);
+      // only add dependencies that are present in the available list
+      const availIds = (available || []).map(a => a.id);
+      for (const d of deps) if (availIds.includes(d)) cur.add(d);
     }
     let order = selection.order.filter(x => cur.has(x));
     for (const idn of Array.from(cur)) if (!order.includes(idn)) order.push(idn);
@@ -143,7 +179,20 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
     // mark as applied and load objects (confirm keeps same behavior)
     setAppliedIds(ids);
     const objects = await loadPatchObjects(ids);
-    onAppliedChange(objects.filter(Boolean));
+    const filtered = objects.filter(Boolean);
+    // schedule notifications in a macrotask to fully decouple from React's
+    // current render cycle and avoid re-entrant update errors
+    setTimeout(() => {
+      try { onAppliedChange(filtered); } catch (e) {}
+      try {
+        patchState.setApplied(filtered);
+        const mergedLocale = filtered.reduce((acc, o) => ({ ...(acc || {}), ...(o.locale || {}) }), {});
+        if (Object.keys(mergedLocale || {}).length) {
+          patchState.setLocaleMap(mergedLocale);
+          try { onLocaleMapChange(prev => ({ ...(prev || {}), ...(mergedLocale || {}) })); } catch (e) {}
+        }
+      } catch (e) {}
+    }, 0);
   }
 
   // helper to load full patch objects for an array of ids
@@ -188,31 +237,9 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
     }
   }
 
-  // Auto-apply selection.order: whenever the working selection/order changes we will
-  // load the corresponding patch objects and notify parent via onAppliedChange so
-  // consumers (like NewList) immediately receive merged data.
-  const _requestId = useRef(0);
-  useEffect(() => {
-    // don't auto-apply while we're reloading the index
-    if (isReloading) return;
-    const ids = selection.order.slice();
-    // bump request id to cancel prior inflight results
-    const myId = ++_requestId.current;
-    (async () => {
-      if (!ids || ids.length === 0) {
-        // clear applied
-        setAppliedIds([]);
-        onAppliedChange([]);
-        return;
-      }
-      const objects = await loadPatchObjects(ids);
-      // only apply if this is the latest request
-      if (myId !== _requestId.current) return;
-      setAppliedIds(ids);
-      onAppliedChange(objects.filter(Boolean));
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selection.order, isReloading]);
+  // Previously we auto-applied selection changes. That behavior caused notifications
+  // on every user tweak; we now only notify consumers when the user explicitly
+  // clicks Confirm. This avoids spamming other modules with intermediate states.
 
   // expose a compact collapsed summary string
   const summary = selection.order && selection.order.length > 0
@@ -225,12 +252,16 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
   return (
     <div className="patch-selector" style={{ marginBottom: 12, border: '1px solid #eee', padding: 8, borderRadius: 6 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontWeight: 'bold' }}><FormattedMessage id="patches.title" defaultMessage="Manage patches" /></div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Button type="primary" onClick={() => setCollapsed(!collapsed)}>
-            {collapsed ? <FormattedMessage id="patches.expand" defaultMessage="Show patches" /> : <FormattedMessage id="patches.collapse" defaultMessage="Hide patches" />}
-          </Button>
-        </div>
+        {!startExpanded && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button type="primary" onClick={() => {
+              if (typeof onShowPanel === 'function') return onShowPanel();
+              setCollapsed(false);
+            }}>
+              <FormattedMessage id="patches.expand" defaultMessage="Show patches" />
+            </Button>
+          </div>
+        )}
       </div>
       {!collapsed && (
         <div style={{ marginTop: 8 }}>
@@ -241,7 +272,7 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-              <input type="checkbox" checked={selection.ids.length === 0} onChange={() => setSelection({ ids: [], order: [] })} />
+              <input type="checkbox" checked={selection.ids.length === 0} onChange={() => { setSelection({ ids: [], order: [] }); setAppliedIds([]); }} />
               <div style={{ marginLeft: 8 }}><div><FormattedMessage id="patches.none" defaultMessage="(none)" /></div></div>
             </div>
             {available.map(entry => {
