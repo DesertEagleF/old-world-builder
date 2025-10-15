@@ -26,6 +26,7 @@ import { setLists } from "./state/lists";
 import { setSettings } from "./state/settings";
 import { Header, Main } from "./components/page";
 import PatchPanel from "./components/patch-panel/PatchPanel";
+import PatchDetails from "./components/patch-panel/PatchDetails";
 
 import "./App.css";
 
@@ -39,7 +40,14 @@ export const App = () => {
     const localLists = localStorage.getItem("owb.lists");
     const localSettings = localStorage.getItem("owb.settings");
 
-    dispatch(setLists(JSON.parse(localLists)));
+    try {
+      const parsed = JSON.parse(localLists) || [];
+      // Ensure backward compatibility: lists created before patches existed may not have a `patches` field.
+      const normalized = (parsed || []).map(l => ({ ...l, patches: Array.isArray(l.patches) ? l.patches : [] }));
+      dispatch(setLists(normalized));
+    } catch (e) {
+      dispatch(setLists([]));
+    }
     dispatch(setSettings(JSON.parse(localSettings)));
   }, [dispatch]);
 
@@ -141,6 +149,10 @@ export const App = () => {
                   </Route>
                   <Route path="/editor/:listId/:type/:unitId/items/:group">
                     <Magic />
+                  </Route>
+                  <Route path="/new/patches/details/:patchId">
+                    {/* fourth column: patch details */}
+                    <PatchDetails />
                   </Route>
                 </Switch>
               </section>

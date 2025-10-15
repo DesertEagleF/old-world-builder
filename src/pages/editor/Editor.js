@@ -22,6 +22,7 @@ import { removeFromLocalList, updateLocalList } from "../../utils/list";
 import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
+import patchState from '../../utils/patchState';
 
 import "./Editor.css";
 
@@ -65,30 +66,40 @@ export const Editor = ({ isMobile }) => {
 
   useEffect(() => {
     if (list) {
-      dispatch(
-        setErrors(
-          validateList({
-            list,
-            language,
-            intl,
-          })
-        )
-      );
-
-      updateLocalList(list);
-      // Apply any stored patches for this list so rules reflect the list's selected patches
+      // First apply any relevant patches so that validateList sees the correct rules
       (async () => {
         try {
           if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
             const ids = list.patches.map(p => p.id);
             await applySelectedRulePatches(ids);
           } else {
-            // no patches -> ensure base rules
-            revertToBaseRules();
+            const applied = patchState.getApplied() || [];
+            if (applied && applied.length > 0) {
+              const ids = applied.map(p => p.id);
+              await applySelectedRulePatches(ids);
+            } else {
+              revertToBaseRules();
+            }
           }
         } catch (e) {
           // swallow - avoid breaking editor load on patch errors
-          // console.warn('Failed to apply list patches', e);
+        }
+
+        // After rules are in the desired patched state, run validation and update local list
+        try {
+          dispatch(
+            setErrors(
+              validateList({
+                list,
+                language,
+                intl,
+              })
+            )
+          );
+
+          updateLocalList(list);
+        } catch (e) {
+          // swallow validation/update errors
         }
       })();
     }
@@ -283,6 +294,7 @@ export const Editor = ({ isMobile }) => {
               {`/ ${list.points} ${intl.formatMessage({
                 id: "app.points",
               })}`}
+              
             </>
           }
           hasPointsError={allPoints > list.points}
@@ -310,6 +322,7 @@ export const Editor = ({ isMobile }) => {
                 {`/ ${list.points} ${intl.formatMessage({
                   id: "app.points",
                 })}`}
+                
               </>
             }
             hasPointsError={allPoints > list.points}
@@ -317,6 +330,17 @@ export const Editor = ({ isMobile }) => {
             navigationIcon="more"
           />
         )}
+        {/* Selected patches summary: separate line under header */}
+        <div className="editor__patch-summary" style={{ margin: '8px 0 12px' }}>
+          <small>
+            <b>{intl.formatMessage({ id: 'patches.selectedLabel' })}</b>{' '}
+            {list.patches && list.patches.length > 0 ? (
+              list.patches.map(p => p.displayName || p.id).join(', ')
+            ) : (
+              <i><FormattedMessage id="patches.none" defaultMessage="(none)" /></i>
+            )}
+          </small>
+        </div>
         <section>
           {errors
             .filter(({ section }) => section === "global")

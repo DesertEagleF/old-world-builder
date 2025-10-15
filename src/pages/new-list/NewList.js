@@ -17,6 +17,8 @@ import { nameMap } from "../magic";
 import { mergePatch } from "../../utils/patch";
 import PatchSelector from '../../components/patch-selector/PatchSelector';
 import { useHistory } from 'react-router-dom';
+import patchState from '../../utils/patchState';
+import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 
 import "./NewList.css";
 
@@ -44,6 +46,29 @@ export const NewList = ({ isMobile }) => {
 
   // PatchSelector handles patch loading, locales and selection. NewList receives applied patch objects
 
+  // On mount, if there are authoritative applied patches in patchState, apply them so rules reflect current selection
+  useEffect(() => {
+    (async () => {
+      try {
+        const applied = patchState.getApplied() || [];
+        if (applied && applied.length > 0) {
+          const ids = applied.map(p => p.id);
+          await applySelectedRulePatches(ids);
+          // also seed our local appliedPatchObjects so the UI reflects current applied set
+          setAppliedPatchObjects(applied.slice());
+          // merge locale map from patchState
+          try { setLocalizedNameMap(prev => ({ ...(prev || {}), ...(patchState.getLocaleMap() || {}) })); } catch (e) {}
+        } else {
+          // ensure base rules when no applied patches
+          revertToBaseRules();
+        }
+      } catch (e) {
+        // swallow errors to avoid blocking NewList load
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Merge all patches/full into the entire gameSystems, then select the army and mark composition sources
   function getMergedGameSystemsWithSources(gameSystems, patchList, gameId) {
     // Find the base system
@@ -60,7 +85,7 @@ export const NewList = ({ isMobile }) => {
         // Patch: merge each army by id
         data.armies.forEach(patchArmy => {
           const idx = mergedArmies.findIndex(a => a.id === patchArmy.id);
-          if (idx !== -1) {
+            if (idx !== -1) {
             // Record $append source
             if (patchArmy.armyComposition) {
               Object.entries(patchArmy.armyComposition).forEach(([op, arr]) => {
@@ -72,15 +97,17 @@ export const NewList = ({ isMobile }) => {
                 }
               });
             }
-            mergedArmies[idx] = mergePatch(mergedArmies[idx], patchArmy);
+            mergedArmies[idx] = mergePatch(mergedArmies[idx], patchArmy, patchId);
           }
         });
       } else if (type === "full") {
         // Full: replace all matching armies
         data.armies.forEach(fullArmy => {
           const idx = mergedArmies.findIndex(a => a.id === fullArmy.id);
-          if (idx !== -1) {
+            if (idx !== -1) {
             mergedArmies[idx] = { ...fullArmy };
+            // mark replacement as from this patch
+            if (patchId && typeof mergedArmies[idx] === 'object') mergedArmies[idx].__patchedBy = patchId;
             // All composition from this patch
             if (fullArmy.armyComposition) {
               if (!compositionSourcesMap[fullArmy.id]) compositionSourcesMap[fullArmy.id] = {};

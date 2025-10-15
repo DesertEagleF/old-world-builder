@@ -4,7 +4,7 @@
  * @param {any} patch - The patch data
  * @returns {any} The merged result
  */
-export function mergePatch(base, patch) {
+export function mergePatch(base, patch, patchId = null) {
     // Support top-level operator objects on the patch itself
     if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
         // If patch is an operator-only object (e.g. {"$replace": ...}) apply operator
@@ -27,9 +27,13 @@ export function mergePatch(base, patch) {
             const baseMap = Object.fromEntries(base.map(item => [item.id, item]));
             patch.forEach(p => {
                 if (p && typeof p === 'object' && 'id' in p && baseMap[p.id]) {
-                    baseMap[p.id] = mergePatch(baseMap[p.id], p);
+                    baseMap[p.id] = mergePatch(baseMap[p.id], p, patchId);
+                    if (patchId && baseMap[p.id] && typeof baseMap[p.id] === 'object') baseMap[p.id].__patchedBy = patchId;
                 } else if (p && typeof p === 'object' && 'id' in p) {
-                    baseMap[p.id] = p;
+                    // clone patch object to avoid mutating original
+                    const cloned = JSON.parse(JSON.stringify(p));
+                    if (patchId && cloned && typeof cloned === 'object') cloned.__patchedBy = patchId;
+                    baseMap[p.id] = cloned;
                 } else {
                     // non-id items appended
                     const key = `__append_${Math.random().toString(36).slice(2)}`;
@@ -59,7 +63,7 @@ export function mergePatch(base, patch) {
         return [...base, ...patch];
     }
 
-    // Objects: merge recursively, supporting per-field operators
+        // Objects: merge recursively, supporting per-field operators
     if (typeof base === 'object' && base !== null && typeof patch === 'object' && patch !== null) {
         const result = { ...base };
         for (const key of Object.keys(patch)) {
@@ -79,12 +83,18 @@ export function mergePatch(base, patch) {
                     continue;
                 }
             }
-            result[key] = mergePatch(base[key], pVal);
+            result[key] = mergePatch(base[key], pVal, patchId);
         }
         return result;
     }
 
     // primitives: patch overrides
+    // If patch is an object and we have a patchId, clone and annotate
+    if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
+        const cloned = JSON.parse(JSON.stringify(patch));
+        if (patchId) cloned.__patchedBy = patchId;
+        return cloned;
+    }
     return patch;
 }
 
@@ -131,7 +141,7 @@ export function clearPatchIndexCache() {
     _patchIndexPromise = null;
 }
 
-function mergeObjectsConcatArrays(baseObj, patchObj) {
+function mergeObjectsConcatArrays(baseObj, patchObj, patchId = null) {
     if (baseObj === undefined) return deepClone(patchObj);
     if (patchObj === undefined) return deepClone(baseObj);
     if (typeof baseObj !== 'object' || baseObj === null) return deepClone(patchObj);
@@ -144,13 +154,53 @@ function mergeObjectsConcatArrays(baseObj, patchObj) {
         const pVal = patchObj[key];
         const bVal = result[key];
         if (Array.isArray(bVal) && Array.isArray(pVal)) {
-            result[key] = [...bVal, ...pVal];
+            // If arrays of objects with ids, merge by id and mark last-patcher
+            const hasId = bVal.some(b => b && typeof b === 'object' && 'id' in b) || pVal.some(p => p && typeof p === 'object' && 'id' in p);
+            if (hasId) {
+                const baseMap = Object.fromEntries((bVal || []).map(item => [item.id, deepClone(item)]));
+                for (const p of pVal) {
+                    if (p && typeof p === 'object' && 'id' in p) {
+                        if (baseMap[p.id]) {
+                            baseMap[p.id] = mergeObjectsConcatArrays(baseMap[p.id], p, patchId);
+                        } else {
+                            baseMap[p.id] = deepClone(p);
+                        }
+                        if (patchId) baseMap[p.id].__patchedBy = patchId;
+                    } else {
+                        // non-id items: append as-is
+                        const keyApp = `__append_${Math.random().toString(36).slice(2)}`;
+                        baseMap[keyApp] = p;
+                    }
+                }
+                const resArr = [];
+                for (const b of bVal) {
+                    if (b && typeof b === 'object' && 'id' in b) {
+                        resArr.push(baseMap[b.id]);
+                        delete baseMap[b.id];
+                    } else {
+                        const keys = Object.keys(baseMap);
+                        if (keys.length) {
+                            resArr.push(baseMap[keys[0]]);
+                            delete baseMap[keys[0]];
+                        }
+                    }
+                }
+                for (const k of Object.keys(baseMap)) resArr.push(baseMap[k]);
+                result[key] = resArr;
+            } else {
+                result[key] = [...bVal, ...pVal];
+            }
         } else if (Array.isArray(pVal) && bVal === undefined) {
             result[key] = deepClone(pVal);
         } else if (typeof bVal === 'object' && bVal !== null && typeof pVal === 'object' && pVal !== null) {
-            result[key] = mergeObjectsConcatArrays(bVal, pVal);
+            result[key] = mergeObjectsConcatArrays(bVal, pVal, patchId);
         } else {
-            result[key] = deepClone(pVal);
+            // If a primitive or replacement object, clone and annotate if object
+            const cloned = deepClone(pVal);
+            if (patchId && cloned && typeof cloned === 'object' && !Array.isArray(cloned)) {
+                cloned.__patchedBy = patchId;
+            }
+            result[key] = cloned;
         }
     }
     return result;
@@ -167,13 +217,16 @@ export function mergeRulesWithPatches(baseRules, patches) {
             const patchArmyRules = patchRules[armyId];
             if (!merged[armyId]) {
                 merged[armyId] = deepClone(patchArmyRules);
+                // annotate newly added top-level army rules as coming from this patch
+                if (patchId && typeof merged[armyId] === 'object') merged[armyId].__patchedBy = patchId;
                 continue;
             }
             if (type === 'full') {
                 merged[armyId] = deepClone(patchArmyRules);
+                if (patchId && typeof merged[armyId] === 'object') merged[armyId].__patchedBy = patchId;
                 continue;
             }
-            merged[armyId] = mergeObjectsConcatArrays(merged[armyId], patchArmyRules);
+            merged[armyId] = mergeObjectsConcatArrays(merged[armyId], patchArmyRules, patchId);
         }
     }
     return merged;

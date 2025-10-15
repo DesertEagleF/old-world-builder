@@ -3,6 +3,8 @@ import { FormattedMessage } from 'react-intl';
 import { Button } from '../button';
 import { loadPatchIndex, reloadPatchIndex } from '../../utils/patch';
 import patchState from '../../utils/patchState';
+import { useLanguage } from '../../utils/useLanguage';
+import { useHistory } from 'react-router-dom';
 
 // PatchSelector props:
 // - onAppliedChange(appliedPatchObjects: Array)
@@ -25,12 +27,20 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
         const type = e.type || 'patch';
         let displayName = id;
         let locale = null;
+        let patchMeta = e.meta || null;
+        let name = null;
+        let brief = null;
+        let dependencies = null;
+        // try locale first
         try {
           const res = await fetch(`../../games/patches/${id}/locale.json`);
           if (res.ok) {
             locale = await res.json();
             if (locale && locale['patch-name']) {
-              displayName = locale['patch-name'].name_en || displayName;
+              // prefer current language, fall back to en, then any available string
+              const l = locale['patch-name'];
+              const langKey = `name_${language}`;
+              displayName = (l && (l[langKey] || l.name_en || Object.values(l).find(v => typeof v === 'string'))) || displayName;
             }
             // notify parent about locale map incrementally
             onLocaleMapChange(prev => ({ ...(prev || {}), ...(locale || {}) }));
@@ -38,9 +48,40 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
         } catch (e) {
           // ignore missing locale
         }
-        return { id, type, meta: e.meta || null, displayName };
+        // try reading lightweight patch.json for name/brief/dependencies if present
+        try {
+          const pres = await fetch(`../../games/patches/${id}/patch.json`);
+          if (pres.ok) {
+            const pjson = await pres.json();
+            if (pjson) {
+              patchMeta = patchMeta || pjson.meta || null;
+              name = pjson.name || null;
+              brief = pjson.brief || null;
+              dependencies = pjson.dependencies || pjson.meta?.dependencies || null;
+              // prefer locale name if available, else name.name_en
+              if (!locale && name) {
+                const langKey = `name_${language}`;
+                displayName = name[langKey] || name.name_en || Object.values(name).find(v => typeof v === 'string') || displayName;
+              }
+            }
+          }
+        } catch (e) {
+          // ignore missing patch.json
+        }
+        const meta = { ...(patchMeta || {}) };
+        if (dependencies) meta.dependencies = dependencies;
+        return { id, type, meta: meta || null, displayName, name, brief };
       }));
       setAvailable(patched);
+      // After we have the available list, reconcile with authoritative applied set
+      try {
+        const currentApplied = patchState.getApplied() || [];
+        const appliedIdsNow = (currentApplied || []).map(o => o.id).filter(id => patched.find(p => p.id === id));
+        setSelection({ ids: appliedIdsNow.slice(), order: appliedIdsNow.slice() });
+        setAppliedIds(appliedIdsNow.slice());
+      } catch (e) {
+        // ignore
+      }
       // reconcile selection and appliedIds
       setSelection(prev => ({ ids: prev.ids.filter(id => patched.find(p => p.id === id)), order: prev.order.filter(id => patched.find(p => p.id === id)) }));
       setAppliedIds(prev => prev.filter(id => patched.find(p => p.id === id)));
@@ -60,6 +101,27 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
   // keep a ref to available for subscription handlers
   const availableRef = useRef(available);
   useEffect(() => { availableRef.current = available; }, [available]);
+  const { language } = useLanguage();
+  const history = useHistory();
+
+  function localizedValue(item, field) {
+    // item may have field as object (e.g. name or brief) or have displayName
+    const valObj = item && item[field];
+    if (valObj && typeof valObj === 'object') {
+      const key = `name_${language}`.replace('name_', 'name_');
+      // for name fields we expect keys like name_en, name_cn etc. for brief similarly.
+      const langKey = `${field === 'name' ? 'name_' : 'brief_'}${language}`;
+      if (valObj[langKey]) return valObj[langKey];
+      if (valObj['name_en'] && field === 'name') return valObj['name_en'];
+      if (valObj['brief_en'] && field === 'brief') return valObj['brief_en'];
+      // fallback to any string properties
+      const first = Object.values(valObj).find(v => typeof v === 'string');
+      if (first) return first;
+    }
+    // fallback to displayName or id
+    if (field === 'name') return item.displayName || item.id;
+    return null;
+  }
 
   // sync selection with global patchState so different instances stay consistent
   useEffect(() => {
@@ -209,7 +271,12 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
           // try locale
           let locale = null;
           try { const lres = await fetch(`../../games/patches/${id}/locale.json`); if (lres.ok) locale = await lres.json(); } catch (e) {}
-          const displayName = (locale && locale['patch-name'] && (locale['patch-name'].name_en)) || id;
+          let displayName = id;
+          if (locale && locale['patch-name']) {
+            const l = locale['patch-name'];
+            const langKey = `name_${language}`;
+            displayName = (l[langKey] || l.name_en || Object.values(l).find(v => typeof v === 'string')) || id;
+          }
           return { id, type: entry.type || 'patch', data, locale, displayName };
         } catch (e) {
           return { id, type: 'patch', data: null };
@@ -245,7 +312,7 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
   const summary = selection.order && selection.order.length > 0
     ? selection.order.map(id => {
       const p = available.find(x => x.id === id);
-      return p ? p.displayName || id : id;
+      return p ? localizedValue(p, 'name') || p.displayName || id : id;
     }).join(', ')
     : null;
 
@@ -285,14 +352,36 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
                   <input type="checkbox" disabled={missing} checked={checked} onChange={() => togglePatch(entry.id)} />
                   <div style={{ marginLeft: 8, flex: 1 }}>
                     <div>
-                      {entry.displayName || entry.id}
+                      {localizedValue(entry, 'name')}
                       {missing ? (<span>&nbsp;<FormattedMessage id="patches.missingDeps" defaultMessage="(missing dependency)" /></span>) : null}
                     </div>
                     {deps.length>0 && <div style={{ fontSize: 12, color: '#666' }}><FormattedMessage id="patches.deps" defaultMessage="Depends: " />{deps.join(', ')}</div>}
                   </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button type="button" onClick={() => moveUp(entry.id)}>↑</button>
-                    <button type="button" onClick={() => moveDown(entry.id)}>↓</button>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon="preview"
+                      color="dark"
+                      label={`Details ${entry.id}`}
+                      onClick={() => history.push(`/new/patches/details/${entry.id}`)}
+                    />
+                    <Button
+                      type="text"
+                      size="small"
+                      icon="up"
+                      color="dark"
+                      label={`Move up ${entry.id}`}
+                      onClick={() => moveUp(entry.id)}
+                    />
+                    <Button
+                      type="text"
+                      size="small"
+                      icon="down"
+                      color="dark"
+                      label={`Move down ${entry.id}`}
+                      onClick={() => moveDown(entry.id)}
+                    />
                   </div>
                 </div>
               );
