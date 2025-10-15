@@ -23,7 +23,6 @@ import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
-import { getArmyData } from '../../utils/army';
 
 import "./Editor.css";
 
@@ -66,35 +65,93 @@ export const Editor = ({ isMobile }) => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (list) {
-      dispatch(
-        setErrors(
-          validateList({
-            list,
-            language,
-            intl,
-          })
-        )
-      );
+    let mounted = true;
+    (async () => {
+      if (!list) return;
 
       updateLocalList(list);
-      // Apply any stored patches for this list so rules reflect the list's selected patches
-      (async () => {
-        try {
-          if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
-            const ids = list.patches.map(p => p.id);
-            await applySelectedRulePatches(ids);
-          } else {
-            // no patches -> ensure base rules
-            revertToBaseRules();
-          }
-        } catch (e) {
-          // swallow - avoid breaking editor load on patch errors
-          // console.warn('Failed to apply list patches', e);
-        }
-      })();
-    }
+
+      if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
+        const ids = list.patches.map((p) => p.id);
+        await applySelectedRulePatches(ids);
+      } else {
+        // no patches -> ensure base rules
+        revertToBaseRules();
+      }
+      if (mounted) {
+        dispatch(
+          setErrors(
+            validateList({
+              list,
+              language,
+              intl,
+            })
+          )
+        );
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, [list, dispatch, language, intl]);
+
+  const [fetchedPatchNames, setFetchedPatchNames] = useState({});
+  const getPatchDisplayName = (patch) => {
+    if (!patch) return "";
+    const id = typeof patch === "string" ? patch : patch && (patch.id || (typeof patch.name === 'string' ? patch.name : undefined));
+    if (id && fetchedPatchNames && fetchedPatchNames[id]) return fetchedPatchNames[id];
+    const lang = language || 'en';
+    const nameObj = (patch && patch.data && patch.data.name) || (patch && patch.name);
+    if (nameObj && typeof nameObj === 'object') {
+      const langKey = `name_${lang}`;
+      return nameObj[langKey] || nameObj['name_en'] || Object.values(nameObj).find(v => typeof v === 'string') || (id || '');
+    }
+    return id || '';
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadPatchNames() {
+      if (!list || !Array.isArray(list.patches) || list.patches.length === 0) return;
+      const ids = list.patches
+        .map((p) => (typeof p === 'string' ? p : p && p.id ? p.id : (p && typeof p.name === 'string' ? p.name : null)))
+        .filter(Boolean);
+      if (ids.length === 0) return;
+
+      const next = { ...(fetchedPatchNames || {}) };
+      await Promise.all(
+        ids.map(async (id) => {
+          if (Object.prototype.hasOwnProperty.call(next, id)) return;
+          try {
+            const res = await fetch(`/games/patches/${id}/patch.json`);
+            if (!res.ok) {
+              next[id] = id;
+              return;
+            }
+            const j = await res.json();
+            const name = j && j.name;
+            if (name && typeof name === 'object') {
+              const langKey = `name_${language}`;
+              next[id] = name[langKey] || name['name_en'] || Object.values(name).find(v => typeof v === 'string') || null;
+            } else {
+              next[id] = id;
+            }
+          } catch (e) {
+            next[id] = null;
+          }
+        })
+      );
+
+      if (mounted) setFetchedPatchNames(next);
+    }
+
+    loadPatchNames();
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list && list.patches, language]);
 
   if (redirect) {
     return <Redirect to="/" />;
@@ -119,6 +176,7 @@ export const Editor = ({ isMobile }) => {
   }
 
   const armyComposition = list.armyComposition || list.army;
+  
   const allPoints = getAllPoints(list);
   const lordsPoints = getPoints({ list, type: "lords" });
   const heroesPoints = getPoints({ list, type: "heroes" });
@@ -338,6 +396,22 @@ export const Editor = ({ isMobile }) => {
             navigationIcon="more"
           />
         )}
+        <section>
+        {list.patches && Array.isArray(list.patches) && list.patches.length > 0 && (
+          <div className="editor__patches-inline">
+            <span className="editor__patches-label">
+              {intl.formatMessage({ id: "patches.selectedLabel", defaultMessage: "Selected patches:" })}
+            </span>{" "}
+            {list.patches.map((p, i) => (
+              <span key={p.id || i} className="editor__patch-name">
+                {getPatchDisplayName(p)}{i < list.patches.length - 1 ? ", " : ""}
+              </span>
+            ))}
+          </div>
+        )}
+        <div style={{ height: 12 }} />
+        </section>
+
         <section>
           {errors
             .filter(({ section }) => section === "global")
