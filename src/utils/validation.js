@@ -717,5 +717,27 @@ export const validateList = ({ list, language, intl }) => {
       checkRules({ ruleUnit, type: "mercenaries" });
     });
 
-  return errors;
+  // Deduplicate errors: some validation checks can produce identical error objects
+  // across multiple checks or repeated runs (especially when patches modify rules).
+  // Use a stable key composed of the important fields to filter duplicates.
+  const unique = [];
+  const seen = new Set();
+  for (const err of errors) {
+    const key = [
+      err.message || "",
+      err.section || "",
+      err.name || "",
+      err.diff !== undefined ? String(err.diff) : "",
+      err.min !== undefined ? String(err.min) : "",
+      err.max !== undefined ? String(err.max) : "",
+      err.option || "",
+      err.command || "",
+    ].join("|");
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(err);
+    }
+  }
+
+  return unique;
 };

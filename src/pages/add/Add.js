@@ -13,7 +13,7 @@ import { setArmy } from "../../state/army";
 import { getUnitName } from "../../utils/unit";
 import { getRandomId } from "../../utils/id";
 import { useLanguage } from "../../utils/useLanguage";
-import { getArmyData } from "../../utils/army";
+import { getArmyData, getAvailableAllies, getAlliesForComposition } from "../../utils/army";
 import { fetcher } from "../../utils/fetcher";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
 
@@ -43,10 +43,27 @@ export const Add = ({ isMobile }) => {
   const armyData = game?.armies.find((army) => army.id === list.army);
   const allies = armyData?.allies;
   const mercenaries = armyData?.mercenaries;
-  const handleAdd = (unit, ally, unitType, magicItemsArmy) => {
+  const availableAllies = game
+    ? getAlliesForComposition({
+      data: game?.armies.find((a) => a.id === list?.army),
+      composition: list?.armyComposition || list?.army,
+    })
+    : [];
+  // allyArmyId: the source army id (e.g. 'grand-cathay')
+  // allyArmyComposition: the composition variant id (e.g. 'jade-fleet')
+  const handleAdd = (
+    unit,
+    allyArmyId,
+    unitType,
+    magicItemsArmy,
+    allyArmyComposition
+  ) => {
     const newUnit = {
       ...unit,
-      army: ally,
+      // always set the army to the source army id
+      army: allyArmyId || unit.army,
+      // record the chosen composition variant (if any)
+      armyComposition: allyArmyComposition || unit.armyComposition || allyArmyId,
       unitType,
       id: `${unit.id}.${getRandomId()}`,
       magicItemsArmy: unit.magicItemsArmy || magicItemsArmy,
@@ -55,21 +72,26 @@ export const Add = ({ isMobile }) => {
     dispatch(addUnit({ listId, type, unit: newUnit }));
     setRedirect(newUnit.id);
   };
-  const getUnit = (unit, ally, unitType, magicItemsArmy) => (
+  const getUnit = (
+    unit,
+    allyArmyId,
+    unitType,
+    magicItemsArmy,
+    allyArmyComposition
+  ) => (
     <li key={unit.id} className="list">
       <button
         className="list__inner add__list-inner"
-        onClick={() => handleAdd(unit, ally, unitType, magicItemsArmy)}
+        onClick={() => handleAdd(unit, allyArmyId, unitType, magicItemsArmy, allyArmyComposition)}
       >
         <span className="add__name">
           {unit.minimum ? `${unit.minimum} ` : null}
           <b>{getUnitName({ unit, language })}</b>
         </span>
-        <i className="unit__points">{`${
-          unit.minimum ? unit.points * unit.minimum : unit.points
-        } ${intl.formatMessage({
-          id: "app.points",
-        })}`}</i>
+        <i className="unit__points">{`${unit.minimum ? unit.points * unit.minimum : unit.points
+          } ${intl.formatMessage({
+            id: "app.points",
+          })}`}</i>
       </button>
       <RuleWithIcon name={unit.name_en} isDark className="add__rules-icon" />
     </li>
@@ -111,9 +133,9 @@ export const Add = ({ isMobile }) => {
           },
         });
       }
-    } else if (list && type === "allies" && allAllies.length === 0 && allies) {
+    } else if (list && type === "allies" && allAllies.length === 0 && (availableAllies && availableAllies.length > 0)) {
       setAlliesLoaded(false);
-      allies.forEach(({ army, armyComposition, magicItemsArmy }, index) => {
+      availableAllies.forEach(({ army, armyComposition, magicItemsArmy }, index) => {
         const isCustom = game.id !== "the-old-world";
         const customData = isCustom && getCustomDatasetData(army);
 
@@ -148,8 +170,8 @@ export const Add = ({ isMobile }) => {
                   ally: army,
                   armyComposition: armyComposition || army,
                   magicItemsArmy: magicItemsArmy,
-                },
-              ];
+                  },
+                ];
               setAlliesLoaded(index + 1);
             },
           });
@@ -334,47 +356,46 @@ export const Add = ({ isMobile }) => {
                   return (
                     <Expandable
                       key={index}
-                      headline={`${
-                        game?.armies.find((army) => army.id === ally)[
-                          `name_${language}`
-                        ] ||
+                      headline={`${game?.armies.find((army) => army.id === ally)[
+                        `name_${language}`
+                      ] ||
                         game?.armies.find((army) => army.id === ally).name_en
-                      } ${
-                        armyComposition !== ally
-                          ? ` (${
-                              nameMap[armyComposition][`name_${language}`] ||
-                              nameMap[armyComposition].name_en
-                            })`
+                        } ${armyComposition !== ally
+                          ? ` (${nameMap[armyComposition][`name_${language}`] ||
+                          nameMap[armyComposition].name_en
+                          })`
                           : ""
-                      }`}
+                        }`}
                     >
                       {tempCharacters.map((unit) =>
                         getUnit(
                           unit,
-                          armyComposition,
+                          ally,
                           "characters",
-                          magicItemsArmy
+                          magicItemsArmy,
+                          armyComposition
                         )
                       )}
                       {tempCore
                         .filter((unit) => !unit.detachment)
                         .map((unit) =>
-                          getUnit(unit, armyComposition, "core", magicItemsArmy)
+                          getUnit(unit, ally, "core", magicItemsArmy, armyComposition)
                         )}
                       {tempSpecial
                         .filter((unit) => !unit.detachment)
                         .map((unit) =>
                           getUnit(
                             unit,
-                            armyComposition,
+                            ally,
                             "special",
-                            magicItemsArmy
+                            magicItemsArmy,
+                            armyComposition
                           )
                         )}
                       {tempRare
                         .filter((unit) => !unit.detachment)
                         .map((unit) =>
-                          getUnit(unit, armyComposition, "rare", magicItemsArmy)
+                          getUnit(unit, ally, "rare", magicItemsArmy, armyComposition)
                         )}
                     </Expandable>
                   );

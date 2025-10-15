@@ -18,6 +18,20 @@
           "necrarch",
           "strigoi"
         ]
+      },
+      "allies": {
+        "$append": {
+          "von-carstein": [
+            {
+              "army": "empire-of-man"
+            }
+          ],
+          "lahmian": [
+            {
+              "army": "tomb-kings-of-khemri"
+            }
+          ]
+        }
       }
     }
   ]

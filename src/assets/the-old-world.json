@@ -9,8 +9,12 @@
       "name_cn": "Renegade Crowns",
       "name_es": "Renegade Crowns",
       "name_fr": "Renegade Crowns",
-      "items": ["general"],
-      "armyComposition": ["renegade-crowns"],
+      "items": [
+        "general"
+      ],
+      "armyComposition": [
+        "renegade-crowns"
+      ],
       "mercenaries": {
         "renegade-crowns": [
           {
@@ -23,11 +27,16 @@
           },
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls", "bonegrinder-giant"]
+            "units": [
+              "badland-ogre-bulls",
+              "bonegrinder-giant"
+            ]
           },
           {
             "army": "empire-of-man",
-            "units": ["imperial-ogres"]
+            "units": [
+              "imperial-ogres"
+            ]
           }
         ]
       }
@@ -39,7 +48,10 @@
       "name_cn": "人类帝国",
       "name_es": "Empire of Man",
       "name_fr": "Empire de l'Homme",
-      "items": ["general", "empire-of-man"],
+      "items": [
+        "general",
+        "empire-of-man"
+      ],
       "armyComposition": [
         "empire-of-man",
         "city-state-of-nuln",
@@ -49,44 +61,46 @@
         "knightly-order-morr",
         "knightly-order-fiery-heart"
       ],
-      "allies": [
-        {
-          "army": "dwarfen-mountain-holds"
-        },
-        {
-          "army": "kingdom-of-bretonnia"
-        },
-        {
-          "army": "wood-elf-realms"
-        },
-        {
-          "army": "grand-cathay"
-        },
-        {
-          "army": "empire-of-man",
-          "armyComposition": "city-state-of-nuln"
-        },
-        {
-          "army": "empire-of-man",
-          "armyComposition": "knightly-order-panther"
-        },
-        {
-          "army": "empire-of-man",
-          "armyComposition": "knightly-order-white-wolf"
-        },
-        {
-          "army": "empire-of-man",
-          "armyComposition": "knightly-order-blazing-sun"
-        },
-        {
-          "army": "empire-of-man",
-          "armyComposition": "knightly-order-morr"
-        },
-        {
-          "army": "empire-of-man",
-          "armyComposition": "knightly-order-fiery-heart"
-        }
-      ],
+      "allies": {
+        "empire-of-man": [
+          {
+            "army": "dwarfen-mountain-holds"
+          },
+          {
+            "army": "kingdom-of-bretonnia"
+          },
+          {
+            "army": "wood-elf-realms"
+          },
+          {
+            "army": "grand-cathay"
+          },
+          {
+            "army": "empire-of-man",
+            "armyComposition": "city-state-of-nuln"
+          },
+          {
+            "army": "empire-of-man",
+            "armyComposition": "knightly-order-panther"
+          },
+          {
+            "army": "empire-of-man",
+            "armyComposition": "knightly-order-white-wolf"
+          },
+          {
+            "army": "empire-of-man",
+            "armyComposition": "knightly-order-blazing-sun"
+          },
+          {
+            "army": "empire-of-man",
+            "armyComposition": "knightly-order-morr"
+          },
+          {
+            "army": "empire-of-man",
+            "armyComposition": "knightly-order-fiery-heart"
+          }
+        ]
+      },
       "mercenaries": {
         "empire-of-man": [
           {
@@ -99,11 +113,15 @@
           },
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           },
           {
             "army": "empire-of-man",
-            "units": ["imperial-ogres"]
+            "units": [
+              "imperial-ogres"
+            ]
           }
         ],
         "city-state-of-nuln": [
@@ -117,7 +135,9 @@
           },
           {
             "army": "empire-of-man",
-            "units": ["imperial-ogres"]
+            "units": [
+              "imperial-ogres"
+            ]
           }
         ],
         "knightly-order-panther": [
@@ -138,48 +158,62 @@
       "name_cn": "兽人&地精部落",
       "name_es": "Orc & Goblin Tribes",
       "name_fr": "Tribus des Orques & Gobelins",
-      "items": ["general", "orc-and-goblin-tribes"],
+      "items": [
+        "general",
+        "orc-and-goblin-tribes"
+      ],
       "armyComposition": [
         "orc-and-goblin-tribes",
         "nomadic-waaagh",
         "troll-horde"
       ],
-      "allies": [
-        {
-          "army": "orc-and-goblin-tribes",
-          "armyComposition": "nomadic-waaagh"
-        },
-        {
-          "army": "orc-and-goblin-tribes",
-          "armyComposition": "troll-horde"
-        },
-        {
-          "army": "warriors-of-chaos"
-        },
-        {
-          "army": "beastmen-brayherds"
-        },
-        {
-          "army": "tomb-kings-of-khemri"
-        }
-      ],
+      "allies": {
+        "orc-and-goblin-tribes": [
+          {
+            "army": "orc-and-goblin-tribes",
+            "armyComposition": "nomadic-waaagh"
+          },
+          {
+            "army": "orc-and-goblin-tribes",
+            "armyComposition": "troll-horde"
+          },
+          {
+            "army": "warriors-of-chaos"
+          },
+          {
+            "army": "beastmen-brayherds"
+          },
+          {
+            "army": "tomb-kings-of-khemri"
+          }
+        ]
+      },
       "mercenaries": {
         "orc-and-goblin-tribes": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls", "bonegrinder-giant"]
+            "units": [
+              "badland-ogre-bulls",
+              "bonegrinder-giant"
+            ]
           }
         ],
         "troll-horde": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls", "bonegrinder-giant"]
+            "units": [
+              "badland-ogre-bulls",
+              "bonegrinder-giant"
+            ]
           }
         ],
         "nomadic-waaagh": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls", "bonegrinder-giant"]
+            "units": [
+              "badland-ogre-bulls",
+              "bonegrinder-giant"
+            ]
           }
         ]
       }
@@ -191,39 +225,43 @@
       "name_cn": "矮人群山王国",
       "name_es": "Dwarfen Mountain Holds",
       "name_fr": "Forteresses Naines",
-      "items": ["dwarfen-mountain-holds"],
+      "items": [
+        "dwarfen-mountain-holds"
+      ],
       "armyComposition": [
         "dwarfen-mountain-holds",
         "royal-clan",
         "expeditionary-force",
         "slayer-host"
       ],
-      "allies": [
-        {
-          "army": "empire-of-man"
-        },
-        {
-          "army": "kingdom-of-bretonnia"
-        },
-        {
-          "army": "high-elf-realms"
-        },
-        {
-          "army": "grand-cathay"
-        },
-        {
-          "army": "dwarfen-mountain-holds",
-          "armyComposition": "royal-clan"
-        },
-        {
-          "army": "dwarfen-mountain-holds",
-          "armyComposition": "expeditionary-force"
-        },
-        {
-          "army": "dwarfen-mountain-holds",
-          "armyComposition": "slayer-host"
-        }
-      ],
+      "allies": {
+        "dwarfen-mountain-holds": [
+          {
+            "army": "empire-of-man"
+          },
+          {
+            "army": "kingdom-of-bretonnia"
+          },
+          {
+            "army": "high-elf-realms"
+          },
+          {
+            "army": "grand-cathay"
+          },
+          {
+            "army": "dwarfen-mountain-holds",
+            "armyComposition": "royal-clan"
+          },
+          {
+            "army": "dwarfen-mountain-holds",
+            "armyComposition": "expeditionary-force"
+          },
+          {
+            "army": "dwarfen-mountain-holds",
+            "armyComposition": "slayer-host"
+          }
+        ]
+      },
       "mercenaries": {
         "dwarfen-mountain-holds": [
           {
@@ -236,11 +274,15 @@
           },
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           },
           {
             "army": "empire-of-man",
-            "units": ["imperial-ogres"]
+            "units": [
+              "imperial-ogres"
+            ]
           }
         ],
         "royal-clan": [
@@ -255,7 +297,9 @@
           },
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "expeditionary-force": [
@@ -270,13 +314,17 @@
           },
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "slayer-host": [
           {
             "army": "dwarfen-mountain-holds",
-            "units": ["rangers"]
+            "units": [
+              "rangers"
+            ]
           }
         ]
       }
@@ -299,42 +347,53 @@
         "wolves-of-the-sea",
         "heralds-of-darkness"
       ],
-      "allies": [
-        {
-          "army": "orc-and-goblin-tribes"
-        },
-        {
-          "army": "beastmen-brayherds"
-        },
-        {
-          "army": "tomb-kings-of-khemri"
-        },
-        {
-          "army": "warriors-of-chaos",
-          "armyComposition": "wolves-of-the-sea"
-        },
-        {
-          "army": "warriors-of-chaos",
-          "armyComposition": "heralds-of-darkness"
-        }
-      ],
+      "allies": {
+        "warriors-of-chaos": [
+          {
+            "army": "orc-and-goblin-tribes"
+          },
+          {
+            "army": "beastmen-brayherds"
+          },
+          {
+            "army": "tomb-kings-of-khemri"
+          },
+          {
+            "army": "warriors-of-chaos",
+            "armyComposition": "wolves-of-the-sea"
+          },
+          {
+            "army": "warriors-of-chaos",
+            "armyComposition": "heralds-of-darkness"
+          }
+        ]
+      },
       "mercenaries": {
         "warriors-of-chaos": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls", "bonegrinder-giant"]
+            "units": [
+              "badland-ogre-bulls",
+              "bonegrinder-giant"
+            ]
           }
         ],
         "wolves-of-the-sea": [
           {
             "army": "beastmen-brayherds",
-            "units": ["gor-herds", "ungor-herd"]
+            "units": [
+              "gor-herds",
+              "ungor-herd"
+            ]
           }
         ],
         "heralds-of-darkness": [
           {
             "army": "beastmen-brayherds",
-            "units": ["centigore-chieftain", "centigor-herds"]
+            "units": [
+              "centigore-chieftain",
+              "centigor-herds"
+            ]
           }
         ]
       }
@@ -346,54 +405,68 @@
       "name_cn": "巴托尼亚王国",
       "name_es": "Kingdom of Bretonnia",
       "name_fr": "Royaume de Bretonnie",
-      "items": ["general", "kingdom-of-bretonnia", "knightly-virtues"],
+      "items": [
+        "general",
+        "kingdom-of-bretonnia",
+        "knightly-virtues"
+      ],
       "armyComposition": [
         "kingdom-of-bretonnia",
         "errantry-crusades",
         "bretonnian-exiles"
       ],
-      "allies": [
-        {
-          "army": "dwarfen-mountain-holds"
-        },
-        {
-          "army": "empire-of-man"
-        },
-        {
-          "army": "high-elf-realms"
-        },
-        {
-          "army": "wood-elf-realms"
-        },
-        {
-          "army": "grand-cathay"
-        },
-        {
-          "army": "kingdom-of-bretonnia",
-          "armyComposition": "errantry-crusades"
-        },
-        {
-          "army": "kingdom-of-bretonnia",
-          "armyComposition": "bretonnian-exiles"
-        }
-      ],
+      "allies": {
+        "kingdom-of-bretonnia": [
+          {
+            "army": "dwarfen-mountain-holds"
+          },
+          {
+            "army": "empire-of-man"
+          },
+          {
+            "army": "high-elf-realms"
+          },
+          {
+            "army": "wood-elf-realms"
+          },
+          {
+            "army": "grand-cathay"
+          },
+          {
+            "army": "kingdom-of-bretonnia",
+            "armyComposition": "errantry-crusades"
+          },
+          {
+            "army": "kingdom-of-bretonnia",
+            "armyComposition": "bretonnian-exiles"
+          }
+        ]
+      },
       "mercenaries": {
         "kingdom-of-bretonnia": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "errantry-crusades": [
           {
             "army": "empire-of-man",
-            "units": ["empire-knights", "inner-circle-knights"]
+            "units": [
+              "empire-knights",
+              "inner-circle-knights"
+            ]
           }
         ],
         "bretonnian-exiles": [
           {
             "army": "empire-of-man",
-            "units": ["free-company-militia", "empire-archers"]
+            "units": [
+              "free-company-militia",
+              "empire-archers"
+            ]
           }
         ]
       }
@@ -416,30 +489,35 @@
         "minotaur-blood-herd",
         "wild-herd"
       ],
-      "allies": [
-        {
-          "army": "orc-and-goblin-tribes"
-        },
-        {
-          "army": "warriors-of-chaos"
-        },
-        {
-          "army": "tomb-kings-of-khemri"
-        },
-        {
-          "army": "beastmen-brayherds",
-          "armyComposition": "minotaur-blood-herd"
-        },
-        {
-          "army": "beastmen-brayherds",
-          "armyComposition": "wild-herd"
-        }
-      ],
+      "allies": {
+        "beastmen-brayherds": [
+          {
+            "army": "orc-and-goblin-tribes"
+          },
+          {
+            "army": "warriors-of-chaos"
+          },
+          {
+            "army": "tomb-kings-of-khemri"
+          },
+          {
+            "army": "beastmen-brayherds",
+            "armyComposition": "minotaur-blood-herd"
+          },
+          {
+            "army": "beastmen-brayherds",
+            "armyComposition": "wild-herd"
+          }
+        ]
+      },
       "mercenaries": {
         "beastmen-brayherds": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls", "bonegrinder-giant"]
+            "units": [
+              "badland-ogre-bulls",
+              "bonegrinder-giant"
+            ]
           }
         ]
       }
@@ -451,39 +529,48 @@
       "name_cn": "木精灵王国",
       "name_es": "Wood Elf Realms",
       "name_fr": "Royaumes Elfes Sylvains",
-      "items": ["general", "wood-elf-realms", "forest-spites", "kindreds"],
+      "items": [
+        "general",
+        "wood-elf-realms",
+        "forest-spites",
+        "kindreds"
+      ],
       "armyComposition": [
         "wood-elf-realms",
         "orions-wild-hunt",
         "host-of-talsyn"
       ],
-      "allies": [
-        {
-          "army": "empire-of-man"
-        },
-        {
-          "army": "kingdom-of-bretonnia"
-        },
-        {
-          "army": "high-elf-realms"
-        },
-        {
-          "army": "grand-cathay"
-        },
-        {
-          "army": "wood-elf-realms",
-          "armyComposition": "orions-wild-hunt"
-        },
-        {
-          "army": "wood-elf-realms",
-          "armyComposition": "host-of-talsyn"
-        }
-      ],
+      "allies": {
+        "wood-elf-realms": [
+          {
+            "army": "empire-of-man"
+          },
+          {
+            "army": "kingdom-of-bretonnia"
+          },
+          {
+            "army": "high-elf-realms"
+          },
+          {
+            "army": "grand-cathay"
+          },
+          {
+            "army": "wood-elf-realms",
+            "armyComposition": "orions-wild-hunt"
+          },
+          {
+            "army": "wood-elf-realms",
+            "armyComposition": "host-of-talsyn"
+          }
+        ]
+      },
       "mercenaries": {
         "wood-elf-realms": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -495,36 +582,43 @@
       "name_cn": "喀穆里古墓王",
       "name_es": "Tomb Kings of Khemri",
       "name_fr": "Rois des Tombes de Khemri",
-      "items": ["general", "tomb-kings-of-khemri"],
+      "items": [
+        "general",
+        "tomb-kings-of-khemri"
+      ],
       "armyComposition": [
         "tomb-kings-of-khemri",
         "nehekharan-royal-hosts",
         "mortuary-cults"
       ],
-      "allies": [
-        {
-          "army": "orc-and-goblin-tribes"
-        },
-        {
-          "army": "warriors-of-chaos"
-        },
-        {
-          "army": "beastmen-brayherds"
-        },
-        {
-          "army": "tomb-kings-of-khemri",
-          "armyComposition": "nehekharan-royal-hosts"
-        },
-        {
-          "army": "tomb-kings-of-khemri",
-          "armyComposition": "mortuary-cults"
-        }
-      ],
+      "allies": {
+        "tomb-kings-of-khemri": [
+          {
+            "army": "orc-and-goblin-tribes"
+          },
+          {
+            "army": "warriors-of-chaos"
+          },
+          {
+            "army": "beastmen-brayherds"
+          },
+          {
+            "army": "tomb-kings-of-khemri",
+            "armyComposition": "nehekharan-royal-hosts"
+          },
+          {
+            "army": "tomb-kings-of-khemri",
+            "armyComposition": "mortuary-cults"
+          }
+        ]
+      },
       "mercenaries": {
         "tomb-kings-of-khemri": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -536,51 +630,63 @@
       "name_cn": "高等精灵王国",
       "name_es": "High Elf Realms",
       "name_fr": "Royaumes Hauts Elfes",
-      "items": ["general", "high-elf-realms", "elven-honours"],
+      "items": [
+        "general",
+        "high-elf-realms",
+        "elven-honours"
+      ],
       "armyComposition": [
         "high-elf-realms",
         "the-chracian-warhost",
         "sea-guard-garrison"
       ],
-      "allies": [
-        {
-          "army": "empire-of-man"
-        },
-        {
-          "army": "kingdom-of-bretonnia"
-        },
-        {
-          "army": "wood-elf-realms"
-        },
-        {
-          "army": "grand-cathay"
-        },
-        {
-          "army": "high-elf-realms",
-          "armyComposition": "the-chracian-warhost"
-        },
-        {
-          "army": "high-elf-realms",
-          "armyComposition": "sea-guard-garrison"
-        }
-      ],
+      "allies": {
+        "high-elf-realms": [
+          {
+            "army": "empire-of-man"
+          },
+          {
+            "army": "kingdom-of-bretonnia"
+          },
+          {
+            "army": "wood-elf-realms"
+          },
+          {
+            "army": "grand-cathay"
+          },
+          {
+            "army": "high-elf-realms",
+            "armyComposition": "the-chracian-warhost"
+          },
+          {
+            "army": "high-elf-realms",
+            "armyComposition": "sea-guard-garrison"
+          }
+        ]
+      },
       "mercenaries": {
         "high-elf-realms": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "the-chracian-warhost": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "sea-guard-garrison": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -598,23 +704,37 @@
         "gifts-of-khaine",
         "forbidden-poisons"
       ],
-      "armyComposition": ["dark-elves", "de-renegade"],
-      "allies": [
-        {
-          "army": "warriors-of-chaos"
-        }
+      "armyComposition": [
+        "dark-elves",
+        "de-renegade"
       ],
+      "allies": {
+        "dark-elves": [
+          {
+            "army": "warriors-of-chaos"
+          }
+        ],
+        "de-renegade": [
+          {
+            "army": "warriors-of-chaos"
+          }
+        ]
+      },
       "mercenaries": {
         "dark-elves": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "de-renegade": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -626,24 +746,41 @@
       "name_cn": "斯卡文",
       "name_es": "Skaven",
       "name_fr": "Skaven",
-      "items": ["general", "skaven"],
-      "armyComposition": ["skaven", "sk-renegade"],
-      "allies": [
-        {
-          "army": "warriors-of-chaos"
-        }
+      "items": [
+        "general",
+        "skaven"
       ],
+      "armyComposition": [
+        "skaven",
+        "sk-renegade"
+      ],
+      "allies": {
+        "skaven": [
+          {
+            "army": "warriors-of-chaos"
+          }
+        ],
+        "sk-renegade": [
+          {
+            "army": "warriors-of-chaos"
+          }
+        ]
+      },
       "mercenaries": {
         "skaven": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "sk-renegade": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -655,13 +792,27 @@
       "name_cn": "吸血鬼公爵",
       "name_es": "Vampire Counts",
       "name_fr": "Comtes Vampires",
-      "items": ["general", "vampire-counts", "vampiric-powers"],
-      "armyComposition": ["vampire-counts", "vc-renegade"],
-      "allies": [
-        {
-          "army": "tomb-kings-of-khemri"
-        }
-      ]
+      "items": [
+        "general",
+        "vampire-counts",
+        "vampiric-powers"
+      ],
+      "armyComposition": [
+        "vampire-counts",
+        "vc-renegade"
+      ],
+      "allies": {
+        "vampire-counts": [
+          {
+            "army": "tomb-kings-of-khemri"
+          }
+        ],
+        "vc-renegade": [
+          {
+            "army": "tomb-kings-of-khemri"
+          }
+        ]
+      }
     },
     {
       "id": "daemons-of-chaos",
@@ -670,7 +821,10 @@
       "name_cn": "混沌恶魔",
       "name_es": "Daemons of Chaos",
       "name_fr": "Démons du Chaos",
-      "armyComposition": ["daemons-of-chaos", "doc-renegade"],
+      "armyComposition": [
+        "daemons-of-chaos",
+        "doc-renegade"
+      ],
       "items": [
         "general",
         "daemonic-gifts-common",
@@ -692,28 +846,48 @@
       "name_cn": "食人魔王国",
       "name_es": "Ogre Kingdoms",
       "name_fr": "Royaumes Ogres",
-      "items": ["general", "ogre-kingdoms", "big-names"],
-      "armyComposition": ["ogre-kingdoms", "ok-renegade"],
-      "allies": [
-        {
-          "army": "orc-and-goblin-tribes"
-        }
+      "items": [
+        "general",
+        "ogre-kingdoms",
+        "big-names"
       ],
+      "armyComposition": [
+        "ogre-kingdoms",
+        "ok-renegade"
+      ],
+      "allies": {
+        "ogre-kingdoms": [
+          {
+            "army": "orc-and-goblin-tribes"
+          }
+        ],
+        "ok-renegade": [
+          {
+            "army": "orc-and-goblin-tribes"
+          }
+        ]
+      },
       "mercenaries": {
         "ogre-kingdoms": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "ok-renegade": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["bonegrinder-giant"]
+            "units": [
+              "bonegrinder-giant"
+            ]
           },
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -725,24 +899,42 @@
       "name_cn": "蜥蜴人",
       "name_es": "Lizardmen",
       "name_fr": "Hommes-Lézards",
-      "items": ["general", "lizardmen", "disciplines-old-ones"],
-      "armyComposition": ["lizardmen", "lm-renegade"],
-      "allies": [
-        {
-          "army": "high-elf-realms"
-        }
+      "items": [
+        "general",
+        "lizardmen",
+        "disciplines-old-ones"
       ],
+      "armyComposition": [
+        "lizardmen",
+        "lm-renegade"
+      ],
+      "allies": {
+        "lizardmen": [
+          {
+            "army": "high-elf-realms"
+          }
+        ],
+        "lm-renegade": [
+          {
+            "army": "high-elf-realms"
+          }
+        ]
+      },
       "mercenaries": {
         "lizardmen": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "lm-renegade": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -754,33 +946,57 @@
       "name_cn": "混沌矮人",
       "name_es": "Chaos Dwarfs",
       "name_fr": "Nains du Chaos",
-      "items": ["general", "chaos-dwarfs"],
-      "armyComposition": ["chaos-dwarfs", "cd-renegade"],
-      "allies": [
-        {
-          "army": "warriors-of-chaos"
-        },
-        {
-          "army": "daemons-of-chaos",
-          "armyComposition": "doc-renegade",
-          "magicItemsArmy": "daemons-of-chaos"
-        }
+      "items": [
+        "general",
+        "chaos-dwarfs"
       ],
+      "armyComposition": [
+        "chaos-dwarfs",
+        "cd-renegade"
+      ],
+      "allies": {
+        "chaos-dwarfs": [
+          {
+            "army": "warriors-of-chaos"
+          },
+          {
+            "army": "daemons-of-chaos",
+            "armyComposition": "doc-renegade",
+            "magicItemsArmy": "daemons-of-chaos"
+          }
+        ],
+        "cd-renegade": [
+          {
+            "army": "warriors-of-chaos"
+          },
+          {
+            "army": "daemons-of-chaos",
+            "armyComposition": "doc-renegade",
+            "magicItemsArmy": "daemons-of-chaos"
+          }
+        ]
+      },
       "mercenaries": {
         "chaos-dwarfs": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "cd-renegade": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["bonegrinder-giant"]
+            "units": [
+              "bonegrinder-giant"
+            ]
           },
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ]
       }
@@ -792,32 +1008,49 @@
       "name_cn": "震旦天朝",
       "name_es": "Grand Cathay",
       "name_fr": "Grand Cathay",
-      "items": ["general", "grand-cathay"],
-      "armyComposition": ["grand-cathay", "jade-fleet"],
-      "allies": [
-        {
-          "army": "grand-cathay",
-          "armyComposition": "jade-fleet"
-        },
-        { "army": "dwarfen-mountain-holds" },
-        {
-          "army": "empire-of-man"
-        },
-        {
-          "army": "kingdom-of-bretonnia"
-        },
-        {
-          "army": "wood-elf-realms"
-        },
-        {
-          "army": "high-elf-realms"
-        }
+      "items": [
+        "general",
+        "grand-cathay"
       ],
+      "armyComposition": [
+        "grand-cathay",
+        "jade-fleet"
+      ],
+      "allies": {
+        "grand-cathay": [
+          {
+            "army": "grand-cathay",
+            "armyComposition": "jade-fleet"
+          },
+          {
+            "army": "dwarfen-mountain-holds"
+          },
+          {
+            "army": "empire-of-man"
+          },
+          {
+            "army": "kingdom-of-bretonnia"
+          },
+          {
+            "army": "wood-elf-realms"
+          },
+          {
+            "army": "high-elf-realms"
+          }
+        ],
+        "jade-fleet": [
+          {
+            "army": "empire-of-man"
+          }
+        ]
+      },
       "mercenaries": {
         "grand-cathay": [
           {
             "army": "orc-and-goblin-tribes",
-            "units": ["badland-ogre-bulls"]
+            "units": [
+              "badland-ogre-bulls"
+            ]
           }
         ],
         "jade-fleet": [

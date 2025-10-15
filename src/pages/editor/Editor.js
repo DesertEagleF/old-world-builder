@@ -22,7 +22,8 @@ import { removeFromLocalList, updateLocalList } from "../../utils/list";
 import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
-import patchState from '../../utils/patchState';
+import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
+import { getArmyData } from '../../utils/army';
 
 import "./Editor.css";
 
@@ -66,40 +67,30 @@ export const Editor = ({ isMobile }) => {
 
   useEffect(() => {
     if (list) {
-      // First apply any relevant patches so that validateList sees the correct rules
+      dispatch(
+        setErrors(
+          validateList({
+            list,
+            language,
+            intl,
+          })
+        )
+      );
+
+      updateLocalList(list);
+      // Apply any stored patches for this list so rules reflect the list's selected patches
       (async () => {
         try {
           if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
             const ids = list.patches.map(p => p.id);
             await applySelectedRulePatches(ids);
           } else {
-            const applied = patchState.getApplied() || [];
-            if (applied && applied.length > 0) {
-              const ids = applied.map(p => p.id);
-              await applySelectedRulePatches(ids);
-            } else {
-              revertToBaseRules();
-            }
+            // no patches -> ensure base rules
+            revertToBaseRules();
           }
         } catch (e) {
           // swallow - avoid breaking editor load on patch errors
-        }
-
-        // After rules are in the desired patched state, run validation and update local list
-        try {
-          dispatch(
-            setErrors(
-              validateList({
-                list,
-                language,
-                intl,
-              })
-            )
-          );
-
-          updateLocalList(list);
-        } catch (e) {
-          // swallow validation/update errors
+          // console.warn('Failed to apply list patches', e);
         }
       })();
     }
@@ -187,14 +178,33 @@ export const Editor = ({ isMobile }) => {
       points: mercenariesPoints,
       armyComposition,
     });
-  const alliesData =
-    list.allies &&
-    getMaxPercentData({
-      type: "allies",
-      armyPoints: list.points,
-      points: alliesPoints,
-      armyComposition,
-    });
+  // Always compute alliesData so points/limits are available even if list.allies is empty
+  const alliesData = getMaxPercentData({
+    type: "allies",
+    armyPoints: list.points,
+    points: alliesPoints,
+    armyComposition,
+  });
+
+  // Strict: decide allies visibility by checking the dataset's raw `allies` field
+  // for the presence of the current `armyComposition` key. Only show Allies when
+  // dataset.allies[armyComposition] exists and is a non-empty array.
+  let hasAlliesOptions = false;
+  try {
+    const customData = getCustomDatasetData(list.army);
+    if (customData && customData.allies && Array.isArray(customData.allies[armyComposition]) && customData.allies[armyComposition].length > 0) {
+      hasAlliesOptions = true;
+    } else {
+      const gameSystems = getGameSystems();
+      const game = gameSystems.find((g) => g.id === list.game);
+      const builtinArmy = game && game.armies && game.armies.find((a) => a.id === list.army);
+      if (builtinArmy && builtinArmy.allies && Array.isArray(builtinArmy.allies[armyComposition]) && builtinArmy.allies[armyComposition].length > 0) {
+        hasAlliesOptions = true;
+      }
+    }
+  } catch (e) {
+    hasAlliesOptions = false;
+  }
   const moreButtons = [
     {
       name: intl.formatMessage({
@@ -294,7 +304,6 @@ export const Editor = ({ isMobile }) => {
               {`/ ${list.points} ${intl.formatMessage({
                 id: "app.points",
               })}`}
-              
             </>
           }
           hasPointsError={allPoints > list.points}
@@ -322,7 +331,6 @@ export const Editor = ({ isMobile }) => {
                 {`/ ${list.points} ${intl.formatMessage({
                   id: "app.points",
                 })}`}
-                
               </>
             }
             hasPointsError={allPoints > list.points}
@@ -330,17 +338,6 @@ export const Editor = ({ isMobile }) => {
             navigationIcon="more"
           />
         )}
-        {/* Selected patches summary: separate line under header */}
-        <div className="editor__patch-summary" style={{ margin: '8px 0 12px' }}>
-          <small>
-            <b>{intl.formatMessage({ id: 'patches.selectedLabel' })}</b>{' '}
-            {list.patches && list.patches.length > 0 ? (
-              list.patches.map(p => p.displayName || p.id).join(', ')
-            ) : (
-              <i><FormattedMessage id="patches.none" defaultMessage="(none)" /></i>
-            )}
-          </small>
-        </div>
         <section>
           {errors
             .filter(({ section }) => section === "global")
@@ -730,7 +727,7 @@ export const Editor = ({ isMobile }) => {
             </section>
           )}
 
-        {list.allies && alliesData && list?.army !== "daemons-of-chaos" && (
+  {hasAlliesOptions && alliesData && list?.army !== "daemons-of-chaos" && (
           <section className="editor__section">
             <header className="editor__header">
               <h2>

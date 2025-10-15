@@ -5,20 +5,34 @@
             "units": [
                 {
                     "ids": [
-                        "vampire-count"
-
+                        "vampire-count",
+                        "vampire-thrall"
                     ],
-                    "min": 0,
-                    "max": 1
+                    "min": 1
                 },
                 {
                     "ids": [
-                        "baron",
-                        "prophetess",
-                        "sir-cecil-gastonne-the-wyrm-slayer",
-                        "lady-élisse-duachaard"
+                        "vampire-count",
+                        "master-necromancer"
                     ],
-                    "min": 1
+                    "min": 0,
+                    "max": 1,
+                    "points": 1000
+                },
+                {
+                    "ids": [
+                        "wight-king",
+                        "tomb-banshee"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "points": 1000
+                },
+                {
+                    "ids": [
+                        "strigoi-ghoul-king"
+                    ],
+                    "max": 0
                 }
             ]
         },
@@ -27,28 +41,15 @@
             "units": [
                 {
                     "ids": [
-                        "knights-of-the-realm",
-                        "mounted-knights-of-the-realm"
-                    ],
-                    "min": 1
-                },
-                {
-                    "ids": [
-                        "men-at-arms",
-                        "peasant-bowmen"
-                    ],
-                    "min": 1
-                },
-                {
-                    "ids": [
-                        "knights-errant"
+                        "grave-guard",
+                        "black-knights"
                     ],
                     "min": 0,
                     "max": 1,
-                    "requiresType": "core",
+                    "requiresType": "characters",
                     "requires": [
-                        "knights-of-the-realm",
-                        "mounted-knights-of-the-realm"
+                        "wight-king",
+                        "wight-lord"
                     ],
                     "perUnit": true
                 }
@@ -59,11 +60,41 @@
             "units": [
                 {
                     "ids": [
-                        "battle-pilgrims"
+                        "grave-guard",
+                        "black-knights"
                     ],
                     "min": 0,
-                    "max": 2,
+                    "max": 1,
                     "points": 1000
+                },
+                {
+                    "ids": [
+                        "crypt-horrors",
+                        "fell-bats"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "points": 1000
+                },
+                {
+                    "ids": [
+                        "corpse-cart"
+                    ],
+                    "min": 0,
+                    "max": 3
+                },
+                {
+                    "ids": [
+                        "spirit-hosts"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "requiresType": "characters",
+                    "requires": [
+                        "cairn-wraith",
+                        "tomb-banshee"
+                    ],
+                    "perUnit": true
                 }
             ]
         },
@@ -72,11 +103,48 @@
             "units": [
                 {
                     "ids": [
-                        "field-trebuchet"
+                        "vargheists"
                     ],
                     "min": 0,
                     "max": 1,
                     "points": 1000
+                },
+                {
+                    "ids": [
+                        "black-coach"
+                    ],
+                    "min": 0,
+                    "max": 2
+                },
+                {
+                    "ids": [
+                        "terrorgheist",
+                        "varghulf"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "points": 1000
+                },
+                {
+                    "ids": [
+                        "blood-knights"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "points": 1000
+                },
+                {
+                    "ids": [
+                        "hexwraiths"
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "requiresType": "characters",
+                    "requires": [
+                        "cairn-wraith",
+                        "tomb-banshee"
+                    ],
+                    "perUnit": true
                 }
             ]
         },

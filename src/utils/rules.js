@@ -3956,6 +3956,7 @@ export const rules = {
         },
       ],
     },
+    allies: { maxPercent: 33 },
   },
   "renegade-crowns": {
     characters: {
