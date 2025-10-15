@@ -225,7 +225,10 @@ export const NewList = ({ isMobile }) => {
           />
         )}
         <form onSubmit={handleSubmit} className="new-list">
-          <PatchSelector onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} onShowPanel={() => history.push('/new/patches')} />
+          <label style={{ marginBottom: 6, display: 'block' }} htmlFor="patch-selector">
+            <FormattedMessage id="patches.selectedLabel" defaultMessage="Selected patches:" />
+          </label>
+          <PatchSelector id="patch-selector" onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} onShowPanel={() => history.push('/new/patches')} />
           {gameSystems.map(({ name, id }, index) => (
             <div
               className={classNames(

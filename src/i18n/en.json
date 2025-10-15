@@ -75,6 +75,7 @@
   "patches.expand": "Show patches",
   "patches.collapse": "Hide patches",
   "patches.none": "(none)",
+  "patches.selectedLabel": "Selected patches:",
   "patches.confirm": "Confirm",
   "patches.reset": "Reset",
   "patches.missingDeps": "(missing dependency)",

@@ -73,6 +73,7 @@
   "patches.expand": "Pokaż poprawki",
   "patches.collapse": "Ukryj poprawki",
   "patches.none": "(brak)",
+  "patches.selectedLabel": "Wybrane poprawki:",
   "patches.confirm": "Potwierdź poprawki",
   "patches.reset": "Resetuj poprawki",
   "patches.missingDeps": "(brak zależności)",

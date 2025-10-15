@@ -75,6 +75,7 @@
     "patches.expand": "显示补丁",
     "patches.collapse": "隐藏补丁",
     "patches.none": "(无)",
+    "patches.selectedLabel": "已选择的补丁：",
   "patches.confirm": "确定",
   "patches.reset": "重置",
   "patches.missingDeps": "(缺少依赖)",
