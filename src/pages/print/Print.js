@@ -369,17 +369,6 @@ export const Print = () => {
         )}
 
         <div className="print-footer">
-          <p>
-            <FormattedMessage id="export.createdWith" />{" "}
-            <b>"Old World Builder"</b>
-          </p>
-          <p>
-            [
-            <a href="https://old-world-builder.com">
-              <i>old-world-builder.com</i>
-            </a>
-            ]
-          </p>
         </div>
       </main>
     </>

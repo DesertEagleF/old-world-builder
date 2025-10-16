@@ -10,6 +10,7 @@ import { Expandable } from "../../components/expandable";
 import theOldWorld from "../../assets/the-old-world.json";
 
 import "./CustomDatasets.css";
+import { SITE_URL } from "../../config/site";
 
 export const CustomDatasets = () => {
   const location = useLocation();
@@ -137,10 +138,7 @@ export const CustomDatasets = () => {
             id: "footer.custom-datasets",
           })}`}
         </title>
-        <link
-          rel="canonical"
-          href="https://old-world-builder.com/custom-datasets"
-        />
+        <link rel="canonical" href={`${SITE_URL}/custom-datasets`} />
       </Helmet>
 
       <Header headline="Old World Builder" hasMainNavigation hasHomeButton />

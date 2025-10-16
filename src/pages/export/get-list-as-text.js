@@ -295,10 +295,6 @@ export const getListAsText = ({
       isSimpleList: true,
     });
 
-    listString += `\n\n---\n${intl.formatMessage({
-      id: "export.createdWith",
-    })} "Old World Builder"\n\n[https://old-world-builder.com]`;
-
     return listString;
   }
 
@@ -527,20 +523,6 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       showStats,
       armyComposition
     })}`;
-  }
-
-  if (isMarkdownList) {
-    listString += `
-*${intl.formatMessage({
-      id: "export.createdWith",
-    })} "Old World Builder"* - https://old-world-builder.com`;
-  } else {
-    listString += `---
-${intl.formatMessage({
-  id: "export.createdWith",
-})} "Old World Builder"
-
-[https://old-world-builder.com]`;
   }
 
   if (isMarkdownList) {

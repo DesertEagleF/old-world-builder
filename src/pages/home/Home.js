@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
+import { SITE_URL } from "../../config/site";
 import classNames from "classnames";
 
 import { Button } from "../../components/button";
@@ -382,7 +383,7 @@ export const Home = ({ isMobile }) => {
         <title>
           Old World Builder - Army builder for Warhammer: The Old World
         </title>
-        <link rel="canonical" href="https://old-world-builder.com/" />
+        <link rel="canonical" href={`${SITE_URL}/`} />
       </Helmet>
 
       <Dialog
@@ -748,62 +749,6 @@ export const Home = ({ isMobile }) => {
         >
           <FormattedMessage id="home.import" />
         </Button>
-
-        <hr />
-
-        <p>
-          <b>
-            <i>
-              <FormattedMessage id="home.sponsored" />
-            </i>
-          </b>
-        </p>
-
-        <a
-          className="home__banner-link"
-          href="https://tinyurl.com/Forg3dOWB"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src={forg3dBanner}
-            className="home__banner-image"
-            alt={intl.formatMessage({ id: "home.forg3d" })}
-            loading="lazy"
-          />
-        </a>
-
-        {timezone === "europe" ? (
-          <a
-            className="home__banner-link"
-            href={`https://www.fantasywelt.de/?wsa=jcdi7h53acjhc${
-              language === "de" ? "&lang=ger" : "&lang=eng"
-            }`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src={language === "de" ? fantasyweltDe : fantasyweltEn}
-              className="home__banner-image"
-              alt={intl.formatMessage({ id: "home.fantasywelt" })}
-              loading="lazy"
-            />
-          </a>
-        ) : (
-          <a
-            className="home__banner-link"
-            href="https://miniwargamingforge.com?sca_ref=6115787.XxehNS6tUCHiFExD"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src={mwgForge}
-              className="home__banner-image"
-              alt={intl.formatMessage({ id: "home.mwgForge" })}
-              loading="lazy"
-            />
-          </a>
-        )}
       </MainComponent>
     </>
   );

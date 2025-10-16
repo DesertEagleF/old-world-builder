@@ -19,7 +19,6 @@ export const Help = () => {
         <title>
           {`Old World Builder | ${intl.formatMessage({ id: "footer.help" })}`}
         </title>
-        <link rel="canonical" href="https://old-world-builder.com/help" />
       </Helmet>
 
       <Header headline="Old World Builder" hasMainNavigation hasHomeButton />
@@ -28,31 +27,6 @@ export const Help = () => {
         <h2 className="page-headline">
           <FormattedMessage id="help.title" />
         </h2>
-        <p>
-          <FormattedMessage
-            id="help.text"
-            values={{
-              github: (
-                <a
-                  href="https://github.com/nthiebes/old-world-builder"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  GitHub
-                </a>
-              ),
-              discord: (
-                <a
-                  href="https://discord.gg/87nUyjUxTU"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Discord
-                </a>
-              ),
-            }}
-          />
-        </p>
       </Main>
     </>
   );

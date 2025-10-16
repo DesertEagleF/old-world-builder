@@ -133,7 +133,6 @@ export const Datasets = ({ isMobile }) => {
             id: "footer.datasets-editor",
           })}`}
         </title>
-        <link rel="canonical" href="https://old-world-builder.com/datasets" />
       </Helmet>
 
       <Header headline="Old World Builder" hasMainNavigation hasHomeButton />
@@ -175,16 +174,6 @@ export const Datasets = ({ isMobile }) => {
               they appear in the book
             </li>
             <li>Proofread after you're done</li>
-            <li>
-              If a special rule cannot be mapped, write to us in{" "}
-              <a
-                target="_blank"
-                rel="noreferrer"
-                href="https://discord.gg/87nUyjUxTU"
-              >
-                Discord
-              </a>
-            </li>
           </ul>
         </div>
 
@@ -524,29 +513,6 @@ export const Datasets = ({ isMobile }) => {
                 <FormattedMessage id="export.error" />
               </p>
             )}
-            <p className="datasets__paragraph">
-              When you're done editing, copy the text and post it in the{" "}
-              <a
-                target="_blank"
-                rel="noreferrer"
-                href="https://discord.com/channels/1120710419108085780/1120720528068583434"
-              >
-                "Datasets Contribution" Discord Channel
-              </a>
-              .
-            </p>
-            <p className="datasets__paragraph">
-              If you're a bit tech-savvy, you can also create a pull request
-              directly in{" "}
-              <a
-                target="_blank"
-                rel="noreferrer"
-                href="https://github.com/nthiebes/old-world-builder/pulls"
-              >
-                GitHub
-              </a>
-              .
-            </p>
             <textarea
               className="datasets__output"
               rows="10"

@@ -6,6 +6,7 @@ import { useIntl } from "react-intl";
 
 import { Button } from "../../components/button";
 import { Icon } from "../../components/icon";
+import LanguageSwitcher from "../../components/language/LanguageSwitcher";
 
 import "./Header.css";
 
@@ -122,6 +123,8 @@ export const Header = ({
           </p>
         )}
       </div>
+  {!isSection && <LanguageSwitcher className="header__language-switcher" />}
+
       {navigation ? (
         <Button
           type="text"
