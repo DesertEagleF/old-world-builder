@@ -1,4 +1,4 @@
-import { listAvailablePatches, loadPatchesByIds, mergeRulesWithPatches } from './patch';
+import { listAvailablePatches, loadPatchesByIds, mergeRulesWithPatches, loadPatchFilesByIds, mergeDataWithPatches } from './patch';
 
 function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -27,6 +27,21 @@ export async function getAvailablePatches(forceReload = false) {
 
 export async function getPatchesForIds(ids = []) {
   return await loadPatchesByIds(ids);
+}
+
+export async function getPatchFilesForIds(ids = [], filename = 'rules.json') {
+  return await loadPatchFilesByIds(ids, filename);
+}
+
+/**
+ * Given a baseData object/array and array of patch ids, load the specified
+ * filename from each patch and merge into baseData using operator-aware merges.
+ * filename defaults to 'patch.json'.
+ */
+export async function getMergedPatchDataForIds(baseData, ids = [], filename = 'patch.json') {
+  if (!Array.isArray(ids) || ids.length === 0) return JSON.parse(JSON.stringify(baseData));
+  const patches = await loadPatchFilesByIds(ids, filename);
+  return mergeDataWithPatches(baseData, patches);
 }
 
 export async function getMergedRulesForSelection(selectedIds = []) {

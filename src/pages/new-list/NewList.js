@@ -14,7 +14,7 @@ import { useLanguage } from "../../utils/useLanguage";
 import { setLists } from "../../state/lists";
 
 import { nameMap } from "../magic";
-import { mergePatch } from "../../utils/patch";
+import { mergePatch, mergeGameSystemsWithPatches } from "../../utils/patch";
 import PatchSelector from '../../components/patch-selector/PatchSelector';
 import { useHistory } from 'react-router-dom';
 import patchState from '../../utils/patchState';
@@ -44,8 +44,6 @@ export const NewList = ({ isMobile }) => {
   const [localizedNameMap, setLocalizedNameMap] = useState(nameMap);
   const history = useHistory();
 
-  // PatchSelector handles patch loading, locales and selection. NewList receives applied patch objects
-
   // On mount, if there are authoritative applied patches in patchState, apply them so rules reflect current selection
   useEffect(() => {
     (async () => {
@@ -69,70 +67,8 @@ export const NewList = ({ isMobile }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Merge all patches/full into the entire gameSystems, then select the army and mark composition sources
-  function getMergedGameSystemsWithSources(gameSystems, patchList, gameId) {
-    // Find the base system
-    const baseSystem = gameSystems.find(({ id }) => id === gameId);
-    if (!baseSystem) return { armies: [], compositionSourcesMap: {} };
-
-    // Deep copy armies
-    let mergedArmies = baseSystem.armies.map(a => ({ ...a }));
-    let compositionSourcesMap = {};
-
-    for (const { id: patchId, type, data } of patchList) {
-      if (!data.armies) continue;
-      if (type === "patch") {
-        // Patch: merge each army by id
-        data.armies.forEach(patchArmy => {
-          const idx = mergedArmies.findIndex(a => a.id === patchArmy.id);
-            if (idx !== -1) {
-            // Record $append source
-            if (patchArmy.armyComposition) {
-              Object.entries(patchArmy.armyComposition).forEach(([op, arr]) => {
-                if (op === "$append") {
-                  arr.forEach(item => {
-                    if (!compositionSourcesMap[patchArmy.id]) compositionSourcesMap[patchArmy.id] = {};
-                    compositionSourcesMap[patchArmy.id][item] = patchId;
-                  });
-                }
-              });
-            }
-            mergedArmies[idx] = mergePatch(mergedArmies[idx], patchArmy, patchId);
-          }
-        });
-      } else if (type === "full") {
-        // Full: replace all matching armies
-        data.armies.forEach(fullArmy => {
-          const idx = mergedArmies.findIndex(a => a.id === fullArmy.id);
-            if (idx !== -1) {
-            mergedArmies[idx] = { ...fullArmy };
-            // mark replacement as from this patch
-            if (patchId && typeof mergedArmies[idx] === 'object') mergedArmies[idx].__patchedBy = patchId;
-            // All composition from this patch
-            if (fullArmy.armyComposition) {
-              if (!compositionSourcesMap[fullArmy.id]) compositionSourcesMap[fullArmy.id] = {};
-              fullArmy.armyComposition.forEach(item => {
-                compositionSourcesMap[fullArmy.id][item] = patchId;
-              });
-            }
-          }
-        });
-      }
-    }
-    // Mark base for items not from patch/full
-    mergedArmies.forEach(army => {
-      if (army.armyComposition) {
-        if (!compositionSourcesMap[army.id]) compositionSourcesMap[army.id] = {};
-        army.armyComposition.forEach(item => {
-          if (!compositionSourcesMap[army.id][item]) compositionSourcesMap[army.id][item] = "base";
-        });
-      }
-    });
-    return { armies: mergedArmies, compositionSourcesMap };
-  }
-
-  // Use merged armies and sources from applied (confirmed) patches only
-  const { armies: mergedArmies, compositionSourcesMap } = getMergedGameSystemsWithSources(gameSystems, appliedPatchObjects, game);
+  // Use centralized merge helper to combine gameSystems with applied patch objects
+  const { armies: mergedArmies, compositionSourcesMap } = mergeGameSystemsWithPatches(gameSystems, appliedPatchObjects, game);
   const armies = mergedArmies.sort((a, b) => a.id.localeCompare(b.id));
   const baseArmy = armies.find(({ id }) => army === id);
   let journalArmies = baseArmy?.armyComposition || [];
@@ -160,6 +96,7 @@ export const NewList = ({ isMobile }) => {
   const quickActions = lists.length
     ? [...new Set([...listsPoints, 500, 1000, 1500, 2000, 2500])].slice(0, 5)
     : [500, 1000, 1500, 2000, 2500];
+
   const createList = () => {
     const newId = getRandomId();
     const newList = {
@@ -400,3 +337,4 @@ export const NewList = ({ isMobile }) => {
     </>
   );
 };
+ 

@@ -23,6 +23,7 @@ import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
+import patchManager from '../../utils/patchManager';
 
 import "./Editor.css";
 
@@ -152,6 +153,27 @@ export const Editor = ({ isMobile }) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [list && list.patches, language]);
+
+  const [fetchedPatchData, setFetchedPatchData] = useState({});
+  useEffect(() => {
+    let mounted = true;
+    async function loadPatchPayloads() {
+      if (!list || !Array.isArray(list.patches) || list.patches.length === 0) return;
+      const ids = list.patches
+        .map((p) => (typeof p === 'string' ? p : p && p.id ? p.id : (p && typeof p.name === 'string' ? p.name : null)))
+        .filter(Boolean);
+      if (ids.length === 0) return;
+      try {
+        const merged = await patchManager.getMergedPatchDataForIds({}, ids, 'patch.json');
+        if (mounted) setFetchedPatchData(merged || {});
+      } catch (e) {
+        if (mounted) setFetchedPatchData({});
+      }
+    }
+    loadPatchPayloads();
+    return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list && list.patches]);
 
   if (redirect) {
     return <Redirect to="/" />;

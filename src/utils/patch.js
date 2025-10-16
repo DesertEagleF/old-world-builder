@@ -7,15 +7,58 @@
 export function mergePatch(base, patch, patchId = null) {
     // Support top-level operator objects on the patch itself
     if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
-        // If patch is an operator-only object (e.g. {"$replace": ...}) apply operator
-        if ('$replace' in patch && Object.keys(patch).length === 1) {
-            return patch['$replace'];
-        }
         if ('$append' in patch && Object.keys(patch).length === 1) {
-            return Array.isArray(base) ? [...base, ...patch['$append']] : [...patch['$append']];
+            const app = patch['$append'];
+            // array append: concatenate
+            if (Array.isArray(app)) {
+                return Array.isArray(base) ? [...base, ...app] : [...app];
+            }
+            // object append: merge per-key into object base
+            if (app && typeof app === 'object') {
+                const cloned = JSON.parse(JSON.stringify(base || {}));
+                for (const k of Object.keys(app)) {
+                    // if both sides are arrays, concatenate, else recursively merge
+                    if (Array.isArray(cloned[k]) && Array.isArray(app[k])) {
+                        cloned[k] = [...cloned[k], ...app[k]];
+                    } else {
+                        cloned[k] = mergePatch(cloned[k], app[k], patchId);
+                    }
+                }
+                return cloned;
+            }
+            // fallback: treat as empty
+            return Array.isArray(base) ? base : {};
         }
-        if ('$remove' in patch && Object.keys(patch).length === 1) {
-            return Array.isArray(base) ? base.filter(x => !patch['$remove'].includes(x)) : [];
+        // $modify: perform a recursive partial merge (fall back to clone when base undefined)
+        if ('$modify' in patch && Object.keys(patch).length === 1) {
+            return mergePatch(base, patch['$modify'], patchId);
+        }
+        // support $delete (preferred) and $remove (legacy alias)
+        if (('$delete' in patch || '$remove' in patch) && Object.keys(patch).length === 1) {
+            const del = patch['$delete'] || patch['$remove'];
+            if (Array.isArray(base)) {
+                // arrays: remove primitives or objects by id
+                if (base.length > 0 && base[0] && typeof base[0] === 'object' && 'id' in base[0]) {
+                    const ids = Array.isArray(del) ? del : [];
+                    return base.filter(b => !(b && b.id && ids.includes(b.id)));
+                }
+                return Array.isArray(del) ? base.filter(x => !del.includes(x)) : base;
+            }
+            // objects: if del is array of keys, remove those fields
+            if (del && Array.isArray(del)) {
+                const cloned = JSON.parse(JSON.stringify(base || {}));
+                for (const k of del) delete cloned[k];
+                return cloned;
+            }
+            return Array.isArray(base) ? base : {};
+        }
+        // $replace: apply partial modifications to existing structure
+        if ('$replace' in patch && Object.keys(patch).length === 1) {
+            const mod = patch['$replace'];
+            if (typeof base === 'object' && base !== null) {
+                return mergePatch(base, mod, patchId);
+            }
+            return deepClone(mod);
         }
     }
 
@@ -70,16 +113,51 @@ export function mergePatch(base, patch, patchId = null) {
             const pVal = patch[key];
             // operator object for this field
             if (pVal && typeof pVal === 'object' && !Array.isArray(pVal)) {
+                    // support $modify at field level
+                    if ('$modify' in pVal && Object.keys(pVal).length === 1) {
+                        result[key] = mergePatch(base[key], pVal['$modify'], patchId);
+                        continue;
+                    }
                 if ('$replace' in pVal && Object.keys(pVal).length === 1) {
-                    result[key] = pVal['$replace'];
+                    // Apply partial modifications to existing field
+                    result[key] = mergePatch(base[key], pVal['$replace'], patchId);
                     continue;
                 }
                 if ('$append' in pVal && Object.keys(pVal).length === 1) {
-                    result[key] = Array.isArray(base[key]) ? [...base[key], ...pVal['$append']] : [...pVal['$append']];
+                    const app = pVal['$append'];
+                    if (Array.isArray(app)) {
+                        result[key] = Array.isArray(base[key]) ? [...base[key], ...app] : [...app];
+                    } else if (app && typeof app === 'object') {
+                        const cloned = JSON.parse(JSON.stringify(base[key] || {}));
+                        for (const ak of Object.keys(app)) {
+                            if (Array.isArray(cloned[ak]) && Array.isArray(app[ak])) {
+                                cloned[ak] = [...cloned[ak], ...app[ak]];
+                            } else {
+                                cloned[ak] = mergePatch(cloned[ak], app[ak], patchId);
+                            }
+                        }
+                        result[key] = cloned;
+                    } else {
+                        result[key] = Array.isArray(base[key]) ? base[key] : (Array.isArray(app) ? app : base[key]);
+                    }
                     continue;
                 }
-                if ('$remove' in pVal && Object.keys(pVal).length === 1) {
-                    result[key] = Array.isArray(base[key]) ? base[key].filter(x => !pVal['$remove'].includes(x)) : [];
+                if (('$remove' in pVal) && Object.keys(pVal).length === 1) {
+                    const del = pVal['$remove'];
+                    if (Array.isArray(base[key])) {
+                        if (base[key].length > 0 && base[key][0] && typeof base[key][0] === 'object' && 'id' in base[key][0]) {
+                            const ids = Array.isArray(del) ? del : [];
+                            result[key] = base[key].filter(b => !(b && b.id && ids.includes(b.id)));
+                        } else {
+                            result[key] = Array.isArray(del) ? base[key].filter(x => !del.includes(x)) : base[key];
+                        }
+                    } else if (typeof base[key] === 'object' && base[key] !== null && Array.isArray(del)) {
+                        const cloned = JSON.parse(JSON.stringify(base[key]));
+                        for (const k of del) delete cloned[k];
+                        result[key] = cloned;
+                    } else {
+                        result[key] = {};
+                    }
                     continue;
                 }
             }
@@ -215,18 +293,18 @@ export function mergeRulesWithPatches(baseRules, patches) {
 
         for (const armyId of Object.keys(patchRules)) {
             const patchArmyRules = patchRules[armyId];
+            // Use mergePatch so operator-only wrapper objects are handled
             if (!merged[armyId]) {
-                merged[armyId] = deepClone(patchArmyRules);
-                // annotate newly added top-level army rules as coming from this patch
+                merged[armyId] = mergePatch(undefined, patchArmyRules, patchId);
                 if (patchId && typeof merged[armyId] === 'object') merged[armyId].__patchedBy = patchId;
                 continue;
             }
             if (type === 'full') {
-                merged[armyId] = deepClone(patchArmyRules);
+                merged[armyId] = mergePatch({}, patchArmyRules, patchId);
                 if (patchId && typeof merged[armyId] === 'object') merged[armyId].__patchedBy = patchId;
                 continue;
             }
-            merged[armyId] = mergeObjectsConcatArrays(merged[armyId], patchArmyRules, patchId);
+            merged[armyId] = mergePatch(merged[armyId], patchArmyRules, patchId);
         }
     }
     return merged;
@@ -306,4 +384,137 @@ export async function loadPatchesByIds(ids = []) {
     } catch (e) {
         return [];
     }
+}
+
+/**
+ * Merge arbitrary base data with an array of patch objects (each {id, type, data}).
+ * This is a generic helper other modules can call to merge datasets provided by patches
+ * (for example units, lores-of-magic, full datasets, etc.). It uses the operator-aware
+ * mergePatch function so patches may contain $append/$modify/$delete/$replace semantics.
+ *
+ * @param {any} baseData - base dataset (object/array) to merge into
+ * @param {Array<{id:string,type:string,data:any}>} patches - loaded patch objects
+ * @returns {any} merged result
+ */
+export function mergeDataWithPatches(baseData, patches) {
+    const merged = deepClone(baseData === undefined ? {} : baseData);
+    for (const p of patches || []) {
+        const patchId = p && p.id;
+        const pdata = p && p.data;
+        if (!pdata || typeof pdata !== 'object') continue;
+        // patches may contain multiple top-level keys (rules, units, locale, etc.)
+        for (const key of Object.keys(pdata)) {
+            merged[key] = mergePatch(merged[key], pdata[key], patchId);
+        }
+    }
+    return merged;
+}
+
+/**
+ * Load arbitrary files from patch folders for a set of ids.
+ * filename defaults to 'rules.json' but callers can pass 'patch.json', 'full.json', etc.
+ * Returns array of { id, type, data } for found files (data is parsed JSON or null).
+ */
+export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
+    if (!Array.isArray(ids) || ids.length === 0) return [];
+    try {
+        const index = await loadPatchIndex();
+        const map = Object.fromEntries((index || []).map(e => [e.id, e]));
+        const results = await Promise.all(ids.map(async (id) => {
+            const entry = map[id] || { id, type: 'patch' };
+            try {
+                const path = `/games/patches/${id}/${filename}`;
+                const res = await fetch(path);
+                if (!res.ok) return { id, type: entry.type || 'patch', data: null };
+                const data = await res.json();
+                return { id, type: entry.type || 'patch', data };
+            } catch (e) {
+                return { id, type: entry.type || 'patch', data: null };
+            }
+        }));
+        return results.filter(p => p.data);
+    } catch (e) {
+        return [];
+    }
+}
+
+/**
+ * Merge gameSystems.armies with patches provided by patchList and return
+ * { armies: mergedArmies, compositionSourcesMap }
+ * patchList is an array of objects with shape { id, type, data }
+ * This function contains the same behavior as the previous inline
+ * implementation but centralizes the logic here.
+ */
+export function mergeGameSystemsWithPatches(gameSystems, patchList, gameId) {
+    // Find the base system
+    const baseSystem = (gameSystems || []).find(({ id }) => id === gameId);
+    if (!baseSystem) return { armies: [], compositionSourcesMap: {} };
+
+    // Deep copy armies
+    let mergedArmies = (baseSystem.armies || []).map(a => JSON.parse(JSON.stringify(a)));
+    let compositionSourcesMap = {};
+
+    for (const entry of (patchList || [])) {
+        const patchId = entry && entry.id;
+        const type = entry && entry.type;
+        const data = entry && entry.data;
+        if (!data || !data.armies) continue;
+
+        if (type === 'patch' || !type) {
+            // Patch: merge each army by id
+            (data.armies || []).forEach(patchArmy => {
+                const idx = mergedArmies.findIndex(a => a.id === patchArmy.id);
+                if (idx !== -1) {
+                    // Record $append source if present
+                    if (patchArmy.armyComposition) {
+                        Object.entries(patchArmy.armyComposition).forEach(([op, arr]) => {
+                            if (op === '$append') {
+                                if (Array.isArray(arr)) {
+                                    arr.forEach(item => {
+                                        if (!compositionSourcesMap[patchArmy.id]) compositionSourcesMap[patchArmy.id] = {};
+                                        compositionSourcesMap[patchArmy.id][item] = patchId;
+                                    });
+                                } else if (arr && typeof arr === 'object') {
+                                    Object.keys(arr).forEach(itemKey => {
+                                        if (!compositionSourcesMap[patchArmy.id]) compositionSourcesMap[patchArmy.id] = {};
+                                        compositionSourcesMap[patchArmy.id][itemKey] = patchId;
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    mergedArmies[idx] = mergePatch(mergedArmies[idx], patchArmy, patchId);
+                }
+            });
+        } else if (type === 'full') {
+            // Full: replace all matching armies
+            (data.armies || []).forEach(fullArmy => {
+                const idx = mergedArmies.findIndex(a => a.id === fullArmy.id);
+                if (idx !== -1) {
+                    mergedArmies[idx] = JSON.parse(JSON.stringify(fullArmy));
+                    if (patchId && typeof mergedArmies[idx] === 'object') mergedArmies[idx].__patchedBy = patchId;
+                    // All composition from this patch
+                    if (fullArmy.armyComposition) {
+                        if (!compositionSourcesMap[fullArmy.id]) compositionSourcesMap[fullArmy.id] = {};
+                        // assume fullArmy.armyComposition is array
+                        (fullArmy.armyComposition || []).forEach(item => {
+                            compositionSourcesMap[fullArmy.id][item] = patchId;
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    // Mark base for items not from patch/full
+    mergedArmies.forEach(army => {
+        if (army.armyComposition) {
+            if (!compositionSourcesMap[army.id]) compositionSourcesMap[army.id] = {};
+            (army.armyComposition || []).forEach(item => {
+                if (!compositionSourcesMap[army.id][item]) compositionSourcesMap[army.id][item] = 'base';
+            });
+        }
+    });
+
+    return { armies: mergedArmies, compositionSourcesMap };
 }
