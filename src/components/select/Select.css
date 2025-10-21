@@ -30,3 +30,124 @@
 .select--spaceBottom {
   margin-bottom: 1rem;
 }
+
+/* RichSelect adjustments: ensure the control button inside rich-select behaves like the native select */
+.rich-select .select {
+  /* Keep same sizing/spacing as native select and make the button visually appear like a select */
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem 0; /* remove the right margin that native .select has when used inline */
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-align: left;
+  line-height: 48px; /* vertically center text inside the 48px control */
+  padding-right: 2.5rem; /* leave space for caret */
+  position: relative;
+}
+
+.rich-select__list {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border-radius: 2px;
+}
+
+/* caret for RichSelect button to resemble native select caret */
+.rich-select .select::after {
+  content: '';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--color-font);
+  pointer-events: none;
+}
+
+/* Ensure hover/focus visual parity with native select */
+.rich-select .select:hover,
+.rich-select .select:focus,
+.rich-select .select:active {
+  box-shadow: 0 0 10px 2px var(--color-list);
+  outline: none;
+}
+
+/* CustomSelect: visually match native select */
+.custom-select .select {
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem 0;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-align: left;
+  line-height: 48px;
+  padding-right: 6rem; /* leave space for caret and optional badge */
+  position: relative;
+}
+
+.custom-select .select::after {
+  content: '';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--color-font);
+  pointer-events: none;
+}
+
+.custom-select__list {
+  position: absolute;
+  z-index: 1200;
+  left: 0;
+  right: 0;
+  background: var(--color-white);
+  border: 1px solid #ddd;
+  margin-top: 4px;
+  max-height: 240px;
+  overflow: auto;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border-radius: 2px;
+}
+
+.custom-select__item {
+  list-style: none;
+}
+
+.custom-select__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 1rem;
+  height: 48px;
+  border: 0 none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.custom-select__option:hover {
+  background: var(--color-list);
+}
+
+.custom-select__option-badge {
+  margin-left: 8px;
+}
+
+/* inline badge shown in the closed control */
+.custom-select__selected-badge {
+  position: absolute;
+  right: 2.2rem; /* sits left of the caret */
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+}

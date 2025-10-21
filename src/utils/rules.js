@@ -1,4 +1,4 @@
-import patchManager from "./patchManager";
+import patchManager from "./patch";
 
 export const rules = {
   "grand-army": {

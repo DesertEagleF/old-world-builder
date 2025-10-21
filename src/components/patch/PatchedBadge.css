@@ -1,0 +1,50 @@
+.patched-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 12px;
+  gap: 6px;
+  background: rgba(0,0,0,0.06);
+  color: #222;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.patched-badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.patched-badge__text {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.patched-badge--patched {
+  background: #fff7e6;
+  color: #6a4a00;
+  border-color: #ffe7b8;
+}
+.patched-badge--patched .patched-badge__dot { background: #ffb84d; }
+
+.patched-badge--modified {
+  background: #e6f7ff;
+  color: #003a6b;
+  border-color: #b9e6ff;
+}
+.patched-badge--modified .patched-badge__dot { background: #4db3ff; }
+
+.patched-badge--added {
+  background: #ecffe6;
+  color: #1b5e20;
+  border-color: #c8f7c6;
+}
+.patched-badge--added .patched-badge__dot { background: #4dd14d; }
+
+.patched-badge--removed {
+  background: #fff0f0;
+  color: #6b0a09;
+  border-color: #ffd6d6;
+}
+.patched-badge--removed .patched-badge__dot { background: #ff6b6b; }

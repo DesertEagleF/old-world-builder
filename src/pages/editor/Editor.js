@@ -23,7 +23,8 @@ import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
-import patchManager from '../../utils/patchManager';
+import patchManager from '../../utils/patch';
+import PatchedBadge from '../../components/patch/PatchedBadge';
 
 import "./Editor.css";
 
@@ -426,7 +427,7 @@ export const Editor = ({ isMobile }) => {
             </span>{" "}
             {list.patches.map((p, i) => (
               <span key={p.id || i} className="editor__patch-name">
-                {getPatchDisplayName(p)}{i < list.patches.length - 1 ? ", " : ""}
+                <PatchedBadge text={getPatchDisplayName(p)} />{i < list.patches.length - 1 ? " " : ""}
               </span>
             ))}
           </div>

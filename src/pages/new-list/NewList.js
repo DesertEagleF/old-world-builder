@@ -16,6 +16,8 @@ import { setLists } from "../../state/lists";
 import { nameMap } from "../magic";
 import { mergePatch, mergeGameSystemsWithPatches } from "../../utils/patch";
 import PatchSelector from '../../components/patch-selector/PatchSelector';
+import PatchedBadge from '../../components/patch/PatchedBadge';
+import { CustomSelect } from '../../components/select';
 import { useHistory } from 'react-router-dom';
 import patchState from '../../utils/patchState';
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
@@ -220,20 +222,24 @@ export const NewList = ({ isMobile }) => {
           <label htmlFor="army">
             <FormattedMessage id="new.army" />
           </label>
-          <Select
+          <CustomSelect
             id="army"
-            options={armies}
+            options={armies.map((a) => ({
+              id: a.id,
+              name_en: a[`name_${language}`] || a.name_en || a.name,
+              source: a.source,
+            }))}
             onChange={handleArmyChange}
-            selected="empire-of-man"
-            spaceBottom
-            required
+            selected={army}
+            className="select--spaceBottom"
+            appliedPatchObjects={appliedPatchObjects}
           />
           {journalArmies && journalArmies.length > 0 ? (
             <>
               <label htmlFor="arcane-journal">
                 <FormattedMessage id="new.armyComposition" />
               </label>
-              <Select
+              <CustomSelect
                 id="arcane-journal"
                 options={journalArmies.map((journalArmy) => ({
                   id: journalArmy,
@@ -242,31 +248,25 @@ export const NewList = ({ isMobile }) => {
                       ? intl.formatMessage({ id: "new.grandArmy" })
                       : localizedNameMap[journalArmy]?.[`name_${language}`] || journalArmy,
                   source: compositionSources[journalArmy],
-                  // Show patch source in label if not base
-                  label:
-                    (journalArmy === army
-                      ? intl.formatMessage({ id: "new.grandArmy" })
-                      : localizedNameMap[journalArmy]?.[`name_${language}`] || journalArmy) +
-                    (compositionSources[journalArmy] && compositionSources[journalArmy] !== "base"
-                      ? ` (from patch: ${compositionSources[journalArmy]})`
-                      : ""),
                 }))}
                 onChange={handleArcaneJournalChange}
-                selected={army}
-                spaceBottom
-                getOptionLabel={option => option.label || option.name_en}
+                selected={armyComposition}
+                className="select--spaceBottom"
+                appliedPatchObjects={appliedPatchObjects}
               />
+              {/* Badge is now shown inside the select (closed control and open list). External badge display removed. */}
             </>
           ) : null}
           <label htmlFor="composition-rule">
             <FormattedMessage id="new.armyCompositionRule" />
           </label>
-          <Select
+          <CustomSelect
             id="composition-rule"
-            options={compositionRules}
+            options={compositionRules.map(r => ({ id: r.id, name_en: r.name_en }))}
             onChange={handleCompositionRuleChange}
             selected={compositionRule}
-            spaceBottom
+            className="select--spaceBottom"
+            appliedPatchObjects={appliedPatchObjects}
           />
           <label htmlFor="points">
             <FormattedMessage id="misc.points" />

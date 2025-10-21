@@ -305,6 +305,7 @@ export function mergeRulesWithPatches(baseRules, patches) {
                 continue;
             }
             merged[armyId] = mergePatch(merged[armyId], patchArmyRules, patchId);
+            if (patchId && typeof merged[armyId] === 'object') merged[armyId].__patchedBy = patchId;
         }
     }
     return merged;
@@ -518,3 +519,59 @@ export function mergeGameSystemsWithPatches(gameSystems, patchList, gameId) {
 
     return { armies: mergedArmies, compositionSourcesMap };
 }
+
+// --- Patch manager state & convenience APIs (migrated from patchManager) ---
+const _managerState = {
+    available: null,
+    selectedIds: [],
+    lastApplied: null,
+    baseSnapshot: null,
+};
+
+export function initBaseSnapshot(baseRules) {
+    _managerState.baseSnapshot = deepClone(baseRules || {});
+}
+
+export async function getAvailablePatches(forceReload = false) {
+    if (_managerState.available && !forceReload) return _managerState.available;
+    const entries = await listAvailablePatches();
+    _managerState.available = entries;
+    return entries;
+}
+
+export async function getPatchesForIds(ids = []) {
+    return await loadPatchesByIds(ids);
+}
+
+export async function getPatchFilesForIds(ids = [], filename = 'rules.json') {
+    return await loadPatchFilesByIds(ids, filename);
+}
+
+export async function getMergedPatchDataForIds(baseData, ids = [], filename = 'patch.json') {
+    if (!Array.isArray(ids) || ids.length === 0) return JSON.parse(JSON.stringify(baseData));
+    const patches = await loadPatchFilesByIds(ids, filename);
+    return mergeDataWithPatches(baseData, patches);
+}
+
+export async function getMergedRulesForSelection(selectedIds = []) {
+    if (!_managerState.baseSnapshot) throw new Error('patchManager: baseSnapshot not initialized. Call initBaseSnapshot(baseRules) first.');
+    if (!Array.isArray(selectedIds) || selectedIds.length === 0) return deepClone(_managerState.baseSnapshot);
+
+    const patches = await loadPatchesByIds(selectedIds);
+    const merged = mergeRulesWithPatches(_managerState.baseSnapshot, patches);
+    return merged;
+}
+
+export function getSelectionState() {
+    return { selectedIds: [..._managerState.selectedIds], lastApplied: _managerState.lastApplied };
+}
+
+const patchManager = {
+    initBaseSnapshot,
+    getAvailablePatches,
+    getPatchesForIds,
+    getMergedRulesForSelection,
+    getSelectionState,
+};
+
+export default patchManager;
