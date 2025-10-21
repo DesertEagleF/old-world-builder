@@ -440,6 +440,42 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
 }
 
 /**
+ * Load a base file (e.g. /games/the-old-world/<id>.json) and merge any patch files
+ * from /games/patches/<patchId>/<filename> for the provided patch ids.
+ * If no patch file exists for an id, that id is ignored. If no patches provided
+ * or none contain the file, returns the base file content. Does not throw on 404.
+ *
+ * @param {string} basePath - path to base file without extension, e.g. 'games/the-old-world/vampire-counts'
+ * @param {Array<string>} patchIds - array of patch ids to attempt to load
+ * @param {string} filename - filename under the patch folder (defaults to same as base file name)
+ */
+export async function loadAndMergeBaseWithPatches(basePath, patchIds = [], filename = null) {
+    // determine filename if not provided
+    const baseUrl = `/${basePath}.json`;
+    const fileName = filename || basePath.split('/').pop() + '.json';
+
+    // load base
+    let baseData = null;
+    try {
+        const res = await fetch(baseUrl);
+        if (!res.ok) return null;
+        baseData = await res.json();
+    } catch (e) {
+        return null;
+    }
+
+    // no patches requested -> return base
+    if (!Array.isArray(patchIds) || patchIds.length === 0) return baseData;
+
+    // attempt to load patch files for provided ids
+    const patches = await loadPatchFilesByIds(patchIds, fileName);
+    if (!Array.isArray(patches) || patches.length === 0) return baseData;
+
+    // merge using mergeDataWithPatches so operator semantics apply
+    return mergeDataWithPatches(baseData, patches.map(p => ({ id: p.id, type: p.type, data: p.data })));
+}
+
+/**
  * Merge gameSystems.armies with patches provided by patchList and return
  * { armies: mergedArmies, compositionSourcesMap }
  * patchList is an array of objects with shape { id, type, data }

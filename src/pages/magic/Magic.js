@@ -26,6 +26,7 @@ import {
 } from "../../utils/magic-item-limitations";
 
 import { nameMap } from "./name-map";
+import { loadAndMergeBaseWithPatches } from "../../utils/patch";
 import "./Magic.css";
 
 const updateIds = (items) => {
@@ -298,36 +299,33 @@ export const Magic = ({ isMobile }) => {
   }, [unit, list, unitId, command]);
 
   useEffect(() => {
-    army &&
-      list &&
-      unit &&
-      !items &&
-      fetcher({
-        url: "games/the-old-world/magic-items",
-        onSuccess: (data) => {
-          let itemCategories = army.items;
+    if (army && list && unit && !items) {
+      (async () => {
+        const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
+        const data = await loadAndMergeBaseWithPatches('games/the-old-world/magic-items', patchIds, 'magic-items.json');
 
-          if (unit.magicItemsArmy) {
-            itemCategories = itemCategories.filter(
-              (itemCategory) => itemCategory !== army.id
-            );
-            if (data[unit.magicItemsArmy]) {
-              itemCategories.push(unit.magicItemsArmy);
-            }
+        let itemCategories = army.items;
+
+        if (unit.magicItemsArmy) {
+          itemCategories = itemCategories.filter(
+            (itemCategory) => itemCategory !== army.id
+          );
+          if (data && data[unit.magicItemsArmy]) {
+            itemCategories.push(unit.magicItemsArmy);
           }
+        }
 
-          const allItems = itemCategories.map((itemCategory) => {
-            return {
-              items: data[itemCategory],
-              name_de: nameMap[itemCategory].name_de,
-              name_en: nameMap[itemCategory].name_en,
-              id: itemCategory,
-            };
-          });
+        const allItems = itemCategories.map((itemCategory) => ({
+          items: data ? data[itemCategory] : [],
+          name_de: nameMap[itemCategory].name_de,
+          name_en: nameMap[itemCategory].name_en,
+          id: itemCategory,
+        }));
 
-          dispatch(setItems(updateIds(allItems)));
-        },
-      });
+        dispatch(setItems(updateIds(allItems)));
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [army, list, unit, items, dispatch]);
 
   if (!unit || !army || !items) {

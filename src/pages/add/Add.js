@@ -14,6 +14,7 @@ import { getUnitName } from "../../utils/unit";
 import { getRandomId } from "../../utils/id";
 import { useLanguage } from "../../utils/useLanguage";
 import { getArmyData, getAvailableAllies, getAlliesForComposition } from "../../utils/army";
+import { loadAndMergeBaseWithPatches } from "../../utils/patch";
 import { fetcher } from "../../utils/fetcher";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
 
@@ -155,26 +156,25 @@ export const Add = ({ isMobile }) => {
           ];
           setAlliesLoaded(index + 1);
         } else {
-          fetcher({
-            url: `games/the-old-world/${army}`,
-            onSuccess: (data) => {
-              const armyData = getArmyData({
-                data,
-                armyComposition: armyComposition || army,
-              });
+          (async () => {
+            const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
+            const data = await loadAndMergeBaseWithPatches(`games/the-old-world/${army}`, patchIds, `${army}.json`);
+            const armyData = getArmyData({
+              data,
+              armyComposition: armyComposition || army,
+            });
 
-              allAllies = [
-                ...allAllies,
-                {
-                  ...armyData,
-                  ally: army,
-                  armyComposition: armyComposition || army,
-                  magicItemsArmy: magicItemsArmy,
-                  },
-                ];
-              setAlliesLoaded(index + 1);
-            },
-          });
+            allAllies = [
+              ...allAllies,
+              {
+                ...armyData,
+                ally: army,
+                armyComposition: armyComposition || army,
+                magicItemsArmy: magicItemsArmy,
+              },
+            ];
+            setAlliesLoaded(index + 1);
+          })();
         }
       });
     } else if (
@@ -207,27 +207,26 @@ export const Add = ({ isMobile }) => {
             allMercenaries = [...allMercenaries, ...mercenaryUnits];
             setMercenariesLoaded(index + 1);
           } else {
-            fetcher({
-              url: `games/the-old-world/${mercenary.army}`,
-              onSuccess: (data) => {
-                const armyData = getArmyData({
-                  data,
-                  armyComposition: mercenary.army,
-                });
-                const allUnits = [
-                  ...armyData.characters,
-                  ...armyData.core,
-                  ...armyData.special,
-                  ...armyData.rare,
-                  ...armyData.mercenaries,
-                ];
-                const mercenaryUnits = allUnits
-                  .filter((unit) => mercenary.units.includes(unit.id))
-                  .map((unit) => ({ ...unit, army: mercenary.army }));
-                allMercenaries = [...allMercenaries, ...mercenaryUnits];
-                setMercenariesLoaded(index + 1);
-              },
-            });
+            (async () => {
+              const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
+              const data = await loadAndMergeBaseWithPatches(`games/the-old-world/${mercenary.army}`, patchIds, `${mercenary.army}.json`);
+              const armyData = getArmyData({
+                data,
+                armyComposition: mercenary.army,
+              });
+              const allUnits = [
+                ...armyData.characters,
+                ...armyData.core,
+                ...armyData.special,
+                ...armyData.rare,
+                ...armyData.mercenaries,
+              ];
+              const mercenaryUnits = allUnits
+                .filter((unit) => mercenary.units.includes(unit.id))
+                .map((unit) => ({ ...unit, army: mercenary.army }));
+              allMercenaries = [...allMercenaries, ...mercenaryUnits];
+              setMercenariesLoaded(index + 1);
+            })();
           }
         });
     }
