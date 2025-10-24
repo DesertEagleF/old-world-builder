@@ -43,7 +43,7 @@ export const RulesIndex = () => {
               "rules-index__iframe",
               !isLoading && "rules-index__iframe--show"
             )}
-            src={`https://tow.whfb.app/${rulePath}?minimal=true&utm_source=owb&utm_medium=referral`}
+            src={`https://tow.huijiwiki.com/wiki/${rulePath}`}
             title="Warhammer: The Old World Online Rules Index"
             height="500"
             width="700"
