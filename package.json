@@ -1,8 +1,7 @@
 {
   "name": "old-world-builder",
-  "version": "1.22.5",
-  "author": "Nico Thiebes",
-  "homepage": "https://old-world-builder.com",
+  "version": "1.0.0",
+  "homepage": "https://tow.noirphoenix.studio",
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^2.0.0",
@@ -45,13 +44,13 @@
     "eslint-config-react-app": "^7.0.1"
   },
   "scripts": {
-  "start": "react-scripts start",
-  "build": "node scripts/build-without-sourcemap.js",
+    "start": "react-scripts start",
+    "build": "node scripts/build-without-sourcemap.js",
+    "build:production": "PUBLIC_URL=https://tow.noirphoenix.studio node scripts/build-without-sourcemap.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org booky --project old-world-builder ./build && sentry-cli sourcemaps upload --org booky --project old-world-builder ./build"
+    "predeploy": "npm run build:production",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [

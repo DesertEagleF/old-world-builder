@@ -1,0 +1,89 @@
+variables:
+  IMAGE_HOST: huiji.tencentcloudcr.com
+  IMAGE_TAG: '$IMAGE_HOST/tow/towbuilder'
+
+stages:
+  # - provision
+  - build
+  - deploy
+
+# provision-staging:
+#   stage: provision
+#   image: node:20-alpine
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "main"
+#   script:
+#     - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" -O client.zip $CI_SERVER_URL/api/v4/projects/81/jobs/artifacts/main/download?job=build'
+#     - rm -rf ./dist
+#     - unzip client.zip -d ./
+#   artifacts:
+#     paths:
+#       - dist/
+#     expire_in: 7 days
+
+# provision-prod:
+#   stage: provision
+#   image: node:20-alpine
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "production" && $CI_PIPELINE_SOURCE == "pipeline" && $CLIENT_TAG
+#       variables:
+#         ARTIFACT_URL: '$CI_SERVER_URL/api/v4/projects/81/jobs/artifacts/$CLIENT_TAG/download?job=build'
+#     - if: $CI_COMMIT_BRANCH == "production" && $CI_PIPELINE_SOURCE == "web" # 如果是手动触发的，则下载上一次构建的客户端
+#       variables:
+#         ARTIFACT_URL: '$CI_SERVER_URL/api/v4/projects/82/jobs/artifacts/production/download?job=provision-prod'
+#   script:
+#     - 'wget --header="JOB-TOKEN: $CI_JOB_TOKEN" -O client.zip $ARTIFACT_URL'
+#     - rm -rf ./dist
+#     - unzip client.zip -d ./
+#   artifacts:
+#     paths:
+#       - dist/
+#     expire_in: 7 days
+
+build:
+  stage: build
+  image: docker:23.0.5
+  services:
+    - name: docker:23.0.5-dind
+      command: ['--registry-mirror', 'https://ccr.ccs.tencentyun.com']
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: '/certs'
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: '$DOCKER_TLS_CERTDIR/client'
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "production" && ($CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "web")
+  before_script:
+    - until docker info; do sleep 1; done
+    - docker login $IMAGE_HOST --username 100023848674 --password $REGISTRY_TOKEN
+  script:
+    - docker build -t $IMAGE_TAG:$CI_COMMIT_BRANCH .
+    - docker push $IMAGE_TAG:$CI_COMMIT_BRANCH
+
+deploy:
+  stage: deploy
+  image: node:20-alpine
+  variables:
+    YARN_ENABLE_IMMUTABLE_INSTALLS: 'false'
+    NODE_TLS_REJECT_UNAUTHORIZED: '0'
+    DEPLOY_NAMESPACE: tow
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    # - if: $CI_COMMIT_BRANCH == "production" && ($CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "web")
+      variables:
+        DEPLOY_DEPLOYMENT: towbuilder
+        ENV_NAME: production
+        ENV_URL: https://noirphoenix.studio/
+  environment:
+    name: $ENV_NAME
+    url: $ENV_URL
+  before_script:
+    - apk add --no-cache openssl
+  script:
+    - yarn config set npmRegistryServer https://mirrors.cloud.tencent.com/npm/
+    - yarn && yarn build:scripts
+    # - yarn prisma db push --skip-generate
+    # - node scripts/createDBIndex.js
+    # - node scripts/deletePod.js
+    # - 'if [ ${CI_COMMIT_BRANCH} == "production" ]; then node scripts/purgeCDNCache.js; fi'
