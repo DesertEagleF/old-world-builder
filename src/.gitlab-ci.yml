@@ -64,7 +64,7 @@ build:
   image: node:20-alpine
   script:
     - echo "Build Production"
-    - PUBLIC_URL=https://tow.noirphoenix.studio/ yarn && yarn build
+    - PUBLIC_URL=https://noirphoenix.studio/tow-builder yarn && yarn build
   artifacts:
     paths:
       - tow-build/
@@ -85,7 +85,7 @@ deploy:
       variables:
         DEPLOY_DEPLOYMENT: towbuilder
         ENV_NAME: production
-        ENV_URL: https://tow.noirphoenix.studio/
+        ENV_URL: https://noirphoenix.studio/tow-builder
   environment:
     name: $ENV_NAME
     url: $ENV_URL
@@ -93,7 +93,7 @@ deploy:
     - apk add --no-cache openssl
   script:
     - yarn config set npmRegistryServer https://mirrors.cloud.tencent.com/npm/
-    - yarn && yarn build:scripts
+    - yarn && yarn build
     # - yarn prisma db push --skip-generate
     # - node scripts/createDBIndex.js
     # - node scripts/deletePod.js
