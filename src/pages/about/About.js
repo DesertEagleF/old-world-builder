@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+// useLocation removed: not required in this page
 import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
 

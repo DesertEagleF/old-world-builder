@@ -64,7 +64,7 @@ build:
   image: node:20-alpine
   script:
     - echo "Build Production"
-    - PUBLIC_URL=https://tow.noirphoenix.studio/ yarn && yarn build:scripts
+    - PUBLIC_URL=https://tow.noirphoenix.studio/ yarn && yarn build
   artifacts:
     paths:
       - tow-build/

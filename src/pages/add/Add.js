@@ -13,7 +13,7 @@ import { setArmy } from "../../state/army";
 import { getUnitName } from "../../utils/unit";
 import { getRandomId } from "../../utils/id";
 import { useLanguage } from "../../utils/useLanguage";
-import { getArmyData, getAvailableAllies, getAlliesForComposition } from "../../utils/army";
+import { getArmyData, getAlliesForComposition } from "../../utils/army";
 import { loadAndMergeBaseWithPatches } from "../../utils/patch";
 import { fetcher } from "../../utils/fetcher";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";

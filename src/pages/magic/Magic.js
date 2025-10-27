@@ -6,7 +6,6 @@ import classNames from "classnames";
 import { Helmet } from "react-helmet-async";
 
 import { getUnitMagicPoints } from "../../utils/points";
-import { fetcher } from "../../utils/fetcher";
 import { Header, Main } from "../../components/page";
 import { NumberInput } from "../../components/number-input";
 import { ErrorMessage } from "../../components/error-message";

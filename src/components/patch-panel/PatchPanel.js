@@ -8,8 +8,8 @@ import { Header } from '../page';
 // This component renders in the third column. Make its header match the
 // column-style headers used elsewhere (see Header.js / .column-header).
 export default function PatchPanel() {
-  const [applied, setApplied] = useState(patchState.getApplied());
-  const [localeMap, setLocaleMap] = useState(patchState.getLocaleMap());
+  const [, setApplied] = useState(patchState.getApplied());
+  const [, setLocaleMap] = useState(patchState.getLocaleMap());
   const history = useHistory();
 
   useEffect(() => {

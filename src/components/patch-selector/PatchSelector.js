@@ -108,8 +108,7 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
     // item may have field as object (e.g. name or brief) or have displayName
     const valObj = item && item[field];
     if (valObj && typeof valObj === 'object') {
-      const key = `name_${language}`.replace('name_', 'name_');
-      // for name fields we expect keys like name_en, name_cn etc. for brief similarly.
+  // for name fields we expect keys like name_en, name_cn etc. for brief similarly.
       const langKey = `${field === 'name' ? 'name_' : 'brief_'}${language}`;
       if (valObj[langKey]) return valObj[langKey];
       if (valObj['name_en'] && field === 'name') return valObj['name_en'];
@@ -296,7 +295,7 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
     setIsReloading(true);
     try {
       await reloadPatchIndex();
-      const patched = await loadAll();
+  await loadAll();
       // notify parent that available list changed only via locale merging; actual applied objects stay until confirmed
       // If appliedIds include ids no longer present, we keep them until user confirms reset or confirm again.
     } finally {

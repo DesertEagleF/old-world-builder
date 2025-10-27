@@ -13,7 +13,6 @@ import { ListItem, OrderableList } from "../../components/list";
 import { Header, Main } from "../../components/page";
 import { Dialog } from "../../components/dialog";
 import { getAllPoints } from "../../utils/points";
-import { useTimezone } from "../../utils/useTimezone";
 import { setArmy } from "../../state/army";
 import { setItems } from "../../state/items";
 import owb from "../../assets/army-icons/owb.svg";
@@ -35,12 +34,9 @@ import chaosDwarfs from "../../assets/army-icons/chaos-dwarfs.svg";
 import bretonnia from "../../assets/army-icons/bretonnia.svg";
 import cathay from "../../assets/army-icons/cathay.svg";
 import renegade from "../../assets/army-icons/renegade.svg";
-import forg3dBanner from "../../assets/forg3d.jpg";
-import fantasyweltDe from "../../assets/fantasywelt_de.jpg";
-import fantasyweltEn from "../../assets/fantasywelt_en.jpg";
-import mwgForge from "../../assets/mwg-forge.gif";
+// banner assets removed from imports because not used on this page
 import { swap } from "../../utils/collection";
-import { useLanguage } from "../../utils/useLanguage";
+// useLanguage removed from this file (not needed)
 import { updateLocalList, updateListsFolder } from "../../utils/list";
 import { setLists, toggleFolder, updateList } from "../../state/lists";
 import { updateSetting } from "../../state/settings";
@@ -153,8 +149,7 @@ export const Home = ({ isMobile }) => {
   }
 
   const location = useLocation();
-  const { language } = useLanguage();
-  const { timezone } = useTimezone();
+  // language and timezone not required in this component
   const dispatch = useDispatch();
   const intl = useIntl();
   const [listsInFolder, setListsInFolder] = useState([]);

@@ -155,7 +155,7 @@ export const Editor = ({ isMobile }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [list && list.patches, language]);
 
-  const [fetchedPatchData, setFetchedPatchData] = useState({});
+  const [, setFetchedPatchData] = useState({});
   useEffect(() => {
     let mounted = true;
     async function loadPatchPayloads() {

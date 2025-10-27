@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import { Provider as ReduxProvider } from "react-redux";
 import { IntlProvider } from "react-intl";
 import { HelmetProvider } from "react-helmet-async";
-import * as Sentry from "@sentry/react";
 
 import reportWebVitals from "./reportWebVitals";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
-import { FormattedMessage, FormattedDate, useIntl } from "react-intl";
+import { useLocation } from "react-router-dom";
+import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
 import { SITE_URL } from "../../config/site";
 
