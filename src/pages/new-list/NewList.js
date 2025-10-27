@@ -6,7 +6,6 @@ import classNames from "classnames";
 
 import { Button } from "../../components/button";
 import { Header, Main } from "../../components/page";
-import { Select } from "../../components/select";
 import { NumberInput } from "../../components/number-input";
 import { getGameSystems } from "../../utils/game-systems";
 import { getRandomId } from "../../utils/id";
@@ -14,9 +13,8 @@ import { useLanguage } from "../../utils/useLanguage";
 import { setLists } from "../../state/lists";
 
 import { nameMap } from "../magic";
-import { mergePatch, mergeGameSystemsWithPatches } from "../../utils/patch";
+import { mergeGameSystemsWithPatches } from "../../utils/patch";
 import PatchSelector from '../../components/patch-selector/PatchSelector';
-import PatchedBadge from '../../components/patch/PatchedBadge';
 import { CustomSelect } from '../../components/select';
 import { useHistory } from 'react-router-dom';
 import patchState from '../../utils/patchState';
