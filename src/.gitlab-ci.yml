@@ -41,25 +41,36 @@ stages:
 #     expire_in: 7 days
 
 build:
+  # stage: build
+  # image: docker:23.0.5
+  # services:
+  #   - name: docker:23.0.5-dind
+  #     command: ['--registry-mirror', 'https://ccr.ccs.tencentyun.com']
+  # variables:
+  #   DOCKER_HOST: tcp://docker:2376
+  #   DOCKER_TLS_CERTDIR: '/certs'
+  #   DOCKER_TLS_VERIFY: 1
+  #   DOCKER_CERT_PATH: '$DOCKER_TLS_CERTDIR/client'
+  # rules:
+  #   - if: $CI_COMMIT_BRANCH == "main"
+  #   - if: $CI_COMMIT_BRANCH == "production" && ($CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "web")
+  # before_script:
+  #   - until docker info; do sleep 1; done
+  #   - docker login $IMAGE_HOST --username 100023848674 --password $REGISTRY_TOKEN
+  # script:
+  #   - docker build -t $IMAGE_TAG:$CI_COMMIT_BRANCH .
+  #   - docker push $IMAGE_TAG:$CI_COMMIT_BRANCH
   stage: build
-  image: docker:23.0.5
-  services:
-    - name: docker:23.0.5-dind
-      command: ['--registry-mirror', 'https://ccr.ccs.tencentyun.com']
-  variables:
-    DOCKER_HOST: tcp://docker:2376
-    DOCKER_TLS_CERTDIR: '/certs'
-    DOCKER_TLS_VERIFY: 1
-    DOCKER_CERT_PATH: '$DOCKER_TLS_CERTDIR/client'
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == "production" && ($CI_PIPELINE_SOURCE == "pipeline" || $CI_PIPELINE_SOURCE == "web")
-  before_script:
-    - until docker info; do sleep 1; done
-    - docker login $IMAGE_HOST --username 100023848674 --password $REGISTRY_TOKEN
+  image: node:20-alpine
   script:
-    - docker build -t $IMAGE_TAG:$CI_COMMIT_BRANCH .
-    - docker push $IMAGE_TAG:$CI_COMMIT_BRANCH
+    - echo "Build Production"
+    - PUBLIC_URL=https://$PRODUCTION_DOMAIN node scripts/build-without-sourcemap.js
+  artifacts:
+    paths:
+      - tow-build/
+    expire_in: 1 week
+  only:
+    - main
 
 deploy:
   stage: deploy
@@ -74,7 +85,7 @@ deploy:
       variables:
         DEPLOY_DEPLOYMENT: towbuilder
         ENV_NAME: production
-        ENV_URL: https://noirphoenix.studio/
+        ENV_URL: https://tow.noirphoenix.studio/
   environment:
     name: $ENV_NAME
     url: $ENV_URL
