@@ -15,10 +15,21 @@ function run(cmd, args, opts = {}) {
 
 (async () => {
   try {
-    // Run react-scripts build with GENERATE_SOURCEMAP=false
-    const env = Object.assign({}, process.env, { GENERATE_SOURCEMAP: 'false' });
+    // 使用本地安装的 react-scripts，而不是 npx
+    const env = Object.assign({}, process.env, { 
+      GENERATE_SOURCEMAP: 'false',
+      // 确保使用正确的 Node path
+      NODE_PATH: path.join(__dirname, '..', 'node_modules')
+    });
+    
     console.log('Running react-scripts build with GENERATE_SOURCEMAP=false');
-    await run('npx', ['react-scripts', 'build'], { env });
+    
+    // 使用 node 直接运行本地 react-scripts
+    const reactScriptsPath = path.join(__dirname, '..', 'node_modules', '.bin', 'react-scripts');
+    await run('node', [reactScriptsPath, 'build'], { env });
+    
+    // 或者使用 npx 但指定前缀
+    // await run('npx', ['--prefix', process.cwd(), 'react-scripts', 'build'], { env });
 
     // After build, run merge script
     console.log('Running merge-build.js to produce single JS/CSS and remove maps');
