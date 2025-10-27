@@ -64,7 +64,7 @@ build:
   image: node:20-alpine
   script:
     - echo "Build Production"
-    - PUBLIC_URL=https://tow.noirphoenix.studio/ node scripts/build-without-sourcemap.js
+    - PUBLIC_URL=https://tow.noirphoenix.studio/ yarn && yarn build:scripts
   artifacts:
     paths:
       - tow-build/

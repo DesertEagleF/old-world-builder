@@ -38,7 +38,7 @@ export function subscribeLocale(fn) {
   return () => _localeSubs.delete(fn);
 }
 
-export default {
+const patchState = {
   getApplied,
   setApplied,
   subscribeApplied,
@@ -46,3 +46,5 @@ export default {
   setLocaleMap,
   subscribeLocale,
 };
+
+export default patchState;
