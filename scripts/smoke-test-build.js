@@ -14,9 +14,9 @@ function checkFiles() {
   const js = path.join(buildDir, 'static', 'js', 'bundle.js');
   const css = path.join(buildDir, 'static', 'css', 'main.css');
   if (!fs.existsSync(buildDir)) return fail('build directory not found');
-  if (!fs.existsSync(index)) return fail('build/index.html not found');
-  if (!fs.existsSync(js)) return fail('build/static/js/bundle.js not found');
-  if (!fs.existsSync(css)) return fail('build/static/css/main.css not found');
+  if (!fs.existsSync(index)) return fail('dist/index.html not found');
+  if (!fs.existsSync(js)) return fail('dist/js/bundle.js not found');
+  if (!fs.existsSync(css)) return fail('dist/css/main.css not found');
   ok('All expected files exist');
 
   const html = fs.readFileSync(index, 'utf8');
