@@ -6,7 +6,7 @@ const path = require('path');
 const projectRoot = path.resolve(__dirname, '..');
 const buildDir = path.join(projectRoot, 'build');
 const artifactDir = process.env.CI_PROJECT_DIR ? 
-  path.join(process.env.CI_PROJECT_DIR, 'public') : 
+  path.join(process.env.CI_PROJECT_DIR, 'dist') : 
   path.join(projectRoot, 'build');
 
 function safeReadDir(dir) {
