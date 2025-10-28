@@ -2,6 +2,13 @@
 const fs = require('fs');
 const path = require('path');
 
+// 使用与smoke-test.js相同的artifact目录配置
+const projectRoot = path.resolve(__dirname, '..');
+const buildDir = path.join(projectRoot, 'build');
+const artifactDir = process.env.CI_PROJECT_DIR ? 
+  path.join(process.env.CI_PROJECT_DIR, 'public') : 
+  path.join(projectRoot, 'build');
+
 function safeReadDir(dir) {
   try {
     return fs.readdirSync(dir);
@@ -23,22 +30,59 @@ function concatFiles(dir, files, outPath, filterOutRegex) {
     const content = fs.readFileSync(filePath, 'utf8');
     out += removeSourceMapComments(content) + '\n';
   });
+  // 确保输出目录存在
+  const outDir = path.dirname(outPath);
+  if (!fs.existsSync(outDir)) {
+    fs.mkdirSync(outDir, { recursive: true });
+  }
   fs.writeFileSync(outPath, out, 'utf8');
 }
 
-function main() {
-  const projectRoot = path.resolve(__dirname, '..');
-  const buildDir = path.join(projectRoot, 'build');
-  const jsDir = path.join(buildDir, 'static', 'js');
-  const cssDir = path.join(buildDir, 'static', 'css');
-
-  if (!fs.existsSync(buildDir)) {
-    console.error('build directory not found, run `npm run build` first');
-    process.exit(1);
+function copyBuildToArtifact() {
+  try {
+    // 如果artifact目录已存在，先清空
+    if (fs.existsSync(artifactDir)) {
+      fs.rmSync(artifactDir, { recursive: true, force: true });
+    }
+    
+    // 复制整个build目录到artifact目录
+    const copyRecursive = (src, dest) => {
+      const entries = fs.readdirSync(src, { withFileTypes: true });
+      for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+        if (entry.isDirectory()) {
+          fs.mkdirSync(destPath, { recursive: true });
+          copyRecursive(srcPath, destPath);
+        } else {
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    };
+    
+    if (fs.existsSync(buildDir)) {
+      fs.mkdirSync(artifactDir, { recursive: true });
+      copyRecursive(buildDir, artifactDir);
+      console.log(`Copied build files to artifact directory: ${artifactDir}`);
+    } else {
+      console.error('Build directory not found, run `npm run build` first');
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error('Error copying to artifact directory:', error);
+    throw error;
   }
+}
+
+function main() {
+  // 首先将构建文件复制到artifact目录
+  copyBuildToArtifact();
+
+  const artifactJsDir = path.join(artifactDir, 'static', 'js');
+  const artifactCssDir = path.join(artifactDir, 'static', 'css');
 
   // JS
-  const jsFiles = safeReadDir(jsDir).filter(f => f.endsWith('.js'));
+  const jsFiles = safeReadDir(artifactJsDir).filter(f => f.endsWith('.js'));
   const jsCandidates = jsFiles.filter(f => !/precache-manifest|service-worker|asset-manifest/.test(f));
 
   // sort with heuristic: runtime -> vendors/chunk -> main -> others
@@ -55,17 +99,18 @@ function main() {
     return a.localeCompare(b);
   });
 
-  const outJsPath = path.join(jsDir, 'bundle.js');
-  concatFiles(jsDir, jsCandidates, outJsPath);
+  // 输出到artifact目录
+  const outJsPath = path.join(artifactJsDir, 'bundle.js');
+  concatFiles(artifactJsDir, jsCandidates, outJsPath);
   console.log('Wrote', outJsPath);
 
   // CSS
-  const cssFiles = safeReadDir(cssDir).filter(f => f.endsWith('.css'));
-  const outCssPath = path.join(cssDir, 'main.css');
-  concatFiles(cssDir, cssFiles, outCssPath);
+  const cssFiles = safeReadDir(artifactCssDir).filter(f => f.endsWith('.css'));
+  const outCssPath = path.join(artifactCssDir, 'main.css');
+  concatFiles(artifactCssDir, cssFiles, outCssPath);
   console.log('Wrote', outCssPath);
 
-  // Remove maps
+  // Remove maps from artifact directory
   const mapFiles = [];
   function collectMaps(dir) {
     safeReadDir(dir).forEach(f => {
@@ -75,15 +120,15 @@ function main() {
       }
     });
   }
-  collectMaps(jsDir);
-  collectMaps(cssDir);
-  collectMaps(buildDir);
+  collectMaps(artifactJsDir);
+  collectMaps(artifactCssDir);
+  collectMaps(artifactDir);
   mapFiles.forEach(p => {
     try { fs.unlinkSync(p); console.log('Removed map', p);} catch(e){}
   });
 
-  // Update index.html to reference single js/css
-  const indexPath = path.join(buildDir, 'index.html');
+  // Update index.html in artifact directory to reference single js/css
+  const indexPath = path.join(artifactDir, 'index.html');
   if (fs.existsSync(indexPath)) {
     let html = fs.readFileSync(indexPath, 'utf8');
     // remove existing link rel=stylesheet to /static/css/
@@ -100,17 +145,18 @@ function main() {
     console.log('Updated', indexPath);
   }
 
-  // Optionally remove original chunk files (keep precache/service worker files)
+  // Optionally remove original chunk files from artifact directory (keep precache/service worker files)
   jsCandidates.forEach(f => {
-    const p = path.join(jsDir, f);
+    const p = path.join(artifactJsDir, f);
     try { if (p !== outJsPath) fs.unlinkSync(p); } catch (e) {}
   });
   cssFiles.forEach(f => {
-    const p = path.join(cssDir, f);
+    const p = path.join(artifactCssDir, f);
     try { if (p !== outCssPath) fs.unlinkSync(p); } catch (e) {}
   });
 
   console.log('Merge complete. Single bundle at:', outJsPath, 'and', outCssPath);
+  console.log('Artifact directory:', artifactDir);
 }
 
 main();
