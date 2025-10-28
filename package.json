@@ -45,7 +45,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "PUBLIC_URL=https://noirphoenix.studio/tow-builder node scripts/build-without-sourcemap.js",
+    "build": "node scripts/build-without-sourcemap.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build:production",
