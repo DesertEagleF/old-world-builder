@@ -9,7 +9,7 @@ import "./Button.css";
 
 export const Button = ({
   className,
-  type = "primary",
+  type,
   to,
   href,
   onClick,
@@ -23,7 +23,7 @@ export const Button = ({
   color,
   submitButton,
   disabled,
-  size = "medium",
+  size,
   download,
   value,
 }) => {
@@ -93,4 +93,7 @@ Button.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
-// default values are provided via function parameter defaults
+Button.defaultProps = {
+  type: "primary",
+  size: "medium",
+};

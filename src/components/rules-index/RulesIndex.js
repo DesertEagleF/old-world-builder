@@ -50,7 +50,9 @@ export const RulesIndex = () => {
   const ruleData = rulesMap[normalizedName] || rulesMap[synonym];
   const rulePath = ruleData?.url;
   const rulePathB = rulePath ? `${rulePath}/en` : null;
-  const urlForTab = (rulePath ? `https://tow.huijiwiki.com/wiki/${rulePath}` : null);
+  const urlForTab = rulePath
+    ? `https://tow.huijiwiki.com/wiki/${selectedTab === "B" && rulePathB ? rulePathB : rulePath}`
+    : null;
 
   const handleLinkClick = async (event) => {
     const link = event.target.closest('a');

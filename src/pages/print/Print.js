@@ -282,14 +282,14 @@ export const Print = () => {
       </div>
 
       <main className="print">
-        <h1>
+        <div>
           {list.name}{" "}
           {!isShowList && (
             <span className="print__points">
               [{allPoints} <FormattedMessage id="app.points" />]
             </span>
           )}
-        </h1>
+        </div>
         <p className="print__subheader">
           {game.name}, {armyName}
           {armyCompositionName ? `, ${armyCompositionName}` : ""},{" "}

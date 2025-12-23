@@ -103,16 +103,16 @@ export const Header = ({
         {headline && (
           <>
             {headline === "Old World Builder" ? (
-              <h1 className="header__name">
+              <div className="header__name">
                 <Link className="header__name-link" to="/">
                   {headline}
                 </Link>
-              </h1>
+              </div>
             ) : (
-              <h1 className="header__name">
+              <div className="header__name">
                 {headlineIcon && headlineIcon}
-                <span className="header__name-text col-header">{headline}</span>
-              </h1>
+                <span className="header__name-text">{headline}</span>
+              </div>
             )}
           </>
         )}
@@ -203,7 +203,7 @@ export const Header = ({
 Header.propTypes = {
   className: PropTypes.string,
   to: PropTypes.string,
-  headline: PropTypes.node,
+  headline: PropTypes.string,
   headlineIcon: PropTypes.node,
   subheadline: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   children: PropTypes.node,

@@ -286,6 +286,12 @@ export const rules = {
           max: 1,
           points: 1000,
         },
+        {
+          ids: ["winged-warsphinx"],
+          min: 0,
+          max: 1,
+          points: 1000,
+        },
       ],
     },
     mercenaries: {
@@ -425,6 +431,12 @@ export const rules = {
         },
         {
           ids: ["casket-of-souls"],
+          min: 0,
+          max: 1,
+          points: 1000,
+        },
+        {
+          ids: ["winged-warsphinx"],
           min: 0,
           max: 1,
           points: 1000,
@@ -1407,7 +1419,7 @@ export const rules = {
           max: 1,
         },
         {
-          ids: ["doomseekers"],
+          ids: ["doomseeker"],
           min: 0,
           max: 4,
           requiresType: "characters",
@@ -1541,12 +1553,6 @@ export const rules = {
           max: 1,
           requiresType: "characters",
           requires: ["priest-of-ulric", "high-priest-of-ulric"],
-        },
-        {
-          ids: ["great-cannon", "mortar"],
-          min: 0,
-          max: 3,
-          points: 1000,
         },
       ],
     },
@@ -2605,6 +2611,7 @@ export const rules = {
             "flesh-hounds-of-khorne-core",
             "bloodcrushers-of-khorne",
             "skull-cannon-of-khorne",
+            "chaos-furies-of-khorne",
           ],
           perUnit: true,
         },
@@ -2619,6 +2626,7 @@ export const rules = {
             "nurglings-core",
             "beasts-of-nurgle",
             "plague-drones-of-nurgle",
+            "chaos-furies-of-nurgle",
           ],
           perUnit: true,
         },
@@ -2634,6 +2642,7 @@ export const rules = {
             "fiends-of-slaanesh",
             "hellflayer-of-slaanesh",
             "seeker-chariot-of-slaanesh",
+            "chaos-furies-of-slaanesh",
           ],
           perUnit: true,
         },
@@ -2651,6 +2660,7 @@ export const rules = {
             "flamers-of-tzeentch",
             "screamers-of-tzeentch",
             "burning-chariot-of-tzeentch",
+            "chaos-furies-of-tzeentch",
           ],
           perUnit: true,
         },
@@ -3958,7 +3968,6 @@ export const rules = {
         },
       ],
     },
-    allies: { maxPercent: 33 },
   },
   "renegade-crowns": {
     characters: {
@@ -3998,7 +4007,7 @@ export const rules = {
       maxPercent: 25,
       units: [
         {
-          ids: ["border-princes-organ-gun", "border-princes-mortar"],
+          ids: ["border-princes-organ-gun", "border-princes-bombard"],
           min: 0,
           max: 1,
           points: 1000,

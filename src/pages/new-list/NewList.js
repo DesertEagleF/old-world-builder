@@ -6,11 +6,13 @@ import classNames from "classnames";
 
 import { Button } from "../../components/button";
 import { Header, Main } from "../../components/page";
+import { Select } from "../../components/select";
 import { NumberInput } from "../../components/number-input";
 import { getGameSystems } from "../../utils/game-systems";
 import { getRandomId } from "../../utils/id";
 import { useLanguage } from "../../utils/useLanguage";
 import { setLists } from "../../state/lists";
+import { RulesIndex, RuleWithIcon } from "../../components/rules-index";
 
 import { nameMap } from "../magic";
 import { mergeGameSystemsWithPatches } from "../../utils/patch";
@@ -91,12 +93,18 @@ export const NewList = ({ isMobile }) => {
       id: "grand-melee-combined-arms",
       name_en: intl.formatMessage({ id: "misc.grand-melee-combined-arms" }),
     },
+    {
+      id: "battle-march",
+      name_en: intl.formatMessage({ id: "misc.battle-march" }),
+    },
   ];
   const listsPoints = [...lists.map((list) => list.points)].reverse();
-  const quickActions = lists.length
-    ? [...new Set([...listsPoints, 500, 1000, 1500, 2000, 2500])].slice(0, 5)
-    : [500, 1000, 1500, 2000, 2500];
-
+  const quickActions =
+    compositionRule === "battle-march"
+      ? [500, 600, 750]
+      : lists.length
+      ? [...new Set([...listsPoints, 500, 1000, 1500, 2000, 2500])].slice(0, 5)
+      : [500, 1000, 1500, 2000, 2500];
   const createList = () => {
     const newId = getRandomId();
     const newList = {
@@ -228,44 +236,54 @@ export const NewList = ({ isMobile }) => {
               source: a.source,
             }))}
             onChange={handleArmyChange}
-            selected={army}
-            className="select--spaceBottom"
-            appliedPatchObjects={appliedPatchObjects}
+            selected="empire-of-man"
+            spaceBottom
+            required
           />
-          {journalArmies && journalArmies.length > 0 ? (
+          {journalArmies ? (
             <>
               <label htmlFor="arcane-journal">
                 <FormattedMessage id="new.armyComposition" />
               </label>
               <CustomSelect
                 id="arcane-journal"
-                options={journalArmies.map((journalArmy) => ({
-                  id: journalArmy,
-                  name_en:
-                    journalArmy === army
-                      ? intl.formatMessage({ id: "new.grandArmy" })
-                      : localizedNameMap[journalArmy]?.[`name_${language}`] || journalArmy,
-                  source: compositionSources[journalArmy],
-                }))}
+                options={[
+                  ...journalArmies.map((journalArmy) => ({
+                    id: journalArmy,
+                    name_en:
+                      journalArmy === army
+                        ? intl.formatMessage({ id: "new.grandArmy" })
+                        : nameMap[journalArmy].name_en,
+                  })),
+                ]}
                 onChange={handleArcaneJournalChange}
-                selected={armyComposition}
-                className="select--spaceBottom"
-                appliedPatchObjects={appliedPatchObjects}
+                selected={army}
+                spaceBottom
               />
-              {/* Badge is now shown inside the select (closed control and open list). External badge display removed. */}
             </>
           ) : null}
           <label htmlFor="composition-rule">
             <FormattedMessage id="new.armyCompositionRule" />
           </label>
-          <CustomSelect
+          <Select
             id="composition-rule"
-            options={compositionRules.map(r => ({ id: r.id, name_en: r.name_en }))}
+            options={compositionRules}
             onChange={handleCompositionRuleChange}
             selected={compositionRule}
-            className="select--spaceBottom"
-            appliedPatchObjects={appliedPatchObjects}
+            spaceBottom
           />
+          <p className="new-list__composition-description">
+            <i>
+              <FormattedMessage
+                id={`new.armyCompositionRuleDescription.${compositionRule}`}
+              />
+            </i>
+            <RuleWithIcon
+              name={compositionRule}
+              isDark
+              className="game-view__rule-icon"
+            />
+          </p>
           <label htmlFor="points">
             <FormattedMessage id="misc.points" />
           </label>
@@ -334,5 +352,4 @@ export const NewList = ({ isMobile }) => {
       </MainComponent>
     </>
   );
-};
- 
+}; 

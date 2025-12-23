@@ -33,6 +33,7 @@ yarn-error.log*
 
 # intellij metadata
 .idea
+.claude
 
 # TODO Files
 TODO.md

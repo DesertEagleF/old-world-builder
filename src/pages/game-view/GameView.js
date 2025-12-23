@@ -33,7 +33,7 @@ import "./GameView.css";
 
 export const GameView = () => {
   const params = useParams() || {};
-  let { listId } = params;
+  let { listId, type } = params;
   const location = useLocation();
   if (!listId) {
     try {
@@ -362,9 +362,12 @@ export const GameView = () => {
                     {showPoints && (
                       <span className="game-view__points">
                         [
-                        {getUnitPoints(unit, {
-                          armyComposition,
-                        })}{" "}
+                        {getUnitPoints(
+                          { ...unit, type },
+                          {
+                            armyComposition,
+                          }
+                        )}{" "}
                         <FormattedMessage id="app.points" />]
                       </span>
                     )}
@@ -551,10 +554,13 @@ export const GameView = () => {
           ...unitPoints,
           dead: unitPoints.dead
             ? 0
-            : getUnitPoints(unit, {
-                noDetachments: true,
-                armyComposition,
-              }),
+            : getUnitPoints(
+                { ...unit, type },
+                {
+                  noDetachments: true,
+                  armyComposition,
+                }
+              ),
           fleeing: 0,
           25: 0,
         };
@@ -573,10 +579,13 @@ export const GameView = () => {
           fleeing: unitPoints.fleeing
             ? 0
             : Math.round(
-                getUnitPoints(unit, {
-                  noDetachments: true,
-                  armyComposition,
-                }) / 2
+                getUnitPoints(
+                  { ...unit, type },
+                  {
+                    noDetachments: true,
+                    armyComposition,
+                  }
+                ) / 2
               ),
           25: 0,
         };
@@ -596,10 +605,13 @@ export const GameView = () => {
           25: unitPoints["25"]
             ? 0
             : Math.round(
-                getUnitPoints(unit, {
-                  noDetachments: true,
-                  armyComposition,
-                }) / 2
+                getUnitPoints(
+                  { ...unit, type },
+                  {
+                    noDetachments: true,
+                    armyComposition,
+                  }
+                ) / 2
               ),
         };
         break;
@@ -616,6 +628,7 @@ export const GameView = () => {
                   {
                     ...detachment,
                     strength: 1,
+                    type,
                   },
                   { armyComposition }
                 ),

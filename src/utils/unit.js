@@ -255,7 +255,7 @@ export const getAllOptions = (
         })
     : [];
   const lore = [];
-  if (isWizard({ options })) {
+  if (isWizard({ options, command, mounts })) {
     if (activeLore && nameMap[activeLore].name_en !== "None") {
       lore.push(
         nameMap[activeLore][`name_${language}`] || nameMap[activeLore].name_en
@@ -445,13 +445,38 @@ export const isWizard = (unitToCheck) => {
     ...unitToCheck,
     options: unitToCheck.options || [],
   };
+  return (
+    optionsHaveActiveWizard(unit) ||
+    hasActiveWizardOption(unitToCheck.command) ||
+    hasActiveWizardOption(unitToCheck.mounts)
+  );
+};
+
+export const optionsHaveActiveWizard = (optionHolder) => {
   return Boolean(
     findOption(
-      unit.options,
+      optionHolder.options,
       ({ name_en, active }) =>
         active && name_en.toLowerCase().includes("wizard")
     )
   );
+};
+
+export const hasActiveWizardOption = (optionHoldersList) => {
+  const allOptionsForActiveHolders = {
+    ...optionHoldersList,
+    options:
+      optionHoldersList && optionHoldersList.length
+        ? optionHoldersList
+            .filter((optionHolder) => optionHolder.active)
+            .filter((activeOptionHolder) => activeOptionHolder.options)
+            .flatMap(
+              (activeOptionHolderWithOptions) =>
+                activeOptionHolderWithOptions.options
+            )
+        : [],
+  };
+  return optionsHaveActiveWizard(allOptionsForActiveHolders);
 };
 
 /**
@@ -536,6 +561,7 @@ export const getUnitLoresWithSpells = (unit, armyComposition) => {
           illusion: loresOfMagicWithSpells["illusion"],
           necromancy: loresOfMagicWithSpells["necromancy"],
           "waaagh-magic": loresOfMagicWithSpells["waaagh-magic"],
+          shadowlands: loresOfMagicWithSpells["shadowlands"],
         }
       : unitHasItem(unit, "Loremaster")
       ? {

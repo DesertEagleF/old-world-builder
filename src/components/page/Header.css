@@ -50,6 +50,12 @@
 }
 
 .header__name {
+  font-family: "Gideon Roman", serif;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 7px;
+  color: var(--color-headline);
+  line-height: 29px;
   margin-bottom: 0;
   display: flex;
   justify-content: center;

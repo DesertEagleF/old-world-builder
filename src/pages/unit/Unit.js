@@ -31,6 +31,7 @@ import { useLanguage } from "../../utils/useLanguage";
 import { updateLocalList } from "../../utils/list";
 import { getRandomId } from "../../utils/id";
 import { getArmyData } from "../../utils/army";
+import { namesForSpread } from "../../utils/string";
 import {
   getUnitName,
   getUnitOptionNotes,
@@ -148,8 +149,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
 
     unitDetachments.push({
       id: `${id}.${getRandomId()}`,
-      name_de: detachment.name_de,
-      name_en: detachment.name_en,
+      ...namesForSpread(detachment),
       points: detachment.points,
       strength: detachment.minDetachmentSize || 5,
       minDetachmentSize: detachment.minDetachmentSize || 5,
@@ -615,9 +615,12 @@ export const Unit = ({ isMobile, previewData = {} }) => {
               className="unit__header-rule-icon"
             />
           }
-          subheadline={`${getUnitPoints(unit, {
-            armyComposition: unitArmyComposition,
-          })} ${intl.formatMessage({
+          subheadline={`${getUnitPoints(
+            { ...unit, type },
+            {
+              armyComposition: unitArmyComposition,
+            }
+          )} ${intl.formatMessage({
             id: "app.points",
           })}`}
           navigationIcon="more"
@@ -640,9 +643,12 @@ export const Unit = ({ isMobile, previewData = {} }) => {
                 className="unit__header-rule-icon"
               />
             }
-            subheadline={`${getUnitPoints(unit, {
-              armyComposition: unitArmyComposition,
-            })} ${intl.formatMessage({
+            subheadline={`${getUnitPoints(
+              { ...unit, type },
+              {
+                armyComposition: unitArmyComposition,
+              }
+            )} ${intl.formatMessage({
               id: "app.points",
             })}`}
             navigationIcon="more"
@@ -675,7 +681,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
               </span>
               <i className="unit__strength-points">
                 {getPointsText({
-                  points: getPointsPerModel(unit),
+                  points: getPointsPerModel({ ...unit, type }),
                   perModel: true,
                 })}
               </i>
@@ -834,6 +840,21 @@ export const Unit = ({ isMobile, previewData = {} }) => {
                                   />
                                 )}
                             </div>
+                            {magic.maxItemsPerCategory &&
+                              magic.maxItemsPerCategory > 0 && (
+                                <p className="unit__option-note unit__option-note--maxitems">
+                                  <FormattedMessage
+                                    id={
+                                      magic.types.length > 1
+                                        ? "unit.maxItemsPerCategory"
+                                        : "unit.maxItems"
+                                    }
+                                    values={{
+                                      maxItems: magic.maxItemsPerCategory,
+                                    }}
+                                  />
+                                </p>
+                              )}
                             {magic?.selected && (
                               <p>
                                 {magic.selected
@@ -1177,6 +1198,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
                                         <i className="checkbox__points">
                                           {getPointsText({
                                             points: option.points,
+                                            perModel: option.perModel,
                                           })}
                                         </i>
                                       </label>
@@ -1698,7 +1720,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
                               detachmentActive;
 
                             return (
-                              <Fragment key={option.name_en}>
+                              <Fragment
+                                key={`${option.name_en}-${optionIndex}`}
+                              >
                                 <div className="checkbox checkbox--conditional">
                                   <input
                                     type="checkbox"
@@ -1881,6 +1905,20 @@ export const Unit = ({ isMobile, previewData = {} }) => {
                       />
                     )}
                   </div>
+                  {item.maxItemsPerCategory && item.maxItemsPerCategory > 0 && (
+                    <p className="unit__option-note unit__option-note--maxitems">
+                      <FormattedMessage
+                        id={
+                          item.types.length > 1
+                            ? "unit.maxItemsPerCategory"
+                            : "unit.maxItems"
+                        }
+                        values={{
+                          maxItems: item.maxItemsPerCategory,
+                        }}
+                      />
+                    </p>
+                  )}
                   {getUnitOptionNotes({
                     notes: item.notes,
                     key: `options-${itemIndex}-note`,

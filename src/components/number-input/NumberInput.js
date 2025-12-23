@@ -11,8 +11,8 @@ export const NumberInput = ({
   onChange,
   value,
   id,
-  max = 100000,
-  min = 0,
+  max,
+  min,
   readOnly,
   required,
   noError,
@@ -112,4 +112,7 @@ NumberInput.propTypes = {
   noError: PropTypes.bool,
 };
 
-// defaults provided via parameter defaults
+NumberInput.defaultProps = {
+  min: 0,
+  max: 100000,
+};
