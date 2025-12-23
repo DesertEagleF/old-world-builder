@@ -164,7 +164,7 @@ export const RulesIndex = () => {
                   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                     <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h5V3H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-5h-2v5H5V5z" />
                   </svg>
-                  在新页面中访问该页面
+                  在wiki中打开/编辑
                 </button>
               </div>
             </div>
