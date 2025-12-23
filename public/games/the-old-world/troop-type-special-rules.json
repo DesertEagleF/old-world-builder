@@ -1,0 +1,305 @@
+{
+    "troop-types": [
+        {
+            "id": "infantry",
+            "name": "Infantry",
+            "name_cn": "步兵",
+            "types": [
+                {
+                    "id": "regular-infantry",
+                    "name": "Regular Infantry",
+                    "name_cn": "常规步兵",
+                    "special-rules": [
+                        {
+                            "id": "press-of-battle",
+                            "name": "Press of Battle",
+                            "name_cn": "战斗增压"
+                        },
+                        {
+                            "id": "massed-infantry",
+                            "name": "Massed Infantry",
+                            "name_cn": "密集步兵"
+                        },
+                        {
+                            "id": "parry",
+                            "name": "Parry",
+                            "name_cn": "招架"
+                        }
+                    ]
+                },
+                {
+                    "id": "heavy-infantry",
+                    "name": "Heavy Infantry",
+                    "name_cn": "重步兵",
+                    "special-rules": [
+                        {
+                            "id": "steady-in-the-ranks",
+                            "name": "Steady in the Ranks",
+                            "name_cn": "阵面稳固"
+                        },
+                        {
+                            "id": "press-of-battle",
+                            "name": "Press of Battle",
+                            "name_cn": "战斗增压"
+                        },
+                        {
+                            "id": "massed-infantry",
+                            "name": "Massed Infantry",
+                            "name_cn": "密集步兵"
+                        },
+                        {
+                            "id": "parry",
+                            "name": "Parry",
+                            "name_cn": "招架"
+                        }
+                    ]
+                },
+                {
+                    "id": "monstrous-infantry",
+                    "name": "Monstrous Infantry",
+                    "name_cn": "怪兽步兵",
+                    "special-rules": [
+                        {
+                            "id": "clumsy",
+                            "name": "Clumsy",
+                            "name_cn": "笨拙"
+                        }
+                    ]
+                },
+                {
+                    "id": "swarms",
+                    "name": "Swarms",
+                    "name_cn": "集群",
+                    "special-rules": [
+                        {
+                            "id": "insignificant",
+                            "name": "Insignificant",
+                            "name_cn": "无关紧要"
+                        },
+                        {
+                            "id": "no-one-cares",
+                            "name": "No One Cares",
+                            "name_cn": "无人关心"
+                        },
+                        {
+                            "id": "undisciplined",
+                            "name": "Undisciplined",
+                            "name_cn": "无法管教"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "cavalry",
+            "name": "Cavalry",
+            "name_cn": "骑兵",
+            "types": [
+                {
+                    "id": "light-cavalry",
+                    "name": "Light Cavalry",
+                    "name_cn": "轻骑兵",
+                    "special-rules": [
+                        {
+                            "id": "split-profile-cavalry",
+                            "name": "Split Profile (Cavalry)",
+                            "name_cn": "多重面板（骑兵）"
+                        },
+                        {
+                            "id": "cavalry-support",
+                            "name": "Cavalry Support",
+                            "name_cn": "骑兵支援"
+                        }
+                    ]
+                },
+                {
+                    "id": "heavy-cavalry",
+                    "name": "Heavy Cavalry",
+                    "name_cn": "重骑兵",
+                    "special-rules": [
+                        {
+                            "id": "split-profile-cavalry",
+                            "name": "Split Profile (Cavalry)",
+                            "name_cn": "多重面板（骑兵）"
+                        },
+                        {
+                            "id": "cavalry-support",
+                            "name": "Cavalry Support",
+                            "name_cn": "骑兵支援"
+                        }
+                    ]
+                },
+                {
+                    "id": "monstrous-cavalry",
+                    "name": "Monstrous Cavalry",
+                    "name_cn": "怪兽骑兵",
+                    "special-rules": [
+                        {
+                            "id": "split-profile-cavalry",
+                            "name": "Split Profile (Cavalry)",
+                            "name_cn": "多重面板（骑兵）"
+                        },
+                        {
+                            "id": "clumsy",
+                            "name": "Clumsy",
+                            "name_cn": "笨拙"
+                        }
+                    ]
+                },
+                {
+                    "id": "war-beasts",
+                    "name": "War Beasts",
+                    "name_cn": "战兽",
+                    "special-rules": [
+                        {
+                            "id": "undisciplined",
+                            "name": "Undisciplined",
+                            "name_cn": "无法管教"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "chariots",
+            "name": "Chariots",
+            "name_cn": "战车",
+            "types": [
+                {
+                    "id": "light-chariots",
+                    "name": "Light Chariots",
+                    "name_cn": "轻战车",
+                    "special-rules": [
+                        {
+                            "id": "split-profile-chariots",
+                            "name": "Split Profile (Chariots)",
+                            "name_cn": "多重面板（战车）"
+                        },
+                        {
+                            "id": "iron-shod-wheels",
+                            "name": "Iron Shod Wheels",
+                            "name_cn": "铁蹄车轮"
+                        },
+                        {
+                            "id": "churning-wheels",
+                            "name": "Churning Wheels",
+                            "name_cn": "车轮滚滚"
+                        },
+                        {
+                            "id": "firing-platform",
+                            "name": "Firing Platform",
+                            "name_cn": "火力平台"
+                        }
+                    ]
+                },
+                {
+                    "id": "heavy-chariots",
+                    "name": "Heavy Chariots",
+                    "name_cn": "重战车",
+                    "special-rules": [
+                        {
+                            "id": "split-profile-chariots",
+                            "name": "Split Profile (Chariots)",
+                            "name_cn": "多重面板（战车）"
+                        },
+                        {
+                            "id": "scythed-wheels",
+                            "name": "Scythed Wheels",
+                            "name_cn": "收割车轮"
+                        },
+                        {
+                            "id": "lumbering",
+                            "name": "Lumbering",
+                            "name_cn": "迟缓"
+                        },
+                        {
+                            "id": "iron-shod-wheels",
+                            "name": "Iron Shod Wheels",
+                            "name_cn": "铁蹄车轮"
+                        },
+                        {
+                            "id": "firing-platform",
+                            "name": "Firing Platform",
+                            "name_cn": "火力平台"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "monsters",
+            "name": "Monsters",
+            "name_cn": "怪兽",
+            "types": [
+                {
+                    "id": "monstrous-creatures",
+                    "name": "Monstrous Creatures",
+                    "name_cn": "怪兽生物",
+                    "special-rules": [
+                        {
+                            "id": "ridden-monster",
+                            "name": "Ridden Monster",
+                            "name_cn": "骑乘怪兽"
+                        },
+                        {
+                            "id": "lumbering",
+                            "name": "Lumbering",
+                            "name_cn": "迟缓"
+                        }
+                    ]
+                },
+                {
+                    "id": "behemoths",
+                    "name": "Behemoths",
+                    "name_cn": "巨兽",
+                    "special-rules": [
+                        {
+                            "id": "ridden-monster",
+                            "name": "Ridden Monster",
+                            "name_cn": "骑乘怪兽"
+                        },
+                        {
+                            "id": "lumbering",
+                            "name": "Lumbering",
+                            "name_cn": "迟缓"
+                        },
+                        {
+                            "id": "thunderstomp",
+                            "name": "Thunderstomp",
+                            "name_cn": "雷霆践踏"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "war-machines",
+            "name": "War Machines",
+            "name_cn": "战争机器",
+            "types": [
+                {
+                    "id": "war-machines",
+                    "name": "War Machines",
+                    "name_cn": "战争机器",
+                    "special-rules": [
+                        {
+                            "id": "split-profile-war-machine",
+                            "name": "Split Profile (War Machine)",
+                            "name_cn": "多重面板（战争机器）"
+                        },
+                        {
+                            "id": "were-not-paid-to-fight",
+                            "name": "\"We're Not Paid to Fight\"",
+                            "name_cn": "“合同里可没说这个！”"
+                        },
+                        {
+                            "id": "weapon-of-war",
+                            "name": "Weapon of War",
+                            "name_cn": "战争武器"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

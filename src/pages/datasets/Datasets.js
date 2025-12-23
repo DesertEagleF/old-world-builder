@@ -180,7 +180,7 @@ export const Datasets = ({ isMobile }) => {
         <div className="datasets__columns">
           <section className="column datasets__column">
             <header className="editor__header">
-              <h2>Load a dataset</h2>
+              <div class="header-2">Load a dataset</div>
             </header>
 
             <Select
@@ -219,7 +219,7 @@ export const Datasets = ({ isMobile }) => {
 
           <section className="column datasets__column">
             <header className="editor__header">
-              <h2>Edit units</h2>
+              <div class="header-2">Edit units</div>
             </header>
             {isLoading ? (
               <Spinner />
@@ -456,7 +456,7 @@ export const Datasets = ({ isMobile }) => {
 
           <section className="column datasets__column">
             <header className="editor__header">
-              <h2>Add new unit</h2>
+              <div class="header-2">Add new unit</div>
             </header>
             <Expandable
               headline="Character"
@@ -497,7 +497,7 @@ export const Datasets = ({ isMobile }) => {
 
           <section className="column datasets__column">
             <header className="editor__header">
-              <h2>JSON output</h2>
+              <div class="header-2">JSON output</div>
             </header>
             <Button
               icon={copied ? "check" : "copy"}

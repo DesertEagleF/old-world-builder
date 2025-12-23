@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
+import { queryParts } from '../../utils/query';
 import { useDispatch, useSelector } from "react-redux";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
@@ -26,11 +27,20 @@ import { getStats, getUnitName } from "../../utils/unit";
 import { editUnit } from "../../state/lists";
 import { updateSetting } from "../../state/settings";
 import { getGameSystems } from "../../utils/game-systems";
+import { getJson } from "../../utils/resourceLoader";
 
 import "./GameView.css";
 
 export const GameView = () => {
-  const { listId } = useParams();
+  const params = useParams() || {};
+  let { listId } = params;
+  const location = useLocation();
+  if (!listId) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === 'game-view' || parts[0] === 'editor') listId = parts[1];
+    } catch (e) {}
+  }
   const { language } = useLanguage();
   const intl = useIntl();
   const dispatch = useDispatch();
@@ -50,9 +60,73 @@ export const GameView = () => {
   const [BSBDead, setBSBDead] = useState(false);
   const [detachmentsDead, setDetachmentsDead] = useState({});
   const [victoryPoints, setVictoryPoints] = useState({});
+  const [troopTypeSpecialRules, setTroopTypeSpecialRules] = useState(null);
+  const [unitTroopTypeMap, setUnitTroopTypeMap] = useState({});
+
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (list.game === "the-old-world") {
+        try {
+          const [troopTypeData, unitTroopTypeData] = await Promise.all([
+            getJson("troop-type-special-rules"),
+            getJson("unit-troop-type")
+          ]);
+          setTroopTypeSpecialRules(troopTypeData);
+          setUnitTroopTypeMap(unitTroopTypeData || {});
+        } catch (error) {
+          console.error("Failed to load data:", error);
+        }
+      }
+    };
+
+    loadData();
+  }, [list.game]);
+
+  const getTroopTypeSpecialRules = (troopType) => {
+    if (!troopTypeSpecialRules || !troopType) return [];
+
+    const typeIdMapping = {
+      "monstrous-creature": "monstrous-creatures",
+      "behemoth": "behemoths",
+    };
+
+    const mappedTypeId = typeIdMapping[troopType] || troopType;
+
+    for (const mainType of troopTypeSpecialRules["troop-types"]) {
+      const types = mainType.types || mainType.typres;
+      if (!types) continue;
+      const foundType = types.find(t => t.id === mappedTypeId);
+      if (foundType && foundType["special-rules"]) {
+        return foundType["special-rules"];
+      }
+    }
+
+    return [];
+  };
+
+  const getUnitTroopTypes = (unitName) => {
+    const unitId = unitName.toLowerCase().replace(/\s+/g, "-");
+    return unitTroopTypeMap[unitId] || [];
+  };
+
+  const convertRulesArrayToTextObject = (rulesArray) => {
+    if (!Array.isArray(rulesArray) || rulesArray.length === 0) {
+      return null;
+    }
+
+    const nameEn = rulesArray.map(rule => rule.name).join(", ");
+    const nameCn = rulesArray.map(rule => rule.name_cn || rule.name).join(", ");
+
+    return {
+      name_en: nameEn,
+      name_cn: nameCn
+    };
+  };
+
   const handleCustomNoteChange = ({ value, type, unitId }) => {
     dispatch(
       editUnit({
@@ -71,7 +145,7 @@ export const GameView = () => {
     return (
       <>
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "duplicate.title",
           })}
@@ -259,6 +333,16 @@ export const GameView = () => {
           const stats = getStats(unit, armyComposition);
           const unitGeneratedSpellCount = getUnitGeneratedSpellCount(unit);
 
+          const unitTroopTypes = getUnitTroopTypes(unit.name_en);
+
+          let allTroopTypeSpecialRules = [];
+          for (const troopType of unitTroopTypes) {
+            const rules = getTroopTypeSpecialRules(troopType);
+            if (Array.isArray(rules) && rules.length > 0) {
+              allTroopTypeSpecialRules = [...allTroopTypeSpecialRules, ...rules];
+            }
+          }
+
           return (
             <li key={index} className="list">
               <div className="list__inner game-view__list-inner">
@@ -300,52 +384,63 @@ export const GameView = () => {
                       }),
                     }}
                   />
-                  {showSpecialRules && unit.specialRules ? (
-                    <>
-                      <p className="game-view__special-rules">
-                        <b>
-                          <i>
-                            <FormattedMessage id="unit.specialRules" />:
-                          </i>
-                        </b>{" "}
-                        <RulesLinksText
-                          textObject={unit.specialRules}
-                          showPageNumbers={showPageNumbers}
-                        />
-                      </p>
-                      {unit.detachments &&
-                        unit.detachments.map((detachment) => {
-                          const specialRulesDetachment =
-                            detachment.armyComposition?.[
-                              list?.armyComposition || list?.army
-                            ]?.specialRules || detachment.specialRules;
-
-                          if (!specialRulesDetachment) {
-                            return null;
-                          }
-
-                          return (
-                            <p
-                              className="game-view__special-rules"
-                              key={detachment.id}
-                            >
-                              <b>
-                                <i>
-                                  <FormattedMessage id="unit.specialRules" /> (
-                                  {detachment[`name_${language}`] ||
-                                    detachment.name_en}
-                                  ):
-                                </i>
-                              </b>{" "}
-                              <RulesLinksText
-                                textObject={specialRulesDetachment}
-                                showPageNumbers={showPageNumbers}
-                              />
-                            </p>
-                          );
-                        })}
-                    </>
+                  {showSpecialRules && (unit.specialRules || allTroopTypeSpecialRules.length > 0) ? (
+                    <p className="game-view__special-rules">
+                      <b>
+                        <i>
+                          <FormattedMessage id="unit.specialRules" />:
+                        </i>
+                      </b>{" "}
+                      {unit.specialRules && (
+                        <>
+                          <RulesLinksText
+                            textObject={unit.specialRules}
+                            showPageNumbers={showPageNumbers}
+                          />
+                        </>
+                      )}
+                      {unit.specialRules && allTroopTypeSpecialRules.length > 0 && " "}
+                      {allTroopTypeSpecialRules.length > 0 && (
+                        <>
+                          <RulesLinksText
+                            textObject={convertRulesArrayToTextObject(allTroopTypeSpecialRules)}
+                            showPageNumbers={showPageNumbers}
+                          />
+                        </>
+                      )}
+                    </p>
                   ) : null}
+                  {unit.detachments &&
+                    unit.detachments.map((detachment) => {
+                      const specialRulesDetachment =
+                        detachment.armyComposition?.[
+                          list?.armyComposition || list?.army
+                        ]?.specialRules || detachment.specialRules;
+
+                      if (!specialRulesDetachment) {
+                        return null;
+                      }
+
+                      return (
+                        <p
+                          className="game-view__special-rules"
+                          key={detachment.id}
+                        >
+                          <b>
+                            <i>
+                              <FormattedMessage id="unit.specialRules" /> (
+                              {detachment[`name_${language}`] ||
+                                detachment.name_en}
+                              ):
+                            </i>
+                          </b>{" "}
+                          <RulesLinksText
+                            textObject={specialRulesDetachment}
+                            showPageNumbers={showPageNumbers}
+                          />
+                        </p>
+                      );
+                    })}
                   {showStats &&
                     (stats?.length > 0 ? (
                       <Stats values={stats} className="game-view__stats" />
@@ -605,7 +700,7 @@ export const GameView = () => {
       <RulesIndex />
 
       <Header
-        to={`/editor/${listId}`}
+        to={`?editor.${listId}`}
         headline={intl.formatMessage({
           id: "misc.gameView",
         })}
@@ -619,14 +714,14 @@ export const GameView = () => {
         {list.characters.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.characters" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
                     [{charactersPoints} <FormattedMessage id="app.points" />]
                   </span>
                 )}
-              </h2>
+              </div>
             </header>
             {getSection({ type: "characters" })}
           </section>
@@ -635,14 +730,14 @@ export const GameView = () => {
         {list.core.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.core" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
                     [{corePoints} <FormattedMessage id="app.points" />]
                   </span>
                 )}
-              </h2>
+              </div>
             </header>
             {getSection({ type: "core" })}
           </section>
@@ -651,14 +746,14 @@ export const GameView = () => {
         {list.special.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.special" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
                     [{specialPoints} <FormattedMessage id="app.points" />]
                   </span>
                 )}
-              </h2>
+              </div>
             </header>
             {getSection({ type: "special" })}
           </section>
@@ -667,14 +762,14 @@ export const GameView = () => {
         {list.rare.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.rare" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
                     [{rarePoints} <FormattedMessage id="app.points" />]
                   </span>
                 )}
-              </h2>
+              </div>
             </header>
             {getSection({ type: "rare" })}
           </section>
@@ -683,14 +778,14 @@ export const GameView = () => {
         {list.allies.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.allies" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
                     [{alliesPoints} <FormattedMessage id="app.points" />]
                   </span>
                 )}
-              </h2>
+              </div>
             </header>
             {getSection({ type: "allies" })}
           </section>
@@ -699,14 +794,14 @@ export const GameView = () => {
         {list.mercenaries.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.mercenaries" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
                     [{mercenariesPoints} <FormattedMessage id="app.points" />]
                   </span>
                 )}
-              </h2>
+              </div>
             </header>
             {getSection({ type: "mercenaries" })}
           </section>
@@ -715,10 +810,10 @@ export const GameView = () => {
         {showVictoryPoints && (
           <section className="game-view__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="misc.allVictoryPoints" />
                 {": "}
-              </h2>
+              </div>
               <strong>
                 {getAllVictoryPoints()} <FormattedMessage id="app.points" />
               </strong>

@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
 
 import { Button } from "../../components/button";
+import { queryParts } from "../../utils/query";
 import { Header, Main } from "../../components/page";
 import { NumberInput } from "../../components/number-input";
 import { getRandomId } from "../../utils/id";
@@ -16,7 +17,15 @@ export const DuplicateList = ({ isMobile }) => {
   const location = useLocation();
   const intl = useIntl();
   const MainComponent = isMobile ? Main : Fragment;
-  const { listId } = useParams();
+  const params = useParams() || {};
+  let { listId } = params;
+  // fallback parse ?editor.<listId>
+  if (!listId) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === 'editor') listId = parts[1];
+    } catch (e) {}
+  }
   const dispatch = useDispatch();
   const [name, setName] = useState("");
   const [points, setPoints] = useState(2000);
@@ -24,7 +33,7 @@ export const DuplicateList = ({ isMobile }) => {
   const [redirect, setRedirect] = useState(null);
   const lists = useSelector((state) => state.lists);
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
 
   const handlePointsChange = (event) => {
@@ -77,7 +86,7 @@ export const DuplicateList = ({ isMobile }) => {
     return (
       <>
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "duplicate.title",
           })}
@@ -89,7 +98,7 @@ export const DuplicateList = ({ isMobile }) => {
 
   return (
     <>
-      {redirect && <Redirect to={`/editor/${redirect}`} />}
+      {redirect && <Redirect to={`?editor.${redirect}`} />}
 
       <Helmet>
         <title>{`Old World Builder | ${list?.name}`}</title>
@@ -97,7 +106,7 @@ export const DuplicateList = ({ isMobile }) => {
 
       {isMobile && (
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "duplicate.title",
           })}
@@ -108,7 +117,7 @@ export const DuplicateList = ({ isMobile }) => {
         {!isMobile && (
           <Header
             isSection
-            to={`/editor/${listId}`}
+            to={`?editor.${listId}`}
             headline={intl.formatMessage({
               id: "duplicate.title",
             })}

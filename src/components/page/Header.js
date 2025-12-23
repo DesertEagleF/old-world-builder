@@ -27,7 +27,7 @@ export const Header = ({
   const intl = useIntl();
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
-  const Component = isSection ? "section" : "header";
+  const Component = "section";
   const handleMenuClick = () => {
     setShowMenu(!showMenu);
   };
@@ -111,7 +111,7 @@ export const Header = ({
             ) : (
               <h1 className="header__name">
                 {headlineIcon && headlineIcon}
-                <span className="header__name-text">{headline}</span>
+                <span className="header__name-text col-header">{headline}</span>
               </h1>
             )}
           </>
@@ -203,7 +203,7 @@ export const Header = ({
 Header.propTypes = {
   className: PropTypes.string,
   to: PropTypes.string,
-  headline: PropTypes.string,
+  headline: PropTypes.node,
   headlineIcon: PropTypes.node,
   subheadline: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   children: PropTypes.node,

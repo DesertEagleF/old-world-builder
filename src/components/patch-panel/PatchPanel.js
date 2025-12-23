@@ -22,11 +22,11 @@ export default function PatchPanel() {
     <div>
       <Header
         isSection
-        to="/new"
+        to="?new"
         headline={<FormattedMessage id="patches.title" defaultMessage="Select Patch" />}
       />
       <div style={{ padding: 12 }}>
-        <PatchSelector startExpanded onAppliedChange={() => { history.push('/new'); }} onLocaleMapChange={(m) => patchState.setLocaleMap(m)} />
+        <PatchSelector startExpanded onAppliedChange={() => { history.push('?new'); }} onLocaleMapChange={(m) => patchState.setLocaleMap(m)} />
       </div>
     </div>
   );

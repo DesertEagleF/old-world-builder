@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
+import { queryParts } from '../../utils/query';
 import { useSelector } from "react-redux";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -16,7 +17,18 @@ import { getGameSystems } from "../../utils/game-systems";
 import "./Print.css";
 
 export const Print = () => {
-  const { listId } = useParams();
+  const params = useParams() || {};
+  let { listId } = params;
+  const location = useLocation();
+  if (!listId) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === 'print' || parts[0] === 'editor') {
+        // print route can be ?print.<listId> or editor route may be ?editor.<listId>
+        listId = listId || parts[1];
+      }
+    } catch (e) {}
+  }
   const { language } = useLanguage();
   const intl = useIntl();
   const [isPrinting, setIsPrinting] = useState(false);
@@ -26,7 +38,7 @@ export const Print = () => {
   const [showStats, setShowStats] = useState(true);
   const [showCustomNotes, setShowCustomNotes] = useState(true);
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
 
   if (!list) {
@@ -241,7 +253,7 @@ export const Print = () => {
     <>
       <div className="hide-for-printing">
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "print.title",
           })}
@@ -264,9 +276,9 @@ export const Print = () => {
             <FormattedMessage id="misc.print" />
           )}
         </Button>
-        <h2>
+        <div class="header-2">
           <FormattedMessage id="print.preview" />
-        </h2>
+        </div>
       </div>
 
       <main className="print">
@@ -286,84 +298,84 @@ export const Print = () => {
 
         {list.characters.length > 0 && (
           <section>
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.characters" />{" "}
               {!isShowList && (
                 <span className="print__points">
                   [{charactersPoints} <FormattedMessage id="app.points" />]
                 </span>
               )}
-            </h2>
+            </div>
             {getSection({ type: "characters" })}
           </section>
         )}
 
         {list.core.length > 0 && (
           <section>
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.core" />{" "}
               {!isShowList && (
                 <span className="print__points">
                   [{corePoints} <FormattedMessage id="app.points" />]
                 </span>
               )}
-            </h2>
+            </div>
             {getSection({ type: "core" })}
           </section>
         )}
 
         {list.special.length > 0 && (
           <section>
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.special" />{" "}
               {!isShowList && (
                 <span className="print__points">
                   [{specialPoints} <FormattedMessage id="app.points" />]
                 </span>
               )}
-            </h2>
+            </div>
             {getSection({ type: "special" })}
           </section>
         )}
 
         {list.rare.length > 0 && (
           <section>
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.rare" />{" "}
               {!isShowList && (
                 <span className="print__points">
                   [{rarePoints} <FormattedMessage id="app.points" />]
                 </span>
               )}
-            </h2>
+            </div>
             {getSection({ type: "rare" })}
           </section>
         )}
 
         {list.allies.length > 0 && (
           <section>
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.allies" />{" "}
               {!isShowList && (
                 <span className="print__points">
                   [{alliesPoints} <FormattedMessage id="app.points" />]
                 </span>
               )}
-            </h2>
+            </div>
             {getSection({ type: "allies" })}
           </section>
         )}
 
         {list.mercenaries.length > 0 && (
           <section>
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.mercenaries" />{" "}
               {!isShowList && (
                 <span className="print__points">
                   [{mercenariesPoints} <FormattedMessage id="app.points" />]
                 </span>
               )}
-            </h2>
+            </div>
             {getSection({ type: "mercenaries" })}
           </section>
         )}

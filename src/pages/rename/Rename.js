@@ -1,6 +1,7 @@
 import { Fragment, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useParams, useLocation } from "react-router-dom";
+import { queryParts } from '../../utils/query';
 import { useDispatch, useSelector } from "react-redux";
 import { Helmet } from "react-helmet-async";
 
@@ -16,7 +17,21 @@ export const Rename = ({ isMobile }) => {
   const location = useLocation();
   const intl = useIntl();
   const { language } = useLanguage();
-  const { listId, type, unitId } = useParams();
+  const params = useParams() || {};
+  let { listId, type, unitId } = params;
+  // fallback for query-style routes like ?editor.<listId>.<type>.<unitId>.rename
+  if (!listId || !type || !unitId) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === 'editor') {
+        listId = listId || parts[1];
+        type = type || parts[2];
+        const renameIdx = parts.indexOf('rename');
+        const endIdx = renameIdx > -1 ? renameIdx : parts.length;
+        unitId = unitId || parts.slice(3, endIdx).join('.');
+      }
+    } catch (e) {}
+  }
   const dispatch = useDispatch();
   const list = useSelector((state) =>
     state.lists.find(({ id }) => listId === id)
@@ -54,7 +69,7 @@ export const Rename = ({ isMobile }) => {
     return (
       <>
         <Header
-          to={`/editor/${listId}/${type}/${unitId}`}
+          to={`?editor.${listId}.${type}.${unitId}`}
           headline={intl.formatMessage({
             id: "rename.title",
           })}
@@ -72,7 +87,7 @@ export const Rename = ({ isMobile }) => {
 
       {isMobile && (
         <Header
-          to={`/editor/${listId}/${type}/${unitId}`}
+          to={`?editor.${listId}.${type}.${unitId}`}
           headline={intl.formatMessage({
             id: "rename.title",
           })}
@@ -83,7 +98,7 @@ export const Rename = ({ isMobile }) => {
         {!isMobile && (
           <Header
             isSection
-            to={`/editor/${listId}/${type}/${unitId}`}
+            to={`?editor.${listId}.${type}.${unitId}`}
             headline={intl.formatMessage({
               id: "rename.title",
             })}

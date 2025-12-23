@@ -1,6 +1,6 @@
 import "abortcontroller-polyfill/dist/abortcontroller-polyfill-only";
 
-const baseUrl = "/";
+const baseUrl = "https://tow.huijiwiki.com/wiki/Data:";
 let controller;
 
 const abortFetch = () => {
@@ -9,7 +9,7 @@ const abortFetch = () => {
 export const fetcher = ({ url, onSuccess, onError }) => {
   controller = new AbortController();
 
-  fetch(`${baseUrl}${url}.json?v=${process.env.REACT_APP_VERSION}`, {
+  fetch(`${baseUrl}${url}.json?action=raw`, {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",

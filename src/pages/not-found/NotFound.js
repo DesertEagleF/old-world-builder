@@ -26,9 +26,9 @@ export const NotFound = () => {
           <FormattedMessage id="misc.startpage" />
         </Button>
 
-        <h2>
+        <div class="header-2">
           <FormattedMessage id="404.title" />
-        </h2>
+        </div>
         <p>
           <FormattedMessage id="404.title" />
         </p>

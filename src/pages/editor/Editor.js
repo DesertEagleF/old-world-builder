@@ -24,22 +24,39 @@ import { setErrors } from "../../state/errors";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
 import patchManager from '../../utils/patch';
+import { getJson } from '../../utils/resourceLoader';
 import PatchedBadge from '../../components/patch/PatchedBadge';
 
 import "./Editor.css";
 
 export const Editor = ({ isMobile }) => {
   const MainComponent = isMobile ? Main : Fragment;
-  const { listId } = useParams();
+  const params = useParams();
+  let listId = params && params.listId;
   const intl = useIntl();
   const dispatch = useDispatch();
   const { language } = useLanguage();
   const [redirect, setRedirect] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const location = useLocation();
+  // Fallback: if route params didn't supply listId (we use query-style routes like
+  // ?editor.<id>), extract it from location.search so the Editor still loads when
+  // only the search/query changes. Compute before selectors so hooks see correct id.
+  if (!listId) {
+    try {
+      const s = (location && location.search) || "";
+      const parts = (s.startsWith("?") ? s.slice(1) : s).split('.').filter(Boolean);
+      if (parts[0] === 'editor' && parts[1]) {
+        listId = parts[1];
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
   const errors = useSelector((state) => state.errors);
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
 
   const handleDeleteClick = (event) => {
@@ -125,13 +142,12 @@ export const Editor = ({ isMobile }) => {
       await Promise.all(
         ids.map(async (id) => {
           if (Object.prototype.hasOwnProperty.call(next, id)) return;
-          try {
-            const res = await fetch(`/games/patches/${id}/patch.json`);
-            if (!res.ok) {
+            try {
+            const j = await getJson(`patches-${id}-patch`);
+            if (!j) {
               next[id] = id;
               return;
             }
-            const j = await res.json();
             const name = j && j.name;
             if (name && typeof name === 'object') {
               const langKey = `name_${language}`;
@@ -165,7 +181,7 @@ export const Editor = ({ isMobile }) => {
         .filter(Boolean);
       if (ids.length === 0) return;
       try {
-        const merged = await patchManager.getMergedPatchDataForIds({}, ids, 'patch.json');
+        const merged = await patchManager.getMergedPatchDataForIds({}, ids, 'patch');
         if (mounted) setFetchedPatchData(merged || {});
       } catch (e) {
         if (mounted) setFetchedPatchData({});
@@ -292,35 +308,35 @@ export const Editor = ({ isMobile }) => {
         id: "misc.edit",
       }),
       icon: "edit",
-      to: `/editor/${listId}/edit`,
+      to: `?editor.${listId}.edit`,
     },
     {
       name: intl.formatMessage({
         id: "misc.duplicate",
       }),
       icon: "duplicate",
-      to: `/editor/${listId}/duplicate`,
+      to: `?editor.${listId}.duplicate`,
     },
     {
       name: intl.formatMessage({
         id: "misc.gameView",
       }),
       icon: "shield",
-      to: `/game-view/${listId}`,
+      to: `?game-view.${listId}`,
     },
     {
       name: intl.formatMessage({
         id: "misc.export",
       }),
       icon: "export",
-      to: `/editor/${listId}/export`,
+      to: `?editor.${listId}.export`,
     },
     {
       name: intl.formatMessage({
         id: "misc.print",
       }),
       icon: "print",
-      to: `/print/${listId}`,
+      to: `?print.${listId}`,
     },
     {
       name: intl.formatMessage({
@@ -447,9 +463,9 @@ export const Editor = ({ isMobile }) => {
         {list.lords && (
           <section className="editor__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.lords" />
-              </h2>
+              </div>
               <p className="editor__points">
                 {lordsData.diff > 0 ? (
                   <>
@@ -477,7 +493,7 @@ export const Editor = ({ isMobile }) => {
             <Button
               type="primary"
               centered
-              to={`/editor/${listId}/add/lords`}
+              to={`?editor.${listId}.add.lords`}
               icon="add"
               spaceTop
             >
@@ -489,9 +505,9 @@ export const Editor = ({ isMobile }) => {
         {list.heroes && (
           <section className="editor__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.heroes" />
-              </h2>
+              </div>
               <p className="editor__points">
                 {heroesData.diff > 0 ? (
                   <>
@@ -519,7 +535,7 @@ export const Editor = ({ isMobile }) => {
             <Button
               type="primary"
               centered
-              to={`/editor/${listId}/add/heroes`}
+              to={`?editor.${listId}.add.heroes`}
               icon="add"
               spaceTop
             >
@@ -531,9 +547,9 @@ export const Editor = ({ isMobile }) => {
         {list.characters && (
           <section className="editor__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.characters" />
-              </h2>
+              </div>
               <p className="editor__points">
                 {charactersData.diff > 0 ? (
                   <>
@@ -578,7 +594,7 @@ export const Editor = ({ isMobile }) => {
             <Button
               type="primary"
               centered
-              to={`/editor/${listId}/add/characters`}
+              to={`?editor.${listId}.add.characters`}
               icon="add"
               spaceTop
             >
@@ -589,9 +605,9 @@ export const Editor = ({ isMobile }) => {
 
         <section className="editor__section">
           <header className="editor__header">
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.core" />
-            </h2>
+            </div>
             <p className="editor__points">
               {coreData.diff > 0 ? (
                 <>
@@ -637,7 +653,7 @@ export const Editor = ({ isMobile }) => {
           <Button
             type="primary"
             centered
-            to={`/editor/${listId}/add/core`}
+            to={`?editor.${listId}.add.core`}
             icon="add"
             spaceTop
           >
@@ -647,9 +663,9 @@ export const Editor = ({ isMobile }) => {
 
         <section className="editor__section">
           <header className="editor__header">
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.special" />
-            </h2>
+            </div>
             <p className="editor__points">
               {specialData.diff > 0 ? (
                 <>
@@ -694,7 +710,7 @@ export const Editor = ({ isMobile }) => {
           <Button
             type="primary"
             centered
-            to={`/editor/${listId}/add/special`}
+            to={`?editor.${listId}.add.special`}
             icon="add"
             spaceTop
           >
@@ -704,9 +720,9 @@ export const Editor = ({ isMobile }) => {
 
         <section className="editor__section">
           <header className="editor__header">
-            <h2>
+            <div class="header-2">
               <FormattedMessage id="editor.rare" />
-            </h2>
+            </div>
             <p className="editor__points">
               {rareData.diff > 0 ? (
                 <>
@@ -751,7 +767,7 @@ export const Editor = ({ isMobile }) => {
           <Button
             type="primary"
             centered
-            to={`/editor/${listId}/add/rare`}
+            to={`?editor.${listId}.add.rare`}
             icon="add"
             spaceTop
           >
@@ -766,9 +782,9 @@ export const Editor = ({ isMobile }) => {
           list?.army !== "vampire-counts" && (
             <section className="editor__section">
               <header className="editor__header">
-                <h2>
+                <div class="header-2">
                   <FormattedMessage id="editor.mercenaries" />
-                </h2>
+                </div>
                 <p className="editor__points">
                   {mercenariesData.diff > 0 ? (
                     <>
@@ -815,7 +831,7 @@ export const Editor = ({ isMobile }) => {
               <Button
                 type="primary"
                 centered
-                to={`/editor/${listId}/add/mercenaries`}
+                to={`?editor.${listId}.add.mercenaries`}
                 icon="add"
                 spaceTop
               >
@@ -827,9 +843,9 @@ export const Editor = ({ isMobile }) => {
   {hasAlliesOptions && alliesData && list?.army !== "daemons-of-chaos" && (
           <section className="editor__section">
             <header className="editor__header">
-              <h2>
+              <div class="header-2">
                 <FormattedMessage id="editor.allies" />
-              </h2>
+              </div>
               <p className="editor__points">
                 {alliesData.diff > 0 ? (
                   <>
@@ -874,7 +890,7 @@ export const Editor = ({ isMobile }) => {
             <Button
               type="primary"
               centered
-              to={`/editor/${listId}/add/allies`}
+              to={`?editor.${listId}.add.allies`}
               icon="add"
               spaceTop
             >
@@ -886,7 +902,7 @@ export const Editor = ({ isMobile }) => {
         <Button
           type="secondary"
           centered
-          to={`/game-view/${listId}`}
+          to={`?game-view.${listId}`}
           icon="shield"
           spaceTop
         >
@@ -924,7 +940,7 @@ export const OrderableUnitList = ({ units, type, listId, armyComposition }) => {
         units.map((unit, index) => (
           <ListItem
             key={index}
-            to={`/editor/${listId}/${type}/${unit.id}`}
+            to={`?editor.${listId}.${type}.${unit.id}`}
             className="editor__list"
             active={location.pathname.includes(unit.id)}
           >

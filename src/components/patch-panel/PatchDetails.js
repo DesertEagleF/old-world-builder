@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
+import { queryParts } from '../../utils/query';
 import { FormattedMessage } from 'react-intl';
 import { useLanguage } from '../../utils/useLanguage';
 import { Header } from '../page';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
+import { getJson } from '../../utils/resourceLoader';
 
 export default function PatchDetails() {
-  const { patchId } = useParams();
+  const params = useParams() || {};
+  let { patchId } = params;
+  const location = useLocation();
+  if (!patchId) {
+    try {
+      const parts = queryParts(location.search);
+      // expected ?new.patches.details.<patchId> (patchId may contain dots)
+      if (parts[0] === 'new' && parts[1] === 'patches' && parts[2] === 'details') {
+        patchId = parts.slice(3).join('.');
+      }
+    } catch (e) {}
+  }
   const [detail, setDetail] = useState(null);
   const { language } = useLanguage() || { language: 'en' };
 
@@ -15,9 +28,7 @@ export default function PatchDetails() {
     let mounted = true;
     (async () => {
       try {
-        const res = await fetch(`/games/patches/${patchId}/patch.json`);
-        if (!res.ok) return setDetail(null);
-        const j = await res.json();
+        const j = await getJson(`patches-${patchId}-patch`);
         if (!mounted) return;
         setDetail(j || null);
       } catch (e) {
@@ -51,7 +62,7 @@ export default function PatchDetails() {
 
   return (
     <div>
-      <Header isSection to="/new" headline={title} />
+      <Header isSection to="?new" headline={title} />
       <div className="column-details" style={{ padding: 12 }}>
         {html ? (
           <div className="patch-brief" dangerouslySetInnerHTML={{ __html: html }} />

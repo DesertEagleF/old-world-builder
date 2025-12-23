@@ -6,24 +6,25 @@ build:
   stage: build
   image: node:20-alpine
   script:
+    - rm -rf ./dist
     - echo "Build TOW-Builder"
     - yarn && yarn build
-    # - mkdir -p dist/tow-builder
-    # - cp -r dist/* dist/tow-builder/ 2>/dev/null || true
+    - mkdir -p dist/tow-builder
+    - mv -r dist/* dist/tow-builder/ 2>/dev/null || true
   artifacts:
     paths:
       - dist/
     expire_in: 1 week
 
-# deploy:
-#   stage: deploy
-#   image: node:18-alpine
-#   variables:
-#     BRANCH_NAME: main
-#   # rules:
-#   #   - if: $CI_COMMIT_BRANCH == "main"
-#   #   - if: $CI_COMMIT_TAG
-#   #     variables:
-#   #       BRANCH_NAME: production
-#   script:
-#     - 'wget --post-data="token=$CI_JOB_TOKEN&ref=$BRANCH_NAME&variables[TOW_TAG]=$CI_COMMIT_TAG" $CI_SERVER_URL/api/v4/projects/81/trigger/pipeline'
+deploy:
+  stage: deploy
+  image: node:18-alpine
+  variables:
+    BRANCH_NAME: main
+  # rules:
+  #   - if: $CI_COMMIT_BRANCH == "main"
+  #   - if: $CI_COMMIT_TAG
+  #     variables:
+  #       BRANCH_NAME: production
+  script:
+    - 'wget --post-data="token=$CI_JOB_TOKEN&ref=$BRANCH_NAME&variables[TOW_TAG]=$CI_COMMIT_TAG" $CI_SERVER_URL/api/v4/projects/81/trigger/pipeline'

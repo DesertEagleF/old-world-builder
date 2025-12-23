@@ -4,23 +4,17 @@ import PropTypes from "prop-types";
 import { useIntl } from "react-intl";
 
 import "./LanguageSwitcher.css";
-import germany from "../../assets/germany.svg";
-import usa from "../../assets/usa.svg";
-import spain from "../../assets/spain.svg";
-import france from "../../assets/france.svg";
-import italy from "../../assets/italy.svg";
-import polen from "../../assets/polen.svg";
-import china from "../../assets/china.svg";
+import { getResourceUrl, getAssetUrl } from '../../utils/resourceLoader';
 import { useLanguage } from "../../utils/useLanguage";
 
 const flagMap = {
-  en: usa,
-  de: germany,
-  es: spain,
-  fr: france,
-  it: italy,
-  pl: polen,
-  cn: china,
+  en: 'usa',
+  de: 'germany',
+  es: 'spain',
+  fr: 'france',
+  it: 'italy',
+  pl: 'polen',
+  cn: 'china',
 };
 
 export const LanguageSwitcher = ({ className }) => {
@@ -38,6 +32,23 @@ export const LanguageSwitcher = ({ className }) => {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
+  // Inline runtime image resolver for flags
+  function RemoteImg({ listKey, filename, alt = '', width, height, className: imgClass }) {
+    const [src, setSrc] = useState('');
+    useEffect(() => {
+      let mounted = true;
+      (async () => {
+        try {
+          let url = await getResourceUrl(`${listKey}-${filename}`);
+          if (!url) url = await getAssetUrl(listKey, filename);
+          if (mounted && url) setSrc(url);
+        } catch (e) {}
+      })();
+      return () => { mounted = false; };
+    }, [listKey, filename]);
+    return <img src={src || ''} alt={alt} width={width} height={height} className={imgClass} />;
+  }
+
   const handleChange = (lang) => {
     localStorage.setItem("lang", lang);
     // reload to apply language change across the app
@@ -52,12 +63,7 @@ export const LanguageSwitcher = ({ className }) => {
         onClick={() => setOpen(!open)}
         title={intl.formatMessage({ id: "misc.changeLanguage" })}
       >
-        <img
-          src={flagMap[language] || usa}
-          alt={language}
-          width="20"
-          height="15"
-        />
+        <RemoteImg filename={flagMap[language] || 'usa'} listKey="flags" alt={language} width={20} height={15} />
       </button>
 
       {open && (
@@ -69,7 +75,7 @@ export const LanguageSwitcher = ({ className }) => {
                 className="language-switcher__menu-item"
                 onClick={() => handleChange(lang)}
               >
-                <img src={flagMap[lang]} alt={lang} width="20" height="15" />
+                <RemoteImg listKey="flags-" filename={flagMap[lang]} alt={lang} width={20} height={15} />
                 <span className="language-switcher__menu-text">
                   {intl.formatMessage({ id: `language.${lang}` })}
                 </span>

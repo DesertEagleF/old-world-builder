@@ -81,9 +81,33 @@
         }
       })(window.location);
     </script>
+    <script>
+      // Expose PUBLIC_URL at runtime so code can resolve static assets
+      // even when the app is deployed under a subpath. CRA replaces %PUBLIC_URL%.
+      window.__APP_PUBLIC_URL__ = "%PUBLIC_URL%";
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root" class="old-world-builder-app"></div>
+    <script>
+      // Detect if running in a wiki environment and add appropriate body class
+      (function() {
+        // Check for common wiki indicators
+        var isWiki = false;
+        if (window.location.hostname.indexOf('wiki') !== -1 ||
+            document.body.classList.contains('skin-vector') ||
+            document.body.classList.contains('skin-monobook') ||
+            document.getElementById('mw-content-text') ||
+            document.querySelector('.wiki的情报或数据') ||
+            window.__APP_PUBLIC_URL__ && window.__APP_PUBLIC_URL__.indexOf('wiki') !== -1) {
+          isWiki = true;
+        }
+
+        if (isWiki) {
+          document.body.classList.add('wiki-environment');
+        }
+      })();
+    </script>
   </body>
 </html>

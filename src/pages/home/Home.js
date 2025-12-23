@@ -15,25 +15,7 @@ import { Dialog } from "../../components/dialog";
 import { getAllPoints } from "../../utils/points";
 import { setArmy } from "../../state/army";
 import { setItems } from "../../state/items";
-import owb from "../../assets/army-icons/owb.svg";
-import theEmpire from "../../assets/army-icons/the-empire.svg";
-import dwarfs from "../../assets/army-icons/dwarfs.svg";
-import greenskins from "../../assets/army-icons/greenskins.svg";
-import beastmen from "../../assets/army-icons/beastmen.svg";
-import chaosDeamons from "../../assets/army-icons/chaos-deamons.svg";
-import chaosWarriors from "../../assets/army-icons/chaos-warriors.svg";
-import darkElves from "../../assets/army-icons/dark-elves.svg";
-import highElves from "../../assets/army-icons/high-elves.svg";
-import lizardmen from "../../assets/army-icons/lizardmen.svg";
-import ogres from "../../assets/army-icons/ogres.svg";
-import skaven from "../../assets/army-icons/skaven.svg";
-import tombKings from "../../assets/army-icons/tomb-kings.svg";
-import vampireCounts from "../../assets/army-icons/vampire-counts.svg";
-import woodElves from "../../assets/army-icons/wood-elves.svg";
-import chaosDwarfs from "../../assets/army-icons/chaos-dwarfs.svg";
-import bretonnia from "../../assets/army-icons/bretonnia.svg";
-import cathay from "../../assets/army-icons/cathay.svg";
-import renegade from "../../assets/army-icons/renegade.svg";
+import { getResourceUrl, getAssetUrl } from '../../utils/resourceLoader';
 // banner assets removed from imports because not used on this page
 import { swap } from "../../utils/collection";
 // useLanguage removed from this file (not needed)
@@ -45,27 +27,27 @@ import { getRandomId } from "../../utils/id";
 import "./Home.css";
 
 const armyIconMap = {
-  "the-empire": theEmpire,
-  dwarfs: dwarfs,
-  greenskins: greenskins,
-  "empire-of-man": theEmpire,
-  "orc-and-goblin-tribes": greenskins,
-  "dwarfen-mountain-holds": dwarfs,
-  "warriors-of-chaos": chaosWarriors,
-  "kingdom-of-bretonnia": bretonnia,
-  "beastmen-brayherds": beastmen,
-  "wood-elf-realms": woodElves,
-  "tomb-kings-of-khemri": tombKings,
-  "high-elf-realms": highElves,
-  "dark-elves": darkElves,
-  skaven: skaven,
-  "vampire-counts": vampireCounts,
-  "daemons-of-chaos": chaosDeamons,
-  "ogre-kingdoms": ogres,
-  lizardmen: lizardmen,
-  "chaos-dwarfs": chaosDwarfs,
-  "grand-cathay": cathay,
-  "renegade-crowns": renegade,
+  "the-empire": "the-empire",
+  dwarfs: "dwarfs",
+  greenskins: "greenskins",
+  "empire-of-man": "the-empire",
+  "orc-and-goblin-tribes": "greenskins",
+  "dwarfen-mountain-holds": "dwarfs",
+  "warriors-of-chaos": "chaos-warriors",
+  "kingdom-of-bretonnia": "bretonnia",
+  "beastmen-brayherds": "beastmen",
+  "wood-elf-realms": "wood-elves",
+  "tomb-kings-of-khemri": "tomb-kings",
+  "high-elf-realms": "high-elves",
+  "dark-elves": "dark-elves",
+  skaven: "skaven",
+  "vampire-counts": "vampire-counts",
+  "daemons-of-chaos": "chaos-deamons",
+  "ogre-kingdoms": "ogres",
+  lizardmen: "lizardmen",
+  "chaos-dwarfs": "chaos-dwarfs",
+  "grand-cathay": "cathay",
+  "renegade-crowns": "renegade",
 };
 
 export const Home = ({ isMobile }) => {
@@ -576,11 +558,12 @@ export const Home = ({ isMobile }) => {
 
         {listsWithoutFolders.length === 0 && (
           <>
-            <img
-              src={owb}
+            <RemoteImg
+              listKey="assets"
+              filename="owb"
               alt=""
-              width="100"
-              height="100"
+              width={100}
+              height={100}
               className="home__logo"
             />
             <i className="home__empty">
@@ -616,7 +599,7 @@ export const Home = ({ isMobile }) => {
                   )}
                 >
                   <span className="home__list-item">
-                    <h2 className="home__headline home__headline--folder">
+                    <div className="home__headline home__headline--folder">
                       <Button
                         type="text"
                         label={intl.formatMessage({
@@ -655,7 +638,7 @@ export const Home = ({ isMobile }) => {
                           dispatch(toggleFolder({ folderId: id }));
                         }}
                       />
-                    </h2>
+                    </div>
                   </span>
                   {activeMenu === id && (
                     <ul className="header__more folder__more">
@@ -684,7 +667,7 @@ export const Home = ({ isMobile }) => {
               ) : (
                 <ListItem
                   key={id}
-                  to={`/editor/${id}`}
+                  to={`?editor.${id}`}
                   active={location.pathname.includes(id)}
                   onClick={resetState}
                   hide={
@@ -699,7 +682,7 @@ export const Home = ({ isMobile }) => {
                     <Icon symbol="folder" className="home__folder-icon" />
                   ) : null}
                   <span className="home__list-item">
-                    <h2 className="home__headline">{name}</h2>
+                    <div className="home__headline">{name}</div>
                     {description && (
                       <p className="home__description">{description}</p>
                     )}
@@ -712,12 +695,8 @@ export const Home = ({ isMobile }) => {
                     </p>
                   </span>
                   <div className="home__info">
-                    <img
-                      height="40"
-                      width="40"
-                      src={armyIconMap[army] || owb}
-                      alt=""
-                    />
+                    {/* Runtime-resolved image: try direct key then list mapping */}
+                    <RemoteImg filename={armyIconMap[army] || 'owb'} listKey="army-icons" width={40} height={40} />
                   </div>
                 </ListItem>
               )
@@ -725,7 +704,7 @@ export const Home = ({ isMobile }) => {
         </OrderableList>
         <Button
           centered
-          to="/new"
+          to="?new"
           icon="new-list"
           spaceTop
           onClick={resetState}
@@ -735,7 +714,7 @@ export const Home = ({ isMobile }) => {
         </Button>
         <Button
           centered
-          to="/import"
+          to="?import"
           type="text"
           icon="import"
           color="dark"
@@ -748,3 +727,23 @@ export const Home = ({ isMobile }) => {
     </>
   );
 };
+
+// Inline helper component to load an asset URL at runtime using resourceLoader.
+function RemoteImg({ listKey, filename, alt = '', width, height, className }) {
+  const [src, setSrc] = useState('');
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        // try direct mapping first
+        let url = await getResourceUrl(`${listKey}-${filename}`);
+        if (!url) url = await getAssetUrl(listKey, filename);
+        if (mounted && url) setSrc(url);
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [listKey, filename]);
+  return <img src={src || ''} alt={alt} width={width} height={height} className={className} />;
+}

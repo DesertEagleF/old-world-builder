@@ -174,7 +174,7 @@ export const NewList = ({ isMobile }) => {
 
   return (
     <>
-      {redirect && <Redirect to={`/editor/${redirect}`} />}
+      {redirect && <Redirect to={`?editor.${redirect}`} />}
 
       {isMobile && (
         <Header to="/" headline={intl.formatMessage({ id: "new.title" })} />
@@ -192,7 +192,7 @@ export const NewList = ({ isMobile }) => {
           <label style={{ marginBottom: 6, display: 'block' }} htmlFor="patch-selector">
             <FormattedMessage id="patches.selectedLabel" defaultMessage="Selected patches:" />
           </label>
-          <PatchSelector id="patch-selector" onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} onShowPanel={() => history.push('/new/patches')} />
+          <PatchSelector id="patch-selector" onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} onShowPanel={() => history.push('?new.patches')} />
           {gameSystems.map(({ name, id }, index) => (
             <div
               className={classNames(

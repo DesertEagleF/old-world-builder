@@ -1,0 +1,1832 @@
+{
+  "abyssal-terror": [
+    "monstrous-creature"
+  ],
+  "ancient-stegadon": [
+    "behemoth"
+  ],
+  "anvil-of-doom": [
+    "war-machine",
+    "character"
+  ],
+  "arachnarok-spider": [
+    "behemoth"
+  ],
+  "araloth-lord-of-talsyn": [
+    "regular-infantry",
+    "named-character"
+  ],
+  "arch-necrotect": [
+    "regular-infantry",
+    "character"
+  ],
+  "archmage": [
+    "regular-infantry",
+    "character"
+  ],
+  "aspiring-champion": [
+    "heavy-infantry",
+    "character"
+  ],
+  "badlands-ogre-bulls": [
+    "monstrous-infantry"
+  ],
+  "bale-taurus": [
+    "behemoth"
+  ],
+  "barded-elven-steed": [
+    "heavy-cavalry"
+  ],
+  "barded-pegasus": [
+    "monstrous-cavalry"
+  ],
+  "barded-skeletal-steed": [
+    "heavy-cavalry"
+  ],
+  "barded-warhorse": [
+    "heavy-cavalry"
+  ],
+  "baron": [
+    "regular-infantry",
+    "character"
+  ],
+  "bastiladon": [
+    "monstrous-creature"
+  ],
+  "bat-swarms": [
+    "swarm"
+  ],
+  "battle-pilgrims": [
+    "heavy-infantry"
+  ],
+  "bear-of-loren": [
+    "war-beast"
+  ],
+  "beast-keeper": [
+    "regular-infantry"
+  ],
+  "beastlord": [
+    "heavy-infantry",
+    "character"
+  ],
+  "beasts-of-nurgle": [
+    "monstrous-infantry"
+  ],
+  "bestigor-herd": [
+    "heavy-infantry"
+  ],
+  "black-ark-corsairs": [
+    "regular-infantry"
+  ],
+  "black-coach": [
+    "heavy-chariot"
+  ],
+  "black-dragon": [
+    "behemoth"
+  ],
+  "black-guard-of-naggarond": [
+    "regular-infantry"
+  ],
+  "black-knights": [
+    "heavy-cavalry"
+  ],
+  "black-orc-bigboss": [
+    "heavy-infantry",
+    "character"
+  ],
+  "black-orc-boar-chariot": [
+    "heavy-chariot"
+  ],
+  "black-orc-mob": [
+    "heavy-infantry"
+  ],
+  "black-orc-warboss": [
+    "heavy-infantry",
+    "character"
+  ],
+  "blood-knights": [
+    "heavy-cavalry"
+  ],
+  "blood-throne-of-khorne": [
+    "heavy-chariot"
+  ],
+  "bloodcrushers-of-khorne": [
+    "monstrous-cavalry"
+  ],
+  "bloodletters-of-khorne": [
+    "heavy-infantry"
+  ],
+  "bloodthirster": [
+    "behemoth",
+    "character"
+  ],
+  "bloodwrack-medusa": [
+    "monstrous-creature"
+  ],
+  "bloodwrack-shrine": [
+    "heavy-chariot"
+  ],
+  "blue-horrors-of-tzeentch": [
+    "regular-infantry"
+  ],
+  "bolt-thrower": [
+    "war-machine"
+  ],
+  "bonegrinder-giant": [
+    "behemoth"
+  ],
+  "border-princes-bombard": [
+    "war-machine"
+  ],
+  "border-princes-brigands": [
+    "regular-infantry"
+  ],
+  "border-princes-mortar": [
+    "war-machine"
+  ],
+  "border-princes-organ-gun": [
+    "war-machine"
+  ],
+  "branchwraith": [
+    "regular-infantry",
+    "character"
+  ],
+  "bray-shaman": [
+    "regular-infantry",
+    "character"
+  ],
+  "bretonnian-warhorse": [
+    "heavy-cavalry"
+  ],
+  "brimstone-horrors-of-tzeentch": [
+    "swarm"
+  ],
+  "brotherhood-of-grimnir": [
+    "regular-infantry"
+  ],
+  "bruiser": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "bull-centaur-renders": [
+    "monstrous-cavalry"
+  ],
+  "bull-centaur-taurruk": [
+    "monstrous-cavalry",
+    "character"
+  ],
+  "burlok-damminson": [
+    "heavy-infantry",
+    "named-character"
+  ],
+  "burning-chariot-of-tzeentch": [
+    "heavy-chariot"
+  ],
+  "butcher": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "cairn-wraith": [
+    "regular-infantry",
+    "character"
+  ],
+  "captain-of-the-empire": [
+    "regular-infantry",
+    "character"
+  ],
+  "carnosaur": [
+    "behemoth"
+  ],
+  "carrion": [
+    "monstrous-infantry"
+  ],
+  "casket-of-souls": [
+    "war-machine"
+  ],
+  "cathayan-grand-cannon": [
+    "war-machine"
+  ],
+  "cathayan-sentinel": [
+    "behemoth"
+  ],
+  "cathayan-warhorse": [
+    "heavy-cavalry"
+  ],
+  "cauldron-of-blood": [
+    "heavy-chariot"
+  ],
+  "centigor-herd": [
+    "light-cavalry"
+  ],
+  "chameleon-skinks": [
+    "regular-infantry"
+  ],
+  "chaos-chariot": [
+    "heavy-chariot"
+  ],
+  "chaos-dragon": [
+    "behemoth"
+  ],
+  "chaos-furies": [
+    "regular-infantry"
+  ],
+  "chaos-giant": [
+    "behemoth"
+  ],
+  "chaos-knights": [
+    "heavy-cavalry"
+  ],
+  "chaos-lord": [
+    "heavy-infantry",
+    "character"
+  ],
+  "chaos-marauders": [
+    "regular-infantry"
+  ],
+  "chaos-ogres": [
+    "monstrous-infantry"
+  ],
+  "chaos-spawn": [
+    "monstrous-infantry"
+  ],
+  "chaos-steed": [
+    "heavy-cavalry"
+  ],
+  "chaos-trolls": [
+    "monstrous-infantry"
+  ],
+  "chaos-warhound-handler": [
+    "regular-infantry",
+    "character"
+  ],
+  "chaos-warhounds": [
+    "war-beast"
+  ],
+  "chaos-warriors": [
+    "heavy-infantry"
+  ],
+  "chapter-master": [
+    "heavy-cavalry",
+    "character"
+  ],
+  "chariot-of-tzeentch": [
+    "heavy-chariot"
+  ],
+  "chieftains-chariot": [
+    "heavy-chariot"
+  ],
+  "chimera": [
+    "monstrous-creature"
+  ],
+  "chosen-chaos-chariot": [
+    "heavy-chariot"
+  ],
+  "chosen-chaos-knights": [
+    "heavy-cavalry"
+  ],
+  "chosen-chaos-warriors": [
+    "heavy-infantry"
+  ],
+  "chracian-chieftain": [
+    "heavy-infantry",
+    "character"
+  ],
+  "chracian-woodsmen": [
+    "regular-infantry"
+  ],
+  "clanrats": [
+    "regular-infantry"
+  ],
+  "cockatrice": [
+    "monstrous-creature"
+  ],
+  "cold-one-chariot": [
+    "heavy-chariot"
+  ],
+  "cold-one-dark-elves": [
+    "heavy-cavalry"
+  ],
+  "cold-one-knights": [
+    "heavy-cavalry"
+  ],
+  "cold-one-lizardmen": [
+    "heavy-cavalry"
+  ],
+  "cold-one-riders": [
+    "heavy-cavalry"
+  ],
+  "common-troll-mob": [
+    "monstrous-infantry"
+  ],
+  "corpse-cart": [
+    "heavy-chariot"
+  ],
+  "coven-throne": [
+    "heavy-chariot"
+  ],
+  "crypt-ghouls": [
+    "regular-infantry"
+  ],
+  "crypt-horrors": [
+    "monstrous-infantry"
+  ],
+  "cygor": [
+    "behemoth"
+  ],
+  "daemon-prince-daemons-of-chaos": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "daemon-prince-warriors-of-chaos": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "daemon-slayer": [
+    "heavy-infantry",
+    "character"
+  ],
+  "daemonettes-of-slaanesh": [
+    "regular-infantry"
+  ],
+  "daemonic-herald-of-khorne": [
+    "heavy-infantry",
+    "character"
+  ],
+  "daemonic-herald-of-nurgle": [
+    "regular-infantry",
+    "character"
+  ],
+  "daemonic-herald-of-slaanesh": [
+    "regular-infantry",
+    "character"
+  ],
+  "daemonic-herald-of-tzeentch": [
+    "regular-infantry",
+    "character"
+  ],
+  "daemonic-mount": [
+    "monstrous-cavalry"
+  ],
+  "daemonsmith-sorcerer": [
+    "heavy-infantry",
+    "character"
+  ],
+  "damsel": [
+    "regular-infantry",
+    "character"
+  ],
+  "dark-elf-dreadlord": [
+    "regular-infantry",
+    "character"
+  ],
+  "dark-elf-master": [
+    "regular-infantry",
+    "character"
+  ],
+  "dark-elf-shades": [
+    "regular-infantry"
+  ],
+  "dark-elf-warriors": [
+    "regular-infantry"
+  ],
+  "dark-pegasus": [
+    "monstrous-cavalry"
+  ],
+  "dark-riders": [
+    "light-cavalry"
+  ],
+  "dark-steed": [
+    "light-cavalry"
+  ],
+  "death-hag": [
+    "regular-infantry",
+    "character"
+  ],
+  "deathshrieker-rocket-launcher": [
+    "war-machine"
+  ],
+  "deepwood-hound": [
+    "war-beast"
+  ],
+  "deepwood-scouts": [
+    "regular-infantry"
+  ],
+  "demigryph-knights": [
+    "monstrous-cavalry"
+  ],
+  "demigryph": [
+    "monstrous-cavalry"
+  ],
+  "dire-wolves": [
+    "war-beast"
+  ],
+  "disc-of-tzeentch": [
+    "light-cavalry"
+  ],
+  "doom-diver-catapult": [
+    "war-machine"
+  ],
+  "doombull": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "doomfire-warlocks": [
+    "light-cavalry"
+  ],
+  "doomwheel": [
+    "heavy-chariot"
+  ],
+  "dragon-mage": [
+    "behemoth",
+    "character"
+  ],
+  "dragon-ogre-shaggoth": [
+    "monstrous-creature"
+  ],
+  "dragon-ogres": [
+    "monstrous-cavalry"
+  ],
+  "dragon-princes": [
+    "heavy-cavalry"
+  ],
+  "dragon-slayer": [
+    "heavy-infantry",
+    "character"
+  ],
+  "dryads": [
+    "regular-infantry"
+  ],
+  "duke": [
+    "regular-infantry",
+    "character"
+  ],
+  "dwarf-cart": [
+    "light-chariot"
+  ],
+  "dwarf-warriors": [
+    "heavy-infantry"
+  ],
+  "eagle-claw-bolt-thrower": [
+    "war-machine"
+  ],
+  "ellyrian-reavers": [
+    "light-cavalry"
+  ],
+  "elven-archers": [
+    "regular-infantry"
+  ],
+  "elven-spearmen": [
+    "regular-infantry"
+  ],
+  "elven-steed": [
+    "light-cavalry"
+  ],
+  "empire-archers": [
+    "regular-infantry"
+  ],
+  "empire-engineer": [
+    "regular-infantry",
+    "character"
+  ],
+  "empire-greatswords": [
+    "regular-infantry"
+  ],
+  "empire-knights": [
+    "heavy-cavalry"
+  ],
+  "empire-road-wardens": [
+    "light-cavalry"
+  ],
+  "empire-steam-tank": [
+    "heavy-chariot"
+  ],
+  "empire-war-wagon": [
+    "heavy-chariot"
+  ],
+  "empire-warhorse": [
+    "light-cavalry"
+  ],
+  "engineer-sapper": [
+    "heavy-infantry",
+    "character"
+  ],
+  "engineer": [
+    "heavy-infantry",
+    "character"
+  ],
+  "eternal-guard": [
+    "regular-infantry"
+  ],
+  "exalted-champion": [
+    "heavy-infantry",
+    "character"
+  ],
+  "exalted-seeker-chariot-of-slaanesh": [
+    "heavy-chariot"
+  ],
+  "exalted-sorcerer": [
+    "heavy-infantry",
+    "character"
+  ],
+  "fanatic": [
+    "regular-infantry"
+  ],
+  "fell-bats": [
+    "monstrous-infantry"
+  ],
+  "fiends-of-slaanesh": [
+    "monstrous-cavalry"
+  ],
+  "fire-rain-rocket-battery": [
+    "war-machine"
+  ],
+  "firebelly": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "flagellants": [
+    "regular-infantry"
+  ],
+  "flame-cannon": [
+    "war-machine"
+  ],
+  "flamers-of-tzeentch": [
+    "regular-infantry"
+  ],
+  "flamespyre-phoenix-mount": [
+    "monstrous-creature"
+  ],
+  "flamespyre-phoenix": [
+    "monstrous-creature"
+  ],
+  "flesh-hounds-of-khorne": [
+    "heavy-cavalry"
+  ],
+  "forest-cat": [
+    "war-beast"
+  ],
+  "forest-dragon": [
+    "behemoth"
+  ],
+  "forsaken": [
+    "heavy-infantry"
+  ],
+  "free-company-militia": [
+    "regular-infantry"
+  ],
+  "freeblade-knights": [
+    "heavy-cavalry"
+  ],
+  "frostheart-phoenix-mount": [
+    "monstrous-creature"
+  ],
+  "frostheart-phoenix": [
+    "monstrous-creature"
+  ],
+  "frydaal-the-chainmaker": [
+    "heavy-infantry",
+    "named-character"
+  ],
+  "galrauch": [
+    "behemoth",
+    "named-character"
+  ],
+  "gate-keeper": [
+    "heavy-infantry",
+    "character"
+  ],
+  "gate-master": [
+    "heavy-infantry",
+    "character"
+  ],
+  "general-hans-von-loewenhacke": [
+    "regular-infantry",
+    "named-character"
+  ],
+  "general-of-the-empire": [
+    "regular-infantry",
+    "character"
+  ],
+  "ghorgon": [
+    "behemoth"
+  ],
+  "ghorros-warhoof": [
+    "heavy-cavalry",
+    "named-character"
+  ],
+  "giant-cave-squig": [
+    "monstrous-cavalry"
+  ],
+  "giant-rats": [
+    "war-beast"
+  ],
+  "giant-wolf": [
+    "light-cavalry"
+  ],
+  "giant": [
+    "behemoth"
+  ],
+  "gigantic-spawn-of-chaos": [
+    "behemoth"
+  ],
+  "gigantic-spider": [
+    "light-cavalry"
+  ],
+  "glade-captain": [
+    "regular-infantry",
+    "character"
+  ],
+  "glade-guard": [
+    "regular-infantry"
+  ],
+  "glade-lord": [
+    "regular-infantry",
+    "character"
+  ],
+  "glade-riders": [
+    "light-cavalry"
+  ],
+  "gnoblar-fighters": [
+    "regular-infantry"
+  ],
+  "gnoblar-scraplauncher": [
+    "heavy-chariot"
+  ],
+  "gnoblar-trappers": [
+    "regular-infantry"
+  ],
+  "goblin-bigboss": [
+    "regular-infantry",
+    "character"
+  ],
+  "goblin-bolt-throwa": [
+    "war-machine"
+  ],
+  "goblin-mob": [
+    "regular-infantry"
+  ],
+  "goblin-oddgit": [
+    "regular-infantry",
+    "character"
+  ],
+  "goblin-oddnob": [
+    "regular-infantry",
+    "character"
+  ],
+  "goblin-rock-lobber": [
+    "war-machine"
+  ],
+  "goblin-spider-rider-mob": [
+    "light-cavalry"
+  ],
+  "goblin-warboss": [
+    "regular-infantry",
+    "character"
+  ],
+  "goblin-wolf-chariot": [
+    "light-chariot"
+  ],
+  "goblin-wolf-rider-mob": [
+    "light-cavalry"
+  ],
+  "gor-herd": [
+    "regular-infantry"
+  ],
+  "gorebeast-chariot": [
+    "heavy-chariot"
+  ],
+  "gorebull": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "gorger": [
+    "monstrous-creature"
+  ],
+  "grail-knights": [
+    "heavy-cavalry"
+  ],
+  "grand-master": [
+    "heavy-cavalry",
+    "character"
+  ],
+  "grave-guard": [
+    "heavy-infantry"
+  ],
+  "great-bray-shaman": [
+    "regular-infantry",
+    "character"
+  ],
+  "great-cannon": [
+    "war-machine"
+  ],
+  "great-eagle-mount": [
+    "monstrous-creature"
+  ],
+  "great-eagle": [
+    "monstrous-creature"
+  ],
+  "great-stag": [
+    "monstrous-cavalry"
+  ],
+  "great-taurus": [
+    "behemoth"
+  ],
+  "great-unclean-one": [
+    "behemoth",
+    "character"
+  ],
+  "grey-seer": [
+    "regular-infantry",
+    "character"
+  ],
+  "griffon-empire": [
+    "monstrous-creature"
+  ],
+  "griffon-high-elves": [
+    "monstrous-creature"
+  ],
+  "grudge-thrower": [
+    "war-machine"
+  ],
+  "guardians-of-talsyn": [
+    "regular-infantry"
+  ],
+  "gutter-runners": [
+    "regular-infantry"
+  ],
+  "gyrobomber": [
+    "monstrous-creature"
+  ],
+  "gyrocopter": [
+    "monstrous-cavalry"
+  ],
+  "hammerers": [
+    "heavy-infantry"
+  ],
+  "handmaiden-of-the-everqueen": [
+    "regular-infantry",
+    "character"
+  ],
+  "har-ganeth-executioners": [
+    "regular-infantry"
+  ],
+  "harald-gemunsen": [
+    "heavy-cavalry",
+    "named-character"
+  ],
+  "harbinger-of-doom": [
+    "regular-infantry",
+    "character"
+  ],
+  "harpies": [
+    "regular-infantry"
+  ],
+  "hell-pit-abomination": [
+    "behemoth"
+  ],
+  "hellcannon": [
+    "behemoth"
+  ],
+  "hellflayer-of-slaanesh": [
+    "light-chariot"
+  ],
+  "hexwraiths": [
+    "light-cavalry"
+  ],
+  "high-beastmaster": [
+    "regular-infantry",
+    "character"
+  ],
+  "high-priest-of-ulric": [
+    "regular-infantry",
+    "character"
+  ],
+  "high-priest": [
+    "regular-infantry",
+    "character"
+  ],
+  "hippogryph": [
+    "monstrous-creature"
+  ],
+  "hireling-outriders": [
+    "light-cavalry"
+  ],
+  "hobgoblin-bolt-thrower": [
+    "war-machine"
+  ],
+  "hobgoblin-cutthroats": [
+    "regular-infantry"
+  ],
+  "hobgoblin-khan": [
+    "regular-infantry",
+    "character"
+  ],
+  "hobgoblin-wolf-riders": [
+    "light-cavalry"
+  ],
+  "hunter": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "imperial-dwarf-mercenaries": [
+    "heavy-infantry"
+  ],
+  "imperial-griffon": [
+    "behemoth"
+  ],
+  "imperial-ogres": [
+    "monstrous-infantry"
+  ],
+  "infernal-castellan": [
+    "heavy-infantry",
+    "character"
+  ],
+  "infernal-guard": [
+    "heavy-infantry"
+  ],
+  "infernal-ironsworn": [
+    "heavy-infantry"
+  ],
+  "infernal-seneschal": [
+    "heavy-infantry",
+    "character"
+  ],
+  "inner-circle-knights": [
+    "heavy-cavalry"
+  ],
+  "iron-daemon": [
+    "heavy-chariot"
+  ],
+  "ironblaster": [
+    "heavy-chariot"
+  ],
+  "ironbreakers": [
+    "heavy-infantry"
+  ],
+  "irondrakes": [
+    "heavy-infantry"
+  ],
+  "ironguts": [
+    "monstrous-infantry"
+  ],
+  "ishaya-vess": [
+    "named-character",
+    "regular-infantry"
+  ],
+  "jabberslythe": [
+    "monstrous-creature"
+  ],
+  "jade-lancers": [
+    "heavy-cavalry"
+  ],
+  "jade-warriors": [
+    "heavy-infantry"
+  ],
+  "juggernaut-of-khorne": [
+    "monstrous-cavalry"
+  ],
+  "jungle-swarms": [
+    "swarm"
+  ],
+  "kdaai-fireborn": [
+    "monstrous-infantry"
+  ],
+  "keeper-of-secrets": [
+    "behemoth",
+    "character"
+  ],
+  "khainite-assassin": [
+    "regular-infantry",
+    "character"
+  ],
+  "kharibdyss": [
+    "behemoth"
+  ],
+  "khemrian-warsphinx": [
+    "behemoth"
+  ],
+  "kiknik-toofsnatcha": [
+    "light-cavalry",
+    "named-character"
+  ],
+  "king": [
+    "heavy-infantry",
+    "character"
+  ],
+  "knights-errant": [
+    "heavy-cavalry"
+  ],
+  "knights-of-the-realm-on-foot": [
+    "heavy-infantry"
+  ],
+  "korhil-lionmane": [
+    "named-character",
+    "heavy-infantry"
+  ],
+  "kralmaw-the-prophet-of-ruin": [
+    "regular-infantry",
+    "named-character"
+  ],
+  "kroxigor": [
+    "monstrous-infantry"
+  ],
+  "lady-elisse-duchaard": [
+    "monstrous-cavalry",
+    "named-character"
+  ],
+  "lammasu": [
+    "monstrous-creature"
+  ],
+  "leadbelchers": [
+    "monstrous-infantry"
+  ],
+  "lector-of-sigmar": [
+    "regular-infantry",
+    "character"
+  ],
+  "lion-chariot-of-chrace": [
+    "heavy-chariot"
+  ],
+  "lion-guard": [
+    "heavy-infantry"
+  ],
+  "longbeards": [
+    "heavy-infantry"
+  ],
+  "lord-magistrate": [
+    "regular-infantry",
+    "character"
+  ],
+  "lord-of-change": [
+    "behemoth",
+    "character"
+  ],
+  "lothern-sea-guard": [
+    "regular-infantry"
+  ],
+  "lothern-skycutter": [
+    "heavy-chariot"
+  ],
+  "mage": [
+    "regular-infantry",
+    "character"
+  ],
+  "magma-cannon": [
+    "war-machine"
+  ],
+  "maneaters": [
+    "monstrous-infantry"
+  ],
+  "mangler-squigs": [
+    "behemoth"
+  ],
+  "manticore-dark-elves": [
+    "monstrous-creature"
+  ],
+  "manticore-warriors-of-chaos": [
+    "monstrous-creature"
+  ],
+  "marauder-horsemen": [
+    "light-cavalry"
+  ],
+  "marauder-tribe-berserkers": [
+    "regular-infantry"
+  ],
+  "marauder-tribe-chieftain": [
+    "regular-infantry",
+    "character"
+  ],
+  "marauder-tribe-huscarls": [
+    "light-cavalry"
+  ],
+  "master-assassin": [
+    "regular-infantry",
+    "character"
+  ],
+  "master-mage": [
+    "regular-infantry",
+    "character"
+  ],
+  "master-moulder": [
+    "regular-infantry"
+  ],
+  "master-necromancer": [
+    "regular-infantry",
+    "character"
+  ],
+  "men-at-arms": [
+    "regular-infantry"
+  ],
+  "merwyrm": [
+    "behemoth"
+  ],
+  "miao-ying": [
+    "heavy-infantry",
+    "behemoth",
+    "named-character"
+  ],
+  "miners": [
+    "heavy-infantry"
+  ],
+  "minotaur-herd": [
+    "monstrous-infantry"
+  ],
+  "moon-dragon": [
+    "behemoth"
+  ],
+  "mortar": [
+    "war-machine"
+  ],
+  "mortis-engine": [
+    "heavy-chariot"
+  ],
+  "mortuary-priest": [
+    "regular-infantry",
+    "character"
+  ],
+  "mounted-knights-of-the-realm": [
+    "heavy-cavalry"
+  ],
+  "mounted-yeomen": [
+    "light-cavalry"
+  ],
+  "mournfang-cavalry": [
+    "monstrous-cavalry"
+  ],
+  "nasty-skulker": [
+    "regular-infantry"
+  ],
+  "necrolith-bone-dragon": [
+    "behemoth"
+  ],
+  "necrolith-colossus": [
+    "behemoth"
+  ],
+  "necromantic-acolyte": [
+    "regular-infantry",
+    "character"
+  ],
+  "necropolis-knights": [
+    "monstrous-cavalry"
+  ],
+  "necroserpents": [
+    "monstrous-cavalry"
+  ],
+  "necrosphinx": [
+    "behemoth"
+  ],
+  "necrotect": [
+    "regular-infantry",
+    "character"
+  ],
+  "nekaph": [
+    "regular-infantry",
+    "named-character"
+  ],
+  "night-goblin-bigboss": [
+    "regular-infantry",
+    "character"
+  ],
+  "night-goblin-mob": [
+    "regular-infantry"
+  ],
+  "night-goblin-oddgit": [
+    "regular-infantry",
+    "character"
+  ],
+  "night-goblin-oddnob": [
+    "regular-infantry",
+    "character"
+  ],
+  "night-goblin-squig-herd": [
+    "regular-infantry"
+  ],
+  "night-goblin-squig-hopper-mob": [
+    "light-cavalry"
+  ],
+  "night-goblin-warboss": [
+    "regular-infantry",
+    "character"
+  ],
+  "night-runners": [
+    "regular-infantry"
+  ],
+  "nightmare": [
+    "heavy-cavalry"
+  ],
+  "noble": [
+    "regular-infantry",
+    "character"
+  ],
+  "nuln-state-missile-troops": [
+    "regular-infantry"
+  ],
+  "nuln-swordsmen": [
+    "regular-infantry"
+  ],
+  "nuln-veteran-state-troops": [
+    "regular-infantry"
+  ],
+  "nurglings": [
+    "swarm"
+  ],
+  "ogdruz-swampdigga": [
+    "regular-infantry",
+    "named-character"
+  ],
+  "ogre-bulls": [
+    "monstrous-infantry"
+  ],
+  "ogre-loader": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "orc-bigboss": [
+    "regular-infantry",
+    "character"
+  ],
+  "orc-boar-boy-mob": [
+    "heavy-cavalry"
+  ],
+  "orc-boar-chariot": [
+    "heavy-chariot"
+  ],
+  "orc-bully": [
+    "regular-infantry"
+  ],
+  "orc-mob": [
+    "regular-infantry"
+  ],
+  "orc-warboss": [
+    "regular-infantry",
+    "character"
+  ],
+  "orc-weirdboy": [
+    "regular-infantry",
+    "character"
+  ],
+  "orc-weirdnob": [
+    "regular-infantry",
+    "character"
+  ],
+  "organ-gun": [
+    "war-machine"
+  ],
+  "orion-the-king-in-the-woods": [
+    "monstrous-infantry",
+    "named-character"
+  ],
+  "outcast-wizard": [
+    "regular-infantry",
+    "character"
+  ],
+  "outriders": [
+    "light-cavalry"
+  ],
+  "packmaster": [
+    "regular-infantry"
+  ],
+  "paladin": [
+    "regular-infantry",
+    "character"
+  ],
+  "palanquin-of-nurgle": [
+    "monstrous-cavalry"
+  ],
+  "peasant-bowmen": [
+    "regular-infantry"
+  ],
+  "pegasus-knights": [
+    "monstrous-cavalry"
+  ],
+  "pegasus": [
+    "monstrous-cavalry"
+  ],
+  "phoenix-guard": [
+    "heavy-infantry"
+  ],
+  "pink-horrors-of-tzeentch": [
+    "regular-infantry"
+  ],
+  "pistoliers": [
+    "light-cavalry"
+  ],
+  "plague-censer-bearers": [
+    "regular-infantry"
+  ],
+  "plague-drones-of-nurgle": [
+    "monstrous-cavalry"
+  ],
+  "plague-furnace": [
+    "heavy-chariot"
+  ],
+  "plague-monks": [
+    "regular-infantry"
+  ],
+  "plague-priest": [
+    "regular-infantry",
+    "character"
+  ],
+  "plaguebearers-of-nurgle": [
+    "regular-infantry"
+  ],
+  "poisoned-wind-globadiers": [
+    "regular-infantry"
+  ],
+  "preyton": [
+    "monstrous-creature"
+  ],
+  "priest-of-sigmar": [
+    "regular-infantry",
+    "character"
+  ],
+  "priest-of-ulric": [
+    "regular-infantry",
+    "character"
+  ],
+  "primal-warherd": [
+    "regular-infantry"
+  ],
+  "primal-warhounds": [
+    "war-beast"
+  ],
+  "prince-apophas": [
+    "regular-infantry",
+    "named-character"
+  ],
+  "prince-ulthers-dragon-company": [
+    "heavy-infantry",
+    "named-character"
+  ],
+  "prince": [
+    "regular-infantry",
+    "character"
+  ],
+  "prophetess": [
+    "regular-infantry",
+    "character"
+  ],
+  "quarrellers": [
+    "heavy-infantry"
+  ],
+  "questing-knights": [
+    "heavy-cavalry"
+  ],
+  "rangers": [
+    "heavy-infantry"
+  ],
+  "rat-ogres": [
+    "monstrous-infantry"
+  ],
+  "rat-swarms": [
+    "swarm"
+  ],
+  "razordon-pack": [
+    "regular-infantry",
+    "war-beast"
+  ],
+  "razorgor-chariot": [
+    "heavy-chariot"
+  ],
+  "razorgor-herd": [
+    "war-beast"
+  ],
+  "reaper-bolt-thrower": [
+    "war-machine"
+  ],
+  "renegade-captain": [
+    "regular-infantry"
+  ],
+  "renegade-prince": [
+    "regular-infantry"
+  ],
+  "repeater-crossbowmen": [
+    "regular-infantry"
+  ],
+  "ripperdactyl-riders": [
+    "monstrous-cavalry"
+  ],
+  "ripperdactyl": [
+    "monstrous-cavalry"
+  ],
+  "river-troll-mob": [
+    "monstrous-infantry"
+  ],
+  "royal-clan-warriors": [
+    "heavy-infantry"
+  ],
+  "royal-herald": [
+    "regular-infantry",
+    "character"
+  ],
+  "royal-pegasus": [
+    "monstrous-cavalry"
+  ],
+  "runelord": [
+    "heavy-infantry",
+    "character"
+  ],
+  "runesmith": [
+    "heavy-infantry",
+    "character"
+  ],
+  "sabretusk-pack": [
+    "war-beast"
+  ],
+  "salamander-pack": [
+    "regular-infantry",
+    "war-beast"
+  ],
+  "saurus-oldblood": [
+    "heavy-infantry",
+    "character"
+  ],
+  "saurus-scar-veteran": [
+    "heavy-infantry",
+    "character"
+  ],
+  "saurus-warriors": [
+    "heavy-infantry"
+  ],
+  "scourgerunner-chariot": [
+    "light-chariot"
+  ],
+  "scout-gyrocopter": [
+    "monstrous-cavalry"
+  ],
+  "screamers-of-tzeentch": [
+    "war-beast"
+  ],
+  "screaming-bell": [
+    "heavy-chariot"
+  ],
+  "sea-guard-garrison-commander": [
+    "regular-infantry",
+    "character"
+  ],
+  "seeker-chariot-of-slaanesh": [
+    "light-chariot"
+  ],
+  "seekers-of-slaanesh": [
+    "light-cavalry"
+  ],
+  "sellsword-infantry": [
+    "regular-infantry"
+  ],
+  "sepulchral-stalkers": [
+    "monstrous-cavalry"
+  ],
+  "sergeant-at-arms": [
+    "regular-infantry",
+    "character"
+  ],
+  "settra-the-imperishable": [
+    "heavy-chariot",
+    "named-character"
+  ],
+  "shadow-warriors": [
+    "regular-infantry"
+  ],
+  "shadowdancer": [
+    "regular-infantry",
+    "character"
+  ],
+  "shieldbearers": [
+    "heavy-infantry"
+  ],
+  "ships-company": [
+    "regular-infantry"
+  ],
+  "shugengan-general": [
+    "monstrous-creature",
+    "character"
+  ],
+  "shugengan-lord": [
+    "monstrous-creature",
+    "character"
+  ],
+  "silver-helms": [
+    "heavy-cavalry"
+  ],
+  "sir-cecil-gastonne": [
+    "regular-infantry",
+    "named-character"
+  ],
+  "sisters-of-avelorn": [
+    "regular-infantry"
+  ],
+  "sisters-of-slaughter": [
+    "regular-infantry"
+  ],
+  "sisters-of-the-thorn": [
+    "light-cavalry"
+  ],
+  "skaven-chieftain": [
+    "regular-infantry",
+    "character"
+  ],
+  "skaven-warlord": [
+    "regular-infantry",
+    "character"
+  ],
+  "skeletal-steed-tomb-kings": [
+    "heavy-cavalry"
+  ],
+  "skeletal-steed-vampire-counts": [
+    "heavy-cavalry"
+  ],
+  "skeleton-archers": [
+    "regular-infantry"
+  ],
+  "skeleton-cavalry-cohort": [
+    "heavy-cavalry"
+  ],
+  "skeleton-chariot": [
+    "light-chariot"
+  ],
+  "skeleton-chariots": [
+    "light-chariot"
+  ],
+  "skeleton-horse-archers": [
+    "light-cavalry"
+  ],
+  "skeleton-horsemen": [
+    "heavy-cavalry"
+  ],
+  "skeleton-infantry-cohort": [
+    "regular-infantry"
+  ],
+  "skeleton-skirmishers": [
+    "regular-infantry"
+  ],
+  "skeleton-warriors-tomb-kings": [
+    "regular-infantry"
+  ],
+  "skeleton-warriors-vampire-counts": [
+    "regular-infantry"
+  ],
+  "skin-wolves": [
+    "monstrous-infantry"
+  ],
+  "skink-chief": [
+    "regular-infantry",
+    "character"
+  ],
+  "skink-priest": [
+    "regular-infantry",
+    "character"
+  ],
+  "skink-skirmishers": [
+    "regular-infantry"
+  ],
+  "skull-cannon-of-khorne": [
+    "heavy-chariot"
+  ],
+  "sky-lantern": [
+    "heavy-chariot"
+  ],
+  "slann-mage-priest": [
+    "monstrous-creature",
+    "character"
+  ],
+  "slaughtermaster": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "slayers": [
+    "regular-infantry"
+  ],
+  "sneaky-gits": [
+    "regular-infantry"
+  ],
+  "snotling-mob": [
+    "swarm"
+  ],
+  "snotling-pump-wagon": [
+    "light-chariot"
+  ],
+  "sorcerer-lord": [
+    "heavy-infantry",
+    "character"
+  ],
+  "sorcerer-prophet": [
+    "heavy-infantry",
+    "character"
+  ],
+  "sorceress": [
+    "regular-infantry",
+    "character"
+  ],
+  "soul-grinder": [
+    "behemoth"
+  ],
+  "spellsinger": [
+    "regular-infantry",
+    "character"
+  ],
+  "spellweaver": [
+    "regular-infantry",
+    "character"
+  ],
+  "spirit-hosts": [
+    "swarm"
+  ],
+  "squires": [
+    "regular-infantry"
+  ],
+  "star-dragon": [
+    "behemoth"
+  ],
+  "state-missile-troops": [
+    "regular-infantry"
+  ],
+  "state-troops": [
+    "regular-infantry"
+  ],
+  "steed-of-slaanesh": [
+    "light-cavalry"
+  ],
+  "stegadon": [
+    "behemoth"
+  ],
+  "stone-troll-mob": [
+    "monstrous-infantry"
+  ],
+  "stonehorn-riders": [
+    "behemoth"
+  ],
+  "stonehorn": [
+    "behemoth"
+  ],
+  "storm-weaver": [
+    "regular-infantry",
+    "character"
+  ],
+  "stormvermin": [
+    "regular-infantry"
+  ],
+  "strategist": [
+    "regular-infantry",
+    "character"
+  ],
+  "strigoi-ghoul-king": [
+    "regular-infantry",
+    "character"
+  ],
+  "sun-dragon": [
+    "behemoth"
+  ],
+  "supreme-sorceress": [
+    "regular-infantry",
+    "character"
+  ],
+  "swordmasters-of-hoeth": [
+    "regular-infantry"
+  ],
+  "sylvan-boar": [
+    "war-beast"
+  ],
+  "temple-guard": [
+    "heavy-infantry"
+  ],
+  "terradon-riders": [
+    "monstrous-cavalry"
+  ],
+  "terradon": [
+    "monstrous-cavalry"
+  ],
+  "terrorgheist-mount": [
+    "behemoth"
+  ],
+  "terrorgheist": [
+    "behemoth"
+  ],
+  "teutogen-guard": [
+    "heavy-infantry"
+  ],
+  "thane": [
+    "heavy-infantry",
+    "character"
+  ],
+  "the-green-knight": [
+    "heavy-cavalry",
+    "named-character"
+  ],
+  "thorgrim-ulleksson": [
+    "heavy-infantry",
+    "named-character"
+  ],
+  "thunderers": [
+    "heavy-infantry"
+  ],
+  "thundertusk-riders": [
+    "behemoth"
+  ],
+  "thundertusk": [
+    "behemoth"
+  ],
+  "tiranoc-chariot": [
+    "light-chariot"
+  ],
+  "tomb-banshee": [
+    "regular-infantry",
+    "character"
+  ],
+  "tomb-guard-chariots": [
+    "light-chariot"
+  ],
+  "tomb-guard": [
+    "regular-infantry"
+  ],
+  "tomb-king": [
+    "regular-infantry",
+    "character"
+  ],
+  "tomb-prince": [
+    "regular-infantry",
+    "character"
+  ],
+  "tomb-scorpion": [
+    "monstrous-creature"
+  ],
+  "tomb-swarms": [
+    "swarm"
+  ],
+  "tree-kin": [
+    "monstrous-infantry"
+  ],
+  "treeman": [
+    "behemoth"
+  ],
+  "treemen-ancient": [
+    "behemoth",
+    "character"
+  ],
+  "troglodon": [
+    "monstrous-creature"
+  ],
+  "troll-hag": [
+    "behemoth",
+    "character"
+  ],
+  "tuskgor-chariot": [
+    "heavy-chariot"
+  ],
+  "tyrant": [
+    "monstrous-infantry",
+    "character"
+  ],
+  "ungor-herd": [
+    "regular-infantry"
+  ],
+  "ungor-ravagers": [
+    "regular-infantry"
+  ],
+  "ungrim-ironfist": [
+    "heavy-infantry",
+    "named-character"
+  ],
+  "unicorn": [
+    "monstrous-cavalry"
+  ],
+  "ushabti": [
+    "monstrous-infantry"
+  ],
+  "vampire-count": [
+    "regular-infantry",
+    "character"
+  ],
+  "vampire-thrall": [
+    "regular-infantry",
+    "character"
+  ],
+  "vargheists": [
+    "monstrous-infantry"
+  ],
+  "varghulf": [
+    "monstrous-creature"
+  ],
+  "venerable-ushabti": [
+    "monstrous-infantry"
+  ],
+  "veteran-freeblades": [
+    "heavy-cavalry"
+  ],
+  "veteran-sellswords": [
+    "regular-infantry"
+  ],
+  "veteran-state-troops": [
+    "regular-infantry"
+  ],
+  "war-altar-of-sigmar": [
+    "heavy-chariot"
+  ],
+  "war-boar": [
+    "heavy-cavalry"
+  ],
+  "war-hydra": [
+    "behemoth"
+  ],
+  "war-lions": [
+    "war-beast"
+  ],
+  "wardancers": [
+    "regular-infantry"
+  ],
+  "warden-of-talsyn": [
+    "regular-infantry",
+    "character"
+  ],
+  "wargor": [
+    "heavy-infantry",
+    "character"
+  ],
+  "warhawk-riders": [
+    "monstrous-cavalry"
+  ],
+  "warhawk": [
+    "monstrous-cavalry"
+  ],
+  "warhoof": [
+    "light-cavalry",
+    "character"
+  ],
+  "warhorse-bretonnia": [
+    "light-cavalry"
+  ],
+  "warhorse-realms-of-men": [
+    "light-cavalry"
+  ],
+  "warhorse-warriors-of-chaos": [
+    "light-cavalry"
+  ],
+  "warlock-engineer": [
+    "regular-infantry",
+    "character"
+  ],
+  "warped-gors": [
+    "regular-infantry"
+  ],
+  "warpfire-dragon": [
+    "behemoth"
+  ],
+  "warplock-jezzails": [
+    "regular-infantry"
+  ],
+  "waystalker": [
+    "regular-infantry",
+    "character"
+  ],
+  "waywatchers": [
+    "regular-infantry"
+  ],
+  "weapon-team": [
+    "regular-infantry"
+  ],
+  "white-lions-of-chrace": [
+    "regular-infantry"
+  ],
+  "wight-king": [
+    "regular-infantry",
+    "character"
+  ],
+  "wight-lord": [
+    "regular-infantry",
+    "character"
+  ],
+  "wild-riders": [
+    "light-cavalry"
+  ],
+  "wildwood-rangers": [
+    "regular-infantry"
+  ],
+  "winged-warsphinx": [
+    "behemoth"
+  ],
+  "witch-elves": [
+    "regular-infantry"
+  ],
+  "witch-hunter": [
+    "regular-infantry",
+    "character"
+  ],
+  "wizard-lord": [
+    "regular-infantry",
+    "character"
+  ],
+  "wyvern": [
+    "monstrous-creature"
+  ],
+  "yeomen-guard": [
+    "regular-infantry"
+  ],
+  "yhetees": [
+    "monstrous-infantry"
+  ],
+  "zombie-dragon": [
+    "behemoth"
+  ],
+  "zombies": [
+    "regular-infantry"
+  ]
+}

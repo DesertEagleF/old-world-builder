@@ -2,12 +2,15 @@
 const fs = require('fs');
 const path = require('path');
 
-// 使用与smoke-test.js相同的artifact目录配置
+// Artifact directory: always use the project's build directory to keep
+// outputs local and deterministic (do not depend on CI environment vars).
 const projectRoot = path.resolve(__dirname, '..');
 const buildDir = path.join(projectRoot, 'build');
-const artifactDir = process.env.CI_PROJECT_DIR ? 
-  path.join(process.env.CI_PROJECT_DIR, 'dist') : 
-  path.join(projectRoot, 'build');
+const artifactDir = path.join(projectRoot, 'build');
+// Debug: print resolved paths so we can verify where outputs are written
+console.log('merge-build: projectRoot =', projectRoot);
+console.log('merge-build: buildDir    =', buildDir);
+console.log('merge-build: artifactDir =', artifactDir);
 
 function safeReadDir(dir) {
   try {
@@ -40,12 +43,18 @@ function concatFiles(dir, files, outPath, filterOutRegex) {
 
 function copyBuildToArtifact() {
   try {
-    // 如果artifact目录已存在，先清空
+    // 如果artifact目录已存在，先清空（仅当 artifactDir 与 buildDir 不同）
     if (fs.existsSync(artifactDir)) {
-      fs.rmSync(artifactDir, { recursive: true, force: true });
+      if (path.resolve(artifactDir) !== path.resolve(buildDir)) {
+        fs.rmSync(artifactDir, { recursive: true, force: true });
+      } else {
+        // artifactDir === buildDir: do not remove the build directory itself.
+        // We'll operate in-place to avoid deleting the freshly generated output.
+        console.log('merge-build: artifactDir === buildDir; skipping removal to preserve build output.');
+      }
     }
-    
-    // 复制整个build目录到artifact目录
+
+    // 复制整个build目录到artifact目录（如果源和目标不同）
     const copyRecursive = (src, dest) => {
       const entries = fs.readdirSync(src, { withFileTypes: true });
       for (const entry of entries) {
@@ -61,9 +70,14 @@ function copyBuildToArtifact() {
     };
     
     if (fs.existsSync(buildDir)) {
-      fs.mkdirSync(artifactDir, { recursive: true });
-      copyRecursive(buildDir, artifactDir);
-      console.log(`Copied build files to artifact directory: ${artifactDir}`);
+      if (path.resolve(artifactDir) !== path.resolve(buildDir)) {
+        fs.mkdirSync(artifactDir, { recursive: true });
+        copyRecursive(buildDir, artifactDir);
+        console.log(`Copied build files to artifact directory: ${artifactDir}`);
+      } else {
+        // artifactDir is the same as buildDir; nothing to copy.
+        console.log('merge-build: using build directory in-place as artifact directory');
+      }
     } else {
       console.error('Build directory not found, run `npm run build` first');
       process.exit(1);

@@ -75,7 +75,7 @@ export const itemsUsedElsewhere = (items, list, excludeId) => {
                   errors.push({
                     itemName: item.name_en,
                     unit: unit,
-                    url: `/editor/${list.id}/${category}/${unit.id}/items/${itemGroup}`,
+                    url: `?editor.${list.id}.${category}.${unit.id}.items.${itemGroup}`,
                   });
                 }
               }
@@ -91,7 +91,7 @@ export const itemsUsedElsewhere = (items, list, excludeId) => {
                     errors.push({
                       itemName: item.name_en,
                       unit: unit,
-                      url: `/editor/${list.id}/${category}/${unit.id}/magic/${commandGroup}`,
+                      url: `?editor.${list.id}.${category}.${unit.id}.magic.${commandGroup}`,
                     });
                   }
                 }
@@ -147,7 +147,7 @@ export const runeLoadoutElsewhere = (runes, list, excludeId) => {
             if (targetItemRunes.length > 0) {
               collectedItemRunes.push({
                 itemRunes: targetItemRunes,
-                url: `/editor/${list.id}/${category}/${unit.id}/items/${itemGroup}`,
+                url: `?editor.${list.id}.${category}.${unit.id}.items.${itemGroup}`,
               });
             }
           }
@@ -164,7 +164,7 @@ export const runeLoadoutElsewhere = (runes, list, excludeId) => {
               if (targetItemRunes.length > 0) {
                 collectedItemRunes.push({
                   itemRunes: targetItemRunes,
-                  url: `/editor/${list.id}/${category}/${unit.id}/magic/${commandGroup}`,
+                  url: `?editor.${list.id}.${category}.${unit.id}.magic.${commandGroup}`,
                 });
               }
             }

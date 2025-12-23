@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect, Fragment } from "react";
 import { useParams, useLocation, Redirect } from "react-router-dom";
+import { queryParts } from "../../utils/query";
 import { useDispatch, useSelector } from "react-redux";
 import { FormattedMessage, useIntl } from "react-intl";
 import classNames from "classnames";
@@ -44,14 +45,36 @@ export const Unit = ({ isMobile, previewData = {} }) => {
   const isPreview = Boolean(previewData?.type);
   const { type: previewType, unit: previewUnit } = previewData;
   const MainComponent = isMobile ? Main : Fragment;
-  const { listId, type = previewType, unitId } = useParams();
+  const params = useParams() || {};
+  let { listId, type = previewType, unitId } = params;
   const dispatch = useDispatch();
   const { language } = useLanguage();
   const [redirect, setRedirect] = useState(null);
   const location = useLocation();
+
+  // Fallback to parse query-style routes like ?editor.<listId>.<type>.<unitId>
+  if (!listId || !unitId || !type) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === "editor") {
+        listId = listId || parts[1];
+        type = type || parts[2] || type;
+        // unitId may contain dots; collect parts until a sentinel token
+        const sentinels = ["magic", "rename", "items", "edit", "export", "duplicate", "add", "patches", "details", "print", "game-view"];
+        let endIdx = parts.length;
+        for (let i = 3; i < parts.length; i++) {
+          if (sentinels.includes(parts[i])) {
+            endIdx = i;
+            break;
+          }
+        }
+        unitId = unitId || parts.slice(3, endIdx).join('.');
+      }
+    } catch (e) {}
+  }
   const intl = useIntl();
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
   const gameSystems = getGameSystems();
   const game = gameSystems.find((game) => game.id === list?.game);
@@ -502,7 +525,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         );
       } else {
         fetcher({
-          url: `games/${list.game}/${list.army}`,
+          url: `${list.army}`,
           onSuccess: (data) => {
             dispatch(
               setArmy(
@@ -519,21 +542,21 @@ export const Unit = ({ isMobile, previewData = {} }) => {
   }, [list, army, dispatch, game]);
 
   if (redirect === true) {
-    return <Redirect to={`/editor/${listId}`} />;
+    return <Redirect to={`?editor.${listId}`} />;
   }
 
   if (!unit || (!army && !isPreview)) {
     if (isMobile) {
       return (
         <>
-          <Header to={`/editor/${listId}`} />
+          <Header to={`?editor.${listId}`} />
           <Main loading />
         </>
       );
     } else {
       return (
         <>
-          <Header to={`/editor/${listId}`} isSection />
+          <Header to={`?editor.${listId}`} isSection />
           <Main loading />
         </>
       );
@@ -546,7 +569,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         id: "misc.rename",
       }),
       icon: "edit",
-      to: `/editor/${listId}/${type}/${unit.id}/rename`,
+      to: `?editor.${listId}.${type}.${unit.id}.rename`,
     },
     {
       name: intl.formatMessage({
@@ -583,7 +606,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
 
       {isMobile && (
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           moreButton={moreButtons}
           headline={getUnitName({ unit, language })}
           headlineIcon={
@@ -607,7 +630,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         {!isMobile && (
           <Header
             isSection
-            to={isPreview ? "" : `/editor/${listId}`}
+            to={isPreview ? "" : `?editor.${listId}`}
             moreButton={isPreview ? null : moreButtons}
             headline={getUnitName({ unit, language })}
             headlineIcon={
@@ -770,7 +793,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
                         <>
                           <hr className="unit__hr" />
                           <ListItem
-                            to={`/editor/${listId}/${type}/${unitId}/magic/${index}`}
+                            to={`?editor.${listId}.${type}.${unitId}.magic.${index}`}
                             className="editor__list unit__link unit__command-list"
                             active={location.pathname.includes(
                               `magic/${index}`
@@ -1828,7 +1851,7 @@ export const Unit = ({ isMobile, previewData = {} }) => {
 
               return (
                 <ListItem
-                  to={`/editor/${listId}/${type}/${unitId}/items/${itemIndex}`}
+                  to={`?editor.${listId}.${type}.${unitId}.items.${itemIndex}`}
                   className="editor__list unit__link"
                   active={location.pathname.includes(`items/${itemIndex}`)}
                   key={itemIndex}

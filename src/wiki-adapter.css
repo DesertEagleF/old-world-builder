@@ -1,0 +1,123 @@
+/* Wiki Page Adapter Styles
+ * 这些样式用于将应用适配到wiki页面中
+ * 只有当body有wiki-environment类或检测到wiki环境时，这些样式才会生效
+ */
+
+/* 只在wiki环境中应用这些样式 */
+body.wiki-environment,
+body.wiki-environment .old-world-builder-app {
+  /* 调整头部位置 - 移除固定定位以避免与wiki导航冲突 */
+}
+
+body.wiki-environment .old-world-builder-app {
+  /* 调整整体布局 */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+/* 调整头部样式以适应wiki - 覆盖原有的固定定位 */
+body.wiki-environment .old-world-builder-app .header {
+  position: relative !important; /* 覆盖固定定位 */
+  top: auto !important;
+  left: auto !important;
+  width: 100% !important;
+  z-index: 1; /* 降低z-index以避免覆盖wiki元素 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* 确保主内容区域不会被固定头部遮挡 */
+body.wiki-environment .old-world-builder-app main,
+body.wiki-environment .old-world-builder-app .main {
+  margin-top: 0 !important; /* 移除顶部边距 */
+}
+
+/* 调整column-header在wiki中的显示 */
+body.wiki-environment .old-world-builder-app .column-header {
+  position: relative !important;
+  width: 100% !important;
+  margin: 0 0 1rem 0 !important;
+  border-radius: 4px;
+}
+
+/* 响应式调整 - 在移动设备上 */
+@media (max-width: 768px) {
+  body.wiki-environment .old-world-builder-app .header {
+    height: auto; /* 在移动设备上允许更灵活的高度 */
+    padding: 0.75rem 0;
+  }
+
+  body.wiki-environment .old-world-builder-app .header__name-text {
+    font-size: 1.2rem;
+  }
+
+  body.wiki-environment .old-world-builder-app {
+    padding: 5px;
+  }
+}
+
+/* 确保图标在wiki中正确显示 */
+body.wiki-environment .old-world-builder-app .icon {
+  /* 确保图标在小尺寸下也清晰 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* 可选：调整语言切换器在wiki中的显示 */
+body.wiki-environment .old-world-builder-app .header__language-switcher {
+  /* 如果不需要，可以隐藏 */
+  /* display: none; */
+  opacity: 0.8; /* 稍微降低透明度以融入wiki背景 */
+}
+
+/* 调整按钮样式以更好地融入wiki主题 */
+body.wiki-environment .old-world-builder-app .button {
+  /* 可以根据wiki主题调整 */
+  border-radius: 3px;
+}
+
+/* 调整输入框样式 */
+body.wiki-environment .old-world-builder-app .input {
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+/* 特殊处理列表和卡片在wiki中的显示 */
+body.wiki-environment .old-world-builder-app .list,
+body.wiki-environment .old-world-builder-app .list-item {
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+
+/* 调整错误和成功消息的颜色 */
+body.wiki-environment .old-world-builder-app .icon--red {
+  color: #d14500;
+}
+
+body.wiki-environment .old-world-builder-app .icon--green {
+  color: #92b06a;
+}
+
+/* 打印样式调整 */
+@media print {
+  body.wiki-environment .old-world-builder-app .header {
+    position: relative !important;
+    box-shadow: none;
+  }
+
+  body.wiki-environment .old-world-builder-app {
+    padding: 0;
+  }
+}
+
+/* 当在特定wiki主题中时的特殊处理 */
+body.skin-vector.wiki-environment .old-world-builder-app {
+  /* Vector主题特定调整 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body.skin-monobook.wiki-environment .old-world-builder-app {
+  /* Monobook主题特定调整 */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}

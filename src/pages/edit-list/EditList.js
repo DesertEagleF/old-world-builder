@@ -1,5 +1,6 @@
 import { Fragment, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { queryParts } from "../../utils/query";
 import { useSelector, useDispatch } from "react-redux";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
@@ -20,7 +21,15 @@ export const EditList = ({ isMobile }) => {
   const location = useLocation();
   const intl = useIntl();
   const MainComponent = isMobile ? Main : Fragment;
-  const { listId } = useParams();
+  const params = useParams() || {};
+  let { listId } = params;
+  // fallback for query-style routes like ?editor.<listId>
+  if (!listId) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === 'editor') listId = parts[1];
+    } catch (e) {}
+  }
   const { language } = useLanguage();
   const dispatch = useDispatch();
   const compositionRules = [
@@ -42,7 +51,7 @@ export const EditList = ({ isMobile }) => {
     },
   ];
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
 
   const handlePointsChange = (event) => {
@@ -90,7 +99,7 @@ export const EditList = ({ isMobile }) => {
     return (
       <>
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "edit.title",
           })}
@@ -108,7 +117,7 @@ export const EditList = ({ isMobile }) => {
 
       {isMobile && (
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "edit.title",
           })}
@@ -119,7 +128,7 @@ export const EditList = ({ isMobile }) => {
         {!isMobile && (
           <Header
             isSection
-            to={`/editor/${listId}`}
+            to={`?editor.${listId}`}
             headline={intl.formatMessage({
               id: "edit.title",
             })}

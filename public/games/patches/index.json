@@ -1,6 +1,8 @@
-[
-    {
-        "id": "yefeng",
-        "type": "patch"
-    }
-]
+{
+    "patches": [
+        {
+            "id": "yefeng",
+            "type": "patch"
+        }
+    ]
+}

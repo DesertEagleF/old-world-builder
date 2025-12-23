@@ -8,8 +8,8 @@ export const Expandable = ({
   className,
   headline,
   children,
-  notBold,
-  open,
+  notBold = false,
+  open = false,
   onClick,
   noMargin,
 }) => (
@@ -43,7 +43,4 @@ Expandable.propTypes = {
   notBold: PropTypes.bool,
 };
 
-Expandable.defaultProps = {
-  open: false,
-  notBold: false,
-};
+// defaults provided via parameter defaults

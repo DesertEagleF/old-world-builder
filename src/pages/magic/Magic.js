@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
+import { queryParts } from '../../utils/query';
 import { useDispatch, useSelector } from "react-redux";
 import { FormattedMessage, useIntl } from "react-intl";
 import classNames from "classnames";
@@ -59,10 +60,40 @@ export const Magic = ({ isMobile }) => {
   const location = useLocation();
   const { language } = useLanguage();
   const intl = useIntl();
-  const { listId, type, unitId, command, group } = useParams();
+  const params = useParams() || {};
+  let { listId, type, unitId, command, group } = params;
+  // fallback to support query-style routes like ?editor.<listId>.<type>.<unitId>.magic.<command>
+  if (!listId || !type || !unitId) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === 'editor') {
+        listId = listId || parts[1];
+        type = type || parts[2];
+        // unitId may contain dots; collect parts until sentinel (magic/items/rename/etc.)
+        const sentinels = ['magic', 'items', 'rename', 'edit', 'export', 'duplicate', 'add', 'patches', 'details', 'print', 'game-view'];
+        let cutoff = parts.length;
+        for (let i = 3; i < parts.length; i++) {
+          if (sentinels.includes(parts[i])) {
+            cutoff = i;
+            break;
+          }
+        }
+        unitId = unitId || parts.slice(3, cutoff).join('.');
+
+        const magicIdx = parts.indexOf('magic');
+        const itemsIdx = parts.indexOf('items');
+        if (magicIdx > -1 && parts[magicIdx + 1]) {
+          command = command || parts[magicIdx + 1];
+        }
+        if (itemsIdx > -1 && parts[itemsIdx + 1]) {
+          group = group || parts[itemsIdx + 1];
+        }
+      }
+    } catch (e) {}
+  }
   const dispatch = useDispatch();
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
   const units = list ? list[type] : null;
   const unit = units && units.find(({ id }) => id === unitId);
@@ -301,7 +332,7 @@ export const Magic = ({ isMobile }) => {
     if (army && list && unit && !items) {
       (async () => {
         const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
-        const data = await loadAndMergeBaseWithPatches('games/the-old-world/magic-items', patchIds, 'magic-items.json');
+        const data = await loadAndMergeBaseWithPatches('data-magic-items', patchIds, 'magic-items');
 
         let itemCategories = army.items;
 
@@ -316,7 +347,6 @@ export const Magic = ({ isMobile }) => {
 
         const allItems = itemCategories.map((itemCategory) => ({
           items: data ? data[itemCategory] : [],
-          name_de: nameMap[itemCategory].name_de,
           name_en: nameMap[itemCategory].name_en,
           id: itemCategory,
         }));
@@ -331,14 +361,14 @@ export const Magic = ({ isMobile }) => {
     if (isMobile) {
       return (
         <>
-          <Header to={`/editor/${listId}/${type}/${unitId}`} />
+          <Header to={`?editor.${listId}.${type}.${unitId}`} />
           <Main loading />
         </>
       );
     } else {
       return (
         <>
-          <Header to={`/editor/${listId}/${type}/${unitId}`} isSection />
+          <Header to={`?editor.${listId}.${type}.${unitId}`} isSection />
           <Main loading />
         </>
       );
@@ -504,7 +534,7 @@ export const Magic = ({ isMobile }) => {
       {isMobile && (
         <>
           <Header
-            to={`/editor/${listId}/${type}/${unitId}`}
+            to={`?editor.${listId}.${type}.${unitId}`}
             headline={
               unit?.items?.length && !unit?.command?.length
                 ? unit.items[group][`name_${language}`] ||
@@ -531,7 +561,7 @@ export const Magic = ({ isMobile }) => {
         {!isMobile && (
           <Header
             isSection
-            to={`/editor/${listId}/${type}/${unitId}`}
+            to={`?editor.${listId}.${type}.${unitId}`}
             headline={
               unit?.items?.length && !unit?.command?.length
                 ? unit.items[group][`name_${language}`] ||

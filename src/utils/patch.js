@@ -4,6 +4,8 @@
  * @param {any} patch - The patch data
  * @returns {any} The merged result
  */
+import { getJson } from './resourceLoader';
+
 export function mergePatch(base, patch, patchId = null) {
     // Support top-level operator objects on the patch itself
     if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
@@ -181,6 +183,39 @@ function deepClone(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
+// Resolve an asset path relative to the app's public URL or document base.
+function resolveAssetUrl(relPath) {
+    // Normalize relPath (allow leading slash or not)
+    const p = String(relPath || '').replace(/^\/*/, '');
+    if (typeof window === 'undefined') return '/' + p;
+
+    // Prefer injected PUBLIC_URL, fall back to document base or current location
+    let pub = '';
+    try {
+        if (window.__APP_PUBLIC_URL__ && window.__APP_PUBLIC_URL__ !== '%PUBLIC_URL%') pub = String(window.__APP_PUBLIC_URL__);
+    } catch (e) {}
+    if (!pub && typeof process !== 'undefined' && process.env && process.env.PUBLIC_URL) pub = process.env.PUBLIC_URL;
+
+    let base;
+    try {
+        if (pub) {
+            // Make pub absolute relative to current location if necessary
+            base = new URL(pub.replace(/\/$/, '') + '/', window.location.href).href;
+        } else {
+            const baseEl = (typeof document !== 'undefined' && document.querySelector) ? document.querySelector('base') : null;
+            base = baseEl && baseEl.href ? baseEl.href : window.location.href;
+        }
+    } catch (e) {
+        base = window.location.href;
+    }
+
+    try {
+        return new URL(p, base).href;
+    } catch (e) {
+        return '/' + p;
+    }
+}
+
 // --- Patch index cache ---
 let _patchIndexCache = null;
 let _patchIndexPromise = null;
@@ -194,13 +229,31 @@ export async function loadPatchIndex(forceReload = false) {
     if (!forceReload && _patchIndexPromise) return _patchIndexPromise;
     _patchIndexPromise = (async () => {
         try {
-            const res = await fetch('/games/patches/index.json');
-            if (!res.ok) return [];
-            const json = await res.json();
-            if (!Array.isArray(json)) return [];
-            _patchIndexCache = json;
-            return json;
+                const json = await getJson('patches');
+            if (!json) return [];
+
+            // Support multiple shapes for index.json:
+            // - legacy: top-level array: [ {id, type, ...}, ... ]
+            // - new hosted format: { patches: [ ... ] }
+            // - mapping: { "id": { type, meta... }, ... }
+            let entries = [];
+            if (Array.isArray(json)) {
+                entries = json;
+            } else if (json && Array.isArray(json.patches)) {
+                entries = json.patches;
+            } else if (json && typeof json === 'object') {
+                // treat object as map of id -> entry
+                entries = Object.keys(json).map(k => {
+                    const v = json[k];
+                    if (v && typeof v === 'object') return { id: k, ...v };
+                    return { id: k, type: 'patch' };
+                });
+            }
+
+            _patchIndexCache = Array.isArray(entries) ? entries : [];
+            return _patchIndexCache;
         } catch (e) {
+            console.warn('Error loading patch index via resourceLoader:', e);
             return [];
         } finally {
             _patchIndexPromise = null;
@@ -252,10 +305,8 @@ export async function loadExternalRulePatches() {
         if (!Array.isArray(index) || index.length === 0) return [];
         const patches = await Promise.all(index.map(async (entry) => {
             try {
-                const path = `/games/patches/${entry.id}/rules.json`;
-                const res = await fetch(path);
-                if (!res.ok) return { id: entry.id, type: entry.type || 'patch', data: null };
-                const data = await res.json();
+                const data = await getJson(`patches-${entry.id}-rules`);
+                if (!data) return { id: entry.id, type: entry.type || 'patch', data: null };
                 return { id: entry.id, type: entry.type || 'patch', data };
             } catch (e) {
                 return { id: entry.id, type: entry.type || 'patch', data: null };
@@ -307,10 +358,8 @@ export async function loadPatchesByIds(ids = []) {
         const results = await Promise.all(ids.map(async (id) => {
             const entry = map[id] || { id, type: 'patch' };
             try {
-                const path = `/games/patches/${id}/rules.json`;
-                const res = await fetch(path);
-                if (!res.ok) return { id, type: entry.type || 'patch', data: null };
-                const data = await res.json();
+                const data = await getJson(`patches.${id}.rules`);
+                if (!data) return { id, type: entry.type || 'patch', data: null };
                 return { id, type: entry.type || 'patch', data };
             } catch (e) {
                 return { id, type: entry.type || 'patch', data: null };
@@ -359,10 +408,10 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
         const results = await Promise.all(ids.map(async (id) => {
             const entry = map[id] || { id, type: 'patch' };
             try {
-                const path = `/games/patches/${id}/${filename}`;
-                const res = await fetch(path);
-                if (!res.ok) return { id, type: entry.type || 'patch', data: null };
-                const data = await res.json();
+                // map to new dot-style key: patches.<id>.<filename-without-extension>
+                const key = `patches.${id}.${String(filename || '').replace(/\.json$/, '')}`;
+                const data = await getJson(key);
+                if (!data) return { id, type: entry.type || 'patch', data: null };
                 return { id, type: entry.type || 'patch', data };
             } catch (e) {
                 return { id, type: entry.type || 'patch', data: null };
@@ -386,15 +435,14 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
  */
 export async function loadAndMergeBaseWithPatches(basePath, patchIds = [], filename = null) {
     // determine filename if not provided
-    const baseUrl = `/${basePath}.json`;
-    const fileName = filename || basePath.split('/').pop() + '.json';
+    const baseUrl = resolveAssetUrl(basePath);
+    const fileName = filename || basePath.split('/').pop();// + '.json'
 
     // load base
     let baseData = null;
     try {
-        const res = await fetch(baseUrl);
-        if (!res.ok) return null;
-        baseData = await res.json();
+        baseData = await getJson(`${basePath}`);
+        if (!baseData) return null;
     } catch (e) {
         return null;
     }
@@ -439,6 +487,8 @@ export function mergeGameSystemsWithPatches(gameSystems, patchList, gameId) {
                 if (idx !== -1) {
                     // Record $append source if present
                     if (patchArmy.armyComposition) {
+                        console.log(patchArmy);
+                        console.log(patchArmy.armyComposition);
                         Object.entries(patchArmy.armyComposition).forEach(([op, arr]) => {
                             if (op === '$append') {
                                 if (Array.isArray(arr)) {

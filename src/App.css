@@ -1,7 +1,7 @@
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  --font-size: 16px;
+  --font-size: 14px;
   --color-font: #1c242f;
   --color-font-medium: #ccc;
   --color-font-light: #f6fffd;
@@ -322,4 +322,45 @@ hr {
   position: absolute;
   background-color: var(--color-list);
   height: 100%;
+}
+
+.radio input[type="radio"],.radio-inline input[type="radio"],.checkbox input[type="checkbox"],.checkbox-inline input[type="checkbox"] {
+    position: absolute;
+    margin-left:0;
+    margin-top: 4px \9;
+}
+
+.mw-content-ltr ul, .mw-content-rtl .mw-content-ltr ul{
+    margin:0;
+}
+
+.mw-content-ltr ol, .mw-content-rtl .mw-content-ltr ol{
+    margin:0;
+}
+
+.header-2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.home__headline{
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.home__folder-name{
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.page-Editor ol {
+  margin:0!important;
+}
+
+.page-Editor ul {
+  margin:0!important;
+}
+
+.page-Editor li { 
+  margin:0!important;
 }

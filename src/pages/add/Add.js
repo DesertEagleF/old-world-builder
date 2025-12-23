@@ -19,6 +19,7 @@ import { fetcher } from "../../utils/fetcher";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
 
 import { nameMap } from "../magic";
+import { queryParts } from "../../utils/query";
 
 import "./Add.css";
 
@@ -27,7 +28,8 @@ let allMercenaries = [];
 
 export const Add = ({ isMobile }) => {
   const MainComponent = isMobile ? Main : Fragment;
-  const { listId, type } = useParams();
+  const params = useParams() || {};
+  let { listId, type } = params;
   const dispatch = useDispatch();
   const [redirect, setRedirect] = useState(null);
   const [alliesLoaded, setAlliesLoaded] = useState(0);
@@ -35,8 +37,23 @@ export const Add = ({ isMobile }) => {
   const intl = useIntl();
   const location = useLocation();
   const { language } = useLanguage();
+  // fallback parse for query-style routes like ?editor.<listId>.<type>
+  if (!listId || !type) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === "editor") {
+        listId = listId || parts[1];
+        // route is ?editor.<listId>.add.<type>
+        if (parts[2] === 'add') {
+          type = type || parts[3];
+        } else {
+          type = type || parts[2];
+        }
+      }
+    } catch (e) {}
+  }
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
   const gameSystems = getGameSystems();
   const army = useSelector((state) => state.army);
@@ -121,7 +138,7 @@ export const Add = ({ isMobile }) => {
         );
       } else {
         fetcher({
-          url: `games/${list.game}/${list.army}`,
+          url: `${list.army}`,
           onSuccess: (data) => {
             dispatch(
               setArmy(
@@ -158,7 +175,7 @@ export const Add = ({ isMobile }) => {
         } else {
           (async () => {
             const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
-            const data = await loadAndMergeBaseWithPatches(`games/the-old-world/${army}`, patchIds, `${army}.json`);
+            const data = await loadAndMergeBaseWithPatches(`data-${army}`, patchIds, army);
             const armyData = getArmyData({
               data,
               armyComposition: armyComposition || army,
@@ -209,7 +226,7 @@ export const Add = ({ isMobile }) => {
           } else {
             (async () => {
               const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
-              const data = await loadAndMergeBaseWithPatches(`games/the-old-world/${mercenary.army}`, patchIds, `${mercenary.army}.json`);
+              const data = await loadAndMergeBaseWithPatches(`data-${mercenary.army}`, patchIds, mercenary.army);
               const armyData = getArmyData({
                 data,
                 armyComposition: mercenary.army,
@@ -234,7 +251,7 @@ export const Add = ({ isMobile }) => {
   }, [list, army, allies, type]);
 
   if (redirect) {
-    return <Redirect to={`/editor/${listId}/${type}/${redirect}`} />;
+    return <Redirect to={`?editor.${listId}.${type}.${redirect}`} />;
   }
 
   if (
@@ -252,14 +269,14 @@ export const Add = ({ isMobile }) => {
     if (isMobile) {
       return (
         <>
-          <Header to={`/editor/${listId}`} />
+          <Header to={`?editor.${listId}`} />
           <Main loading />
         </>
       );
     } else {
       return (
         <>
-          <Header to={`/editor/${listId}`} isSection />
+          <Header to={`?editor.${listId}`} isSection />
           <Main loading />
         </>
       );
@@ -274,7 +291,7 @@ export const Add = ({ isMobile }) => {
 
       {isMobile && (
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "add.title",
           })}
@@ -287,7 +304,7 @@ export const Add = ({ isMobile }) => {
         {!isMobile && (
           <Header
             isSection
-            to={`/editor/${listId}`}
+            to={`?editor.${listId}`}
             headline={intl.formatMessage({
               id: "add.title",
             })}

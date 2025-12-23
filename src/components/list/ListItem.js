@@ -11,7 +11,6 @@ export const ListItem = forwardRef(
     ref
   ) => {
     const Component = to ? Link : "button";
-
     return (
       <li
         {...attributes}

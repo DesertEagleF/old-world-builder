@@ -60,7 +60,7 @@ export const Import = ({ isMobile }) => {
 
   return (
     <>
-      {redirect && <Redirect to={`/editor/${redirect}`} />}
+      {redirect && <Redirect to={`?editor.${redirect}`} />}
 
       {isMobile && (
         <Header to="/" headline={intl.formatMessage({ id: "import.title" })} />

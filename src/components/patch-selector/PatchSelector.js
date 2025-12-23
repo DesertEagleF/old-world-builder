@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Button } from '../button';
 import { loadPatchIndex, reloadPatchIndex } from '../../utils/patch';
+import { getJson } from '../../utils/resourceLoader';
 import patchState from '../../utils/patchState';
 import { useLanguage } from '../../utils/useLanguage';
 import { useHistory } from 'react-router-dom';
@@ -33,14 +34,14 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
         let dependencies = null;
         // try locale first
         try {
-          const res = await fetch(`../../games/patches/${id}/locale.json`);
-          if (res.ok) {
-            locale = await res.json();
+          const l = await getJson(`patches-${id}-locale`);
+          if (l) {
+            locale = l;
             if (locale && locale['patch-name']) {
               // prefer current language, fall back to en, then any available string
-              const l = locale['patch-name'];
+              const l2 = locale['patch-name'];
               const langKey = `name_${language}`;
-              displayName = (l && (l[langKey] || l.name_en || Object.values(l).find(v => typeof v === 'string'))) || displayName;
+              displayName = (l2 && (l2[langKey] || l2.name_en || Object.values(l2).find(v => typeof v === 'string'))) || displayName;
             }
             // notify parent about locale map incrementally
             onLocaleMapChange(prev => ({ ...(prev || {}), ...(locale || {}) }));
@@ -50,19 +51,16 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
         }
         // try reading lightweight patch.json for name/brief/dependencies if present
         try {
-          const pres = await fetch(`../../games/patches/${id}/patch.json`);
-          if (pres.ok) {
-            const pjson = await pres.json();
-            if (pjson) {
-              patchMeta = patchMeta || pjson.meta || null;
-              name = pjson.name || null;
-              brief = pjson.brief || null;
-              dependencies = pjson.dependencies || pjson.meta?.dependencies || null;
-              // prefer locale name if available, else name.name_en
-              if (!locale && name) {
-                const langKey = `name_${language}`;
-                displayName = name[langKey] || name.name_en || Object.values(name).find(v => typeof v === 'string') || displayName;
-              }
+          const pjson = await getJson(`patches-${id}-patch`);
+          if (pjson) {
+            patchMeta = patchMeta || pjson.meta || null;
+            name = pjson.name || null;
+            brief = pjson.brief || null;
+            dependencies = pjson.dependencies || pjson.meta?.dependencies || null;
+            // prefer locale name if available, else name.name_en
+            if (!locale && name) {
+              const langKey = `name_${language}`;
+              displayName = name[langKey] || name.name_en || Object.values(name).find(v => typeof v === 'string') || displayName;
             }
           }
         } catch (e) {
@@ -264,12 +262,11 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
       const objects = await Promise.all(ids.map(async (id) => {
         try {
           const entry = (metaIndex || []).find(e => e.id === id) || { id, type: 'patch' };
-          const path = entry.type === 'full' ? `../../games/patches/${id}/full.json` : `../../games/patches/${id}/patch.json`;
-          const res = await fetch(path);
-          const data = res.ok ? await res.json() : {};
+          const path = entry.type === 'full' ? `patches-${id}-full` : `patches-${id}-patch`;
+          const data = (await getJson(path)) || {};
           // try locale
           let locale = null;
-          try { const lres = await fetch(`../../games/patches/${id}/locale.json`); if (lres.ok) locale = await lres.json(); } catch (e) {}
+          try { locale = await getJson(`patches-${id}-locale`); } catch (e) {}
           let displayName = id;
           if (locale && locale['patch-name']) {
             const l = locale['patch-name'];
@@ -295,7 +292,7 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
     setIsReloading(true);
     try {
       await reloadPatchIndex();
-  await loadAll();
+      await loadAll();
       // notify parent that available list changed only via locale merging; actual applied objects stay until confirmed
       // If appliedIds include ids no longer present, we keep them until user confirms reset or confirm again.
     } finally {
@@ -363,7 +360,7 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
                       icon="preview"
                       color="dark"
                       label={`Details ${entry.id}`}
-                      onClick={() => history.push(`/new/patches/details/${entry.id}`)}
+                      onClick={() => history.push(`?new.patches.details.${entry.id}`)}
                     />
                     <Button
                       type="text"

@@ -1,5 +1,6 @@
 import { useEffect, Fragment, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { queryParts } from '../../utils/query';
 import { useSelector } from "react-redux";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
@@ -34,7 +35,15 @@ export const Export = ({ isMobile }) => {
   const intl = useIntl();
   const location = useLocation();
   const { language } = useLanguage();
-  const { listId } = useParams();
+  const params = useParams() || {};
+  let { listId } = params;
+  // fallback for ?editor.<listId> style
+  if (!listId) {
+    try {
+      const parts = queryParts(location.search);
+      if (parts[0] === 'editor' || parts[0] === 'print') listId = parts[1];
+    } catch (e) {}
+  }
   const [hideItems, setHideItems] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -47,7 +56,7 @@ export const Export = ({ isMobile }) => {
   const [listType, setListType] = useState("regular");
   const [listFormatting, setListFormatting] = useState("text");
   const list = useSelector((state) =>
-    state.lists.find(({ id }) => listId === id)
+    state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
   const listText = list
     ? getListAsText({
@@ -124,7 +133,7 @@ export const Export = ({ isMobile }) => {
 
       {isMobile && (
         <Header
-          to={`/editor/${listId}`}
+          to={`?editor.${listId}`}
           headline={intl.formatMessage({
             id: "export.title",
           })}
@@ -135,7 +144,7 @@ export const Export = ({ isMobile }) => {
         {!isMobile && (
           <Header
             isSection
-            to={`/editor/${listId}`}
+            to={`?editor.${listId}`}
             headline={intl.formatMessage({
               id: "export.title",
             })}
