@@ -253,7 +253,7 @@ export const NewList = ({ isMobile }) => {
                     name_en:
                       journalArmy === army
                         ? intl.formatMessage({ id: "new.grandArmy" })
-                        : nameMap[journalArmy].name_en,
+                        : nameMap[journalArmy][`name_${language}`],
                   })),
                 ]}
                 onChange={handleArcaneJournalChange}
