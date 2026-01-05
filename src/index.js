@@ -8,14 +8,7 @@ import reportWebVitals from "./reportWebVitals";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import { App } from "./App";
 import store from "./store";
-
-import English from "./i18n/en.json";
-import German from "./i18n/de.json";
-import Spanish from "./i18n/es.json";
-import French from "./i18n/fr.json";
-import Italian from "./i18n/it.json";
-import Polish from "./i18n/pl.json";
-import Chinese from "./i18n/cn.json";
+import { getJson } from "./utils/resourceLoader";
 
 const metaDescription = {
   de: "Armeebauer für Warhammer: The Old World.",
@@ -67,21 +60,36 @@ try {
   // and proceed without setting document-level attributes.
 }
 
-let messages;
-if (language === "de") {
-  messages = German;
-} else if (language === "es") {
-  messages = Spanish;
-} else if (language === "fr") {
-  messages = French;
-} else if (language === "it") {
-  messages = Italian;
-} else if (language === "pl") {
-  messages = Polish;
-} else if (language === "cn") {
-  messages = Chinese;
-} else {
-  messages = English;
+// Load i18n messages based on detected language
+async function loadMessages(lang) {
+  const configKey = `i18n-${lang}`;
+
+  // Try to load messages for the detected language
+  const rawMessages = await getJson(configKey);
+  if (rawMessages && Object.keys(rawMessages).length > 0) {
+    // Normalize i18n keys: replace full-width punctuation with regular punctuation
+    // The i18n data uses full-width separators which don't match react-intl's expectations
+    const messages = {};
+    for (const [key, value] of Object.entries(rawMessages)) {
+      const normalizedKey = key.replace(/[．・]/g, '.').replace(/[，、]/g, ',');
+      messages[normalizedKey] = value;
+    }
+    return messages;
+  }
+
+  // Fallback to English if loading fails or messages are empty
+  const rawEnglishMessages = await getJson('i18n-en');
+  if (rawEnglishMessages && Object.keys(rawEnglishMessages).length > 0) {
+    // Apply the same normalization to English messages
+    const englishMessages = {};
+    for (const [key, value] of Object.entries(rawEnglishMessages)) {
+      const normalizedKey = key.replace(/[．・]/g, '.').replace(/[，、]/g, ',');
+      englishMessages[normalizedKey] = value;
+    }
+    return englishMessages;
+  }
+
+  return null;
 }
 
 // Mounting logic: when used as a MediaWiki gadget the host will provide an
@@ -96,6 +104,45 @@ async function waitForElement(id, timeout = 5000, interval = 100) {
     await new Promise((res) => setTimeout(res, interval));
   }
   return null;
+}
+
+// App wrapper that ensures i18n is loaded before rendering
+function AppWithI18n({ messages }) {
+  // Only render the app when messages are actually loaded and non-empty
+  // This prevents showing translation keys instead of translated content
+  if (!messages || Object.keys(messages).length === 0) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px',
+        color: '#666',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+        <div style={{ fontSize: '20px', marginBottom: '8px' }}>Loading translations...</div>
+        <div style={{ fontSize: '14px', color: '#999' }}>
+          Language: {language}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <IntlProvider locale={language} messages={messages}>
+      <ReduxProvider store={store}>
+        <React.StrictMode>
+          <HelmetProvider>
+            <App />
+          </HelmetProvider>
+        </React.StrictMode>
+      </ReduxProvider>
+    </IntlProvider>
+  );
 }
 
 async function mountApp() {
@@ -114,17 +161,92 @@ async function mountApp() {
   }
 
   const root = createRoot(mountEl);
-  root.render(
-    <IntlProvider locale={language} messages={messages}>
-      <ReduxProvider store={store}>
-        <React.StrictMode>
-          <HelmetProvider>
-            <App />
-          </HelmetProvider>
-        </React.StrictMode>
-      </ReduxProvider>
-    </IntlProvider>
-  );
+
+  try {
+    // Load i18n messages BEFORE any rendering
+    const messages = await loadMessages(language);
+
+    // Verify messages are loaded and valid
+    if (!messages || Object.keys(messages).length === 0) {
+      root.render(
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '18px',
+          color: '#c00',
+          textAlign: 'center',
+          padding: '20px',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+          <div style={{ fontSize: '24px', marginBottom: '12px', fontWeight: '600' }}>Failed to load translations</div>
+          <div style={{ fontSize: '14px', color: '#666', maxWidth: '400px', lineHeight: '1.5' }}>
+            Unable to load internationalization data for language: <strong>{language}</strong>.
+            <br /><br />
+            Please check your internet connection and refresh the page.
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              fontSize: '14px',
+              backgroundColor: '#0066cc',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Refresh Page
+          </button>
+        </div>
+      );
+      return;
+    }
+
+    // Only render once, with messages already loaded
+    root.render(<AppWithI18n messages={messages} />);
+  } catch (error) {
+    root.render(
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px',
+        color: '#c00',
+        textAlign: 'center',
+        padding: '20px',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>💥</div>
+        <div style={{ fontSize: '24px', marginBottom: '12px', fontWeight: '600' }}>Application Error</div>
+        <div style={{ fontSize: '14px', color: '#666', maxWidth: '400px', lineHeight: '1.5' }}>
+          An unexpected error occurred while loading the application.
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: '20px',
+            padding: '10px 20px',
+            fontSize: '14px',
+            backgroundColor: '#0066cc',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Refresh Page
+        </button>
+      </div>
+    );
+  }
 }
 
 mountApp();
