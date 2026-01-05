@@ -236,7 +236,7 @@ export const NewList = ({ isMobile }) => {
               source: a.source,
             }))}
             onChange={handleArmyChange}
-            selected="empire-of-man"
+            selected={army}
             spaceBottom
             required
           />
@@ -257,7 +257,7 @@ export const NewList = ({ isMobile }) => {
                   })),
                 ]}
                 onChange={handleArcaneJournalChange}
-                selected={army}
+                selected={armyComposition}
                 spaceBottom
               />
             </>

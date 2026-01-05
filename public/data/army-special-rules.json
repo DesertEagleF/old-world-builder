@@ -1,0 +1,73 @@
+{
+	"city-state-of-nuln": {
+		"big-guns-know-no-fear": {
+			"name_en": "Big Guns Know No Fear",
+			"content_en": "Empire Engineers in a City-state of Nuln army (and any unit they have joined) gain the Immune to Psychology special rule whilst there is a friendly war machine within their Command range.",
+			"name_cn": "无畏炮手",
+			"content_cn": "当努恩城卫军队内的帝国工程师的指挥范围内存在一个友方战争机器时，其和其所加入的单位获得心理免疫特殊规则",
+            "display" : true
+		},
+		"entrenched-position": {
+			"name_en": "Entrenched Position",
+			"content_en": "During deployment, you may ‘Entrench’ a single noncharacter model whose troop type is ‘war machine’ for each Empire Engineer your army includes. An Entrenched war machine is considered to be behind partial cover and to be defending a low linear obstacle. Should the war machine move for any reason (including making a Vanguard move), it is no longer Entrenched.",
+			"name_cn": "壕沟加固",
+			"content_cn": "在部署阶段中，你可以为每个军队中包含的帝国工程师选择一个没有“人物“类型的战争机器模型进行“加固”。一个“加固”了的战争机器模型视为部分掩护且在防守低矮型障碍物后。当这个战争机器模型因为任何原因进行移动后（包括因先锋规则移动），它失去加固效果",
+            "display" : true
+		},
+        "gun-limbers": {
+            "name_en": "Gun Limbers",
+            "content_en": "0-1 war machine per 1,000 points, chosen from the following list, may be given the Vanguard and Veteran special rules:\n- Great Cannon.............................................................+5 points\n- Mortar...........................................................................+5 points\n- Helblaster Volley Gun ...........................................+15 points\n- Helstorm Rocket Battery......................................+10 points",
+            "name_cn": "火炮牵引",
+            "content_cn": "从下表中选择 0-1 战争机器/每 1000 分，其获得先锋和老兵特殊规则:\n- 巨型加农炮........................................................................+5 分\n- 臼炮.......................................................................................+5 分\n- 地狱喷射连环炮 ...........................................................+15 分\n- 地狱风暴火箭炮............................................................+10 分",
+            "display" : false
+        },
+        "handgun-drill": {
+            "name_en": "Handgun Drill",
+            "content_en": "Once per game, each detachment of State Missile Troops in a City-state of Nuln army can fire with one additional rank.",
+            "name_cn": "火枪训练",
+            "content_cn": "一次性能力，努恩城卫军队中的每个远程省兵分遣队可以让额外一排模型进行射击",
+            "display" : true
+        },
+        "nuln-state-troops": {
+            "name_en": "Nuln State Troops",
+            "content_en": "Regiments of Nuln State Troops and Nuln Veteran State troops are made as follows, using the profiles for State Troops and Veteran State Troops in the Empire of Man army list, accompanied by detachments of State Missile Troops:\n• A regiment of Nuln State Troops consists of a regimental\nunit of State Troops, accompanied by 1-2 detachments of\nState Missile Troops and/or Swordsmen.\n• A regiment of Nuln Veteran State Troops consists of a\nregimental unit of Veteran State Troops, accompanied\nby 1-2 detachments of State Missile Troops and/\nor Swordsmen.\n• Each unit of State Troops or Veteran State Troops must be\nequipped with halberds.\n• Each detachment of State Missile Troops must be equipped\nwith handguns.\n• A detachment of Swordsmen consists of State Troops\nequipped with hand weapons and shields.\n• Unlike regular detachments, detachments in a regiment of\nNuln State Troops may upgrade one model to a Sergeant\n(champion) for free.",
+            "name_cn": "努恩省兵",
+            "content_cn": "努恩省兵军团和努恩资深省兵军团组成如下，使用人类帝国军队列表的帝国省兵和资深省兵的面板，由远程省兵分遣队伴同:\n• 一个努恩省兵军团由 1 个省兵主团单位和 1-2个远程省兵和/或剑士分遣队所伴同\n• 一个努恩资深省兵军团由 1 个资深省兵主团单位和 1-2 个远程省兵和/或剑士分遣队所伴同\n• 每个省兵和资深省兵必须装备长戟\n• 每个远程省兵分遣队必须装备火枪\n• 剑士分遣队由装备单手武器和盾的省兵组成\n• 不同于常规分遣队规则，努恩省兵军团的分遣队可以免费将一个模型升级为中士（冠军）",
+            "display" : false
+        },
+        "veteran-outriders": {
+            "name_en": "Veteran Outriders",
+            "content_en": "Missile weapons wielded by Outriders included in a City-state of Nuln army are not subject to the Ponderous special rule.",
+            "name_cn": "资深先驱侍骑",
+            "content_cn": "努恩城卫军队中的先驱侍骑所装备的远程武器不受缓慢特殊规则的限制",
+            "display" : true
+        }
+	},
+    "chaos-dwarfs": {
+        "backstab" : {
+            "name_en": "Backstab",
+            "content_en": "If a unit with this special rule is engaged with an enemy unit’s flank or rear arc, it may re-roll any failed rolls To Hit made against that enemy unit.",
+            "name_cn" : "背刺",
+            "content_cn": "若拥有该特殊规则的单位与敌方单位的侧翼区域或后方区域接战，则攻击该敌方单位时可以重投任意失败的命中掷骰。"
+        },
+        "blackshard-armour" : {
+            "name_en": "Blackshard Armour",
+            "content_en": "A model with this special rule has a 5+ Ward save against any wounds suffered that were caused by an attack that has the Flaming Attacks special rule. In addition, a Wizard with this special rule may wear armour without penalty",
+            "name_cn": "黑铁鳞甲",
+            "content_cn": "拥有该特殊规则的模型获得对具有“火焰攻击”特殊规则的攻击5+特殊保护。此外，具有此特殊规则的法师可以装备护具而不受惩罚。"
+        },
+        "blazing-body": {
+            "name_en": "Blazing Body",
+            "content_en": "At the start of every Combat phase, any model (friend or foe) that is in base contact with this model and that does not also have this special rule suffers a single Strength 3 hit with an AP of -. This hit has the Flaming Attacks special rule. \nNote that any Wounds lost due to these hits do not count towards the combat result.",
+            "name_cn": "炽焰之躯",
+            "content_cn": "每个近战阶段开始时，任何与拥有该特殊规则的模型底盘接触，但却未拥有该特殊规则的模型（不论敌我），都会受到一次S3 AP-，且视为具有“火焰攻击”特殊规则的命中\n注：以此法造成的伤害不会计入战果"
+        },
+        "ensorcelled-weapons" : {
+            "name_en": "Ensorcelled Weapons",
+            "content_en": "A hand weapon carried by a model with this special rule has the Magical Attacks special rule and an Armour Piercing characteristic of -1.\nNote that this special rule only applies to a single, non-magical hand weapon and does not apply to a model’s mount (should it have one). If the model is using two hand weapons or any other sort of weapon, this special rule ceases to apply.",
+            "name_cn": "强化武器",
+            "content_cn": "拥有该特殊规则的模型装备的单手武器视为拥有“魔法攻击”特殊规则和AP 属性为-1\n注：该特殊规则仅适用于一把非魔法的单手武器,且不适用于模型的坐骑(若有的话)。如果模型使用两把单手武器或其他武器，该特殊规则失效"
+        }
+
+    }
+}

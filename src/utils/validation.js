@@ -5,8 +5,8 @@ import { getUnitPoints } from "./points";
 import { getUnitName, getUnitLeadership, getUnitRuleData } from "./unit";
 import { joinWithAnd, joinWithOr } from "./string";
 
-const filterByTroopType = (unit) => {
-  const ruleData = getUnitRuleData(unit.name_en);
+const filterByTroopType = (unit, maps) => {
+  const ruleData = getUnitRuleData(unit.name_en, maps);
   return [
     "MCa",
     "LCa",
@@ -68,7 +68,7 @@ const hasSharedCombinedArmsLimit = (otherUnit, unitToValidate) => {
   );
 };
 
-export const validateList = ({ list, language, intl }) => {
+export const validateList = ({ list, language, intl, maps = {} }) => {
   const errors = [];
   const generals = !list?.characters?.length
     ? []
@@ -97,7 +97,7 @@ export const validateList = ({ list, language, intl }) => {
           list.armyComposition?.includes("renegade")
             ? unit.name_en
             : unit.name_en.replace(" {renegade}", "");
-        const leadership = getUnitLeadership(unitName);
+        const leadership = getUnitLeadership(unitName, maps);
 
         if (leadership && leadership > highestLeadership) {
           highestLeadership = leadership;
@@ -119,7 +119,7 @@ export const validateList = ({ list, language, intl }) => {
       );
 
   const coreUnits = list?.core?.length
-    ? list.core.filter(filterByTroopType).length
+    ? list.core.filter((u) => filterByTroopType(u, maps)).length
     : 0;
   let coreUnitsDetachmentCount = 0;
 
@@ -127,24 +127,24 @@ export const validateList = ({ list, language, intl }) => {
     list.core.forEach((unit) => {
       if (unit.detachments && unit.detachments.length) {
         coreUnitsDetachmentCount +=
-          unit.detachments.filter(filterByTroopType).length;
+          unit.detachments.filter((d) => filterByTroopType(d, maps)).length;
       }
     });
   }
 
   const specialUnits = list?.special?.length
-    ? list.special.filter(filterByTroopType).length
+    ? list.special.filter((u) => filterByTroopType(u, maps)).length
     : 0;
   const rareUnits = list?.rare?.length
-    ? list.rare.filter(filterByTroopType).length
+    ? list.rare.filter((u) => filterByTroopType(u, maps)).length
     : 0;
   const mercUnits = list?.mercenaries?.length
-    ? list.mercenaries.filter(filterByTroopType).length
+    ? list.mercenaries.filter((u) => filterByTroopType(u, maps)).length
     : 0;
   const allyUnits = list?.allies?.length
     ? list.allies
         .filter((unit) => unit.unitType !== "characters")
-        .filter(filterByTroopType).length
+        .filter((u) => filterByTroopType(u, maps)).length
     : 0;
   const generalsCount = generals.length;
   const BSBsCount = BSBs.length;
@@ -207,7 +207,7 @@ export const validateList = ({ list, language, intl }) => {
 
   // General doesn't have highest leadership in the army
   const unitLeadership =
-    generalsCount === 1 && getUnitLeadership(generals[0].name_en);
+    generalsCount === 1 && getUnitLeadership(generals[0].name_en, maps);
 
   generalsCount === 1 &&
     unitLeadership &&

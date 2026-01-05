@@ -34,6 +34,18 @@
 
   "assets-lores-of-magic-with-spells": "https://tow.huijiwiki.com/wiki/Data:lores-of-magic-with-spells.json?action=raw",
   "assets-the-old-world": "https://tow.huijiwiki.com/wiki/Data:the-old-world.json?action=raw",
+  "i18n-en": "https://tow.huijiwiki.com/wiki/Data:en.json?action=raw",
+  "i18n-de": "https://tow.huijiwiki.com/wiki/Data:de.json?action=raw",
+  "i18n-es": "https://tow.huijiwiki.com/wiki/Data:es.json?action=raw",
+  "i18n-fr": "https://tow.huijiwiki.com/wiki/Data:fr.json?action=raw",
+  "i18n-it": "https://tow.huijiwiki.com/wiki/Data:it.json?action=raw",
+  "i18n-pl": "https://tow.huijiwiki.com/wiki/Data:pl.json?action=raw",
+  "i18n-cn": "https://tow.huijiwiki.com/wiki/Data:cn.json?action=raw",
+
+  "rules-additional": "https://tow.huijiwiki.com/wiki/Data:rules-additional.json?action=raw",
+  "rules-synonyms": "https://tow.huijiwiki.com/wiki/Data:rules-synonyms.json?action=raw",
+  "rules-index-export": "https://tow.huijiwiki.com/wiki/Data:rules-index-export.json?action=raw",
+  "army-special-rules": "https://tow.huijiwiki.com/wiki/Data:army-special-rules.json?action=raw",
 
   "flags-china": "https://huiji-public.huijistatic.com/tow/uploads/8/81/China.png",
   "flags-france": "https://huiji-public.huijistatic.com/tow/uploads/d/de/France.png",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { queryParts } from '../../utils/query';
 import { useSelector } from "react-redux";
@@ -13,6 +13,9 @@ import { useLanguage } from "../../utils/useLanguage";
 import { getStats, getUnitName } from "../../utils/unit";
 import { nameMap } from "../magic";
 import { getGameSystems } from "../../utils/game-systems";
+import { useRules } from "../../components/rules-index/rules-map";
+import resourceLoader, { getJson } from "../../utils/resourceLoader";
+import { normalizeRuleName } from "../../utils/string";
 
 import "./Print.css";
 
@@ -31,15 +34,181 @@ export const Print = () => {
   }
   const { language } = useLanguage();
   const intl = useIntl();
+  const { rulesMap, synonyms } = useRules();
   const [isPrinting, setIsPrinting] = useState(false);
   const [isShowList, setIsShowList] = useState(false);
   const [showSpecialRules, setShowSpecialRules] = useState(true);
   const [showPageNumbers, setShowPageNumbers] = useState(false);
   const [showStats, setShowStats] = useState(true);
   const [showCustomNotes, setShowCustomNotes] = useState(true);
+  const [troopTypeSpecialRules, setTroopTypeSpecialRules] = useState(null);
+  const [unitTroopTypeMap, setUnitTroopTypeMap] = useState({});
+  const [armySpecialRules, setArmySpecialRules] = useState([]);
+  const [aggregatedRules, setAggregatedRules] = useState([]);
+  const [loadingAggregatedRules, setLoadingAggregatedRules] = useState(false);
   const list = useSelector((state) =>
     state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (list && list.game === "the-old-world") {
+        try {
+          const [troopTypeData, unitTroopTypeData, armySpecialData] = await Promise.all([
+            getJson("troop-type-special-rules"),
+            getJson("unit-troop-type"),
+            getJson("army-special-rules"),
+          ]);
+          setTroopTypeSpecialRules(troopTypeData || null);
+          setUnitTroopTypeMap(unitTroopTypeData || {});
+
+          // load army special rules for this list
+          const armyKey = list.armyComposition || list.army;
+          const rawArmy = (armySpecialData && armySpecialData[armyKey]) || null;
+          if (rawArmy) {
+            const arr = Object.values(rawArmy).filter((r) => r && r.display !== false).map((r) => ({
+              name_cn: r.name_cn || r.name_en,
+              content_cn: r.content_cn || r.content_en,
+            }));
+            setArmySpecialRules(arr);
+          } else {
+            setArmySpecialRules([]);
+          }
+        } catch (e) {
+          console.error("Print: failed loading supplemental data", e);
+        }
+      } else {
+        // ensure state cleared when not applicable
+        setTroopTypeSpecialRules(null);
+        setUnitTroopTypeMap({});
+        setArmySpecialRules([]);
+      }
+    };
+
+    loadData();
+  }, [list && list.game, list && list.army, list && list.armyComposition]);
+
+  useEffect(() => {
+    // aggregate special rules (unit-level + troop-type) and fetch page contents
+    const loadAggregated = async () => {
+      if (!rulesMap) return;
+      setLoadingAggregatedRules(true);
+
+      const allUnits = [
+        ...(list["characters"] || []),
+        ...(list["lords"] || []),
+        ...(list["heroes"] || []),
+        ...(list["core"] || []),
+        ...(list["special"] || []),
+        ...(list["rare"] || []),
+        ...(list["mercenaries"] || []),
+        ...(list["allies"] || []),
+      ];
+
+      const namesSet = new Map(); // key -> displayName
+
+      const getTroopTypeSpecialRules = (troopType) => {
+        if (!troopTypeSpecialRules || !troopType) return [];
+
+        const typeIdMapping = {
+          "monstrous-creature": "monstrous-creatures",
+          "behemoth": "behemoths",
+        };
+
+        const mappedTypeId = typeIdMapping[troopType] || troopType;
+
+        for (const mainType of troopTypeSpecialRules["troop-types"]) {
+          const types = mainType.types || mainType.typres;
+          if (!types) continue;
+          const foundType = types.find((t) => t.id === mappedTypeId);
+          if (foundType && foundType["special-rules"]) {
+            return foundType["special-rules"];
+          }
+        }
+
+        return [];
+      };
+
+      try {
+        // collect names from unit specialRules
+        allUnits.forEach((unit) => {
+          // unit.specialRules may be object or array or null
+          if (!unit || !unit.specialRules) return;
+          let nameEn = unit.specialRules.name_en || unit.specialRules.name || null;
+          if (!nameEn && Array.isArray(unit.specialRules)) {
+            nameEn = unit.specialRules.map((r) => r.name).join(", ");
+          }
+          if (nameEn) {
+            nameEn.split(/,\s*/).forEach((n) => {
+              const key = normalizeRuleName(n);
+              if (key) namesSet.set(key, n);
+            });
+          }
+
+          // attach troop-type special rules
+          const unitId = (unit.name || unit.unit || "").toLowerCase().replace(/\s+/g, "-");
+          const troopTypes = unitTroopTypeMap[unitId] || [];
+          troopTypes.forEach((tt) => {
+            const ttRules = getTroopTypeSpecialRules(tt) || [];
+            ttRules.forEach((r) => {
+              if (r && r.name) {
+                const key = normalizeRuleName(r.name);
+                if (key) namesSet.set(key, r.name);
+              }
+            });
+          });
+        });
+
+        // for each unique normalized name, attempt to fetch rule page content
+        const cfg = await resourceLoader.loadResourceConfig();
+        const results = [];
+        for (const [key, displayName] of namesSet) {
+          const synonym = synonyms && synonyms[key];
+          const ruleData = (rulesMap && (rulesMap[synonym] || rulesMap[key])) || null;
+          // build url
+          let pageUrl = null;
+          if (ruleData && ruleData.url) {
+            if (/^https?:\/\//i.test(ruleData.url)) pageUrl = ruleData.url;
+            else if (cfg && cfg.absoluteBase) pageUrl = cfg.absoluteBase.replace(/\/$/, "") + "/" + ruleData.url.replace(/^\/*/, "");
+            else pageUrl = ruleData.url;
+          }
+
+          let contentHtml = "";
+          if (pageUrl) {
+            try {
+              const resp = await fetch(pageUrl, { cache: "no-store" });
+              if (resp && resp.ok) {
+                const html = await resp.text();
+                try {
+                  const doc = new DOMParser().parseFromString(html, "text/html");
+                  const body = doc.querySelector(".body-content");
+                  contentHtml = body ? body.innerHTML : "";
+                } catch (e) {
+                  console.warn("Print: failed to parse HTML for", pageUrl, e);
+                }
+              }
+            } catch (e) {
+              console.warn("Print: failed to fetch rule page", pageUrl, e);
+            }
+          }
+
+          results.push({ key, name: displayName, url: pageUrl, content: contentHtml });
+        }
+
+        setAggregatedRules(results);
+      } catch (e) {
+        console.error("Print: error aggregating rules", e);
+        setAggregatedRules([]);
+      } finally {
+        setLoadingAggregatedRules(false);
+      }
+    };
+
+    // only run when rulesMap is loaded
+    if (rulesMap && Object.keys(rulesMap).length > 0) {
+      loadAggregated();
+    }
+  }, [rulesMap, synonyms, troopTypeSpecialRules, unitTroopTypeMap, list]);
 
   if (!list) {
     return (
@@ -138,7 +307,7 @@ export const Print = () => {
     return (
       <ul>
         {units.map((unit) => {
-          const stats = getStats(unit, armyComposition);
+          const stats = getStats(unit, armyComposition, { rulesMap, synonyms });
 
           return (
             <li key={unit.id}>
@@ -163,6 +332,7 @@ export const Print = () => {
                 noMagic: isShowList,
                 pageNumbers: showPageNumbers,
                 armyComposition,
+                maps: { rulesMap, synonyms },
               })}
               {showSpecialRules && unit.specialRules ? (
                 <>
@@ -248,6 +418,7 @@ export const Print = () => {
       </ul>
     );
   };
+  
 
   return (
     <>
@@ -295,92 +466,128 @@ export const Print = () => {
           {armyCompositionName ? `, ${armyCompositionName}` : ""},{" "}
           <FormattedMessage id={`misc.${list.compositionRule || "open-war"}`} />
         </p>
+        <div className="print__columns">
+          <div className="print__left">
 
-        {list.characters.length > 0 && (
-          <section>
-            <div class="header-2">
-              <FormattedMessage id="editor.characters" />{" "}
-              {!isShowList && (
-                <span className="print__points">
-                  [{charactersPoints} <FormattedMessage id="app.points" />]
-                </span>
+            {list.characters.length > 0 && (
+              <section>
+                <div class="header-2">
+                  <FormattedMessage id="editor.characters" />{" "}
+                  {!isShowList && (
+                    <span className="print__points">
+                      [{charactersPoints} <FormattedMessage id="app.points" />]
+                    </span>
+                  )}
+                </div>
+                {getSection({ type: "characters" })}
+              </section>
+            )}
+
+            {list.core.length > 0 && (
+              <section>
+                <div class="header-2">
+                  <FormattedMessage id="editor.core" />{" "}
+                  {!isShowList && (
+                    <span className="print__points">
+                      [{corePoints} <FormattedMessage id="app.points" />]
+                    </span>
+                  )}
+                </div>
+                {getSection({ type: "core" })}
+              </section>
+            )}
+
+            {list.special.length > 0 && (
+              <section>
+                <div class="header-2">
+                  <FormattedMessage id="editor.special" />{" "}
+                  {!isShowList && (
+                    <span className="print__points">
+                      [{specialPoints} <FormattedMessage id="app.points" />]
+                    </span>
+                  )}
+                </div>
+                {getSection({ type: "special" })}
+              </section>
+            )}
+
+            {list.rare.length > 0 && (
+              <section>
+                <div class="header-2">
+                  <FormattedMessage id="editor.rare" />{" "}
+                  {!isShowList && (
+                    <span className="print__points">
+                      [{rarePoints} <FormattedMessage id="app.points" />]
+                    </span>
+                  )}
+                </div>
+                {getSection({ type: "rare" })}
+              </section>
+            )}
+
+            {list.allies.length > 0 && (
+              <section>
+                <div class="header-2">
+                  <FormattedMessage id="editor.allies" />{" "}
+                  {!isShowList && (
+                    <span className="print__points">
+                      [{alliesPoints} <FormattedMessage id="app.points" />]
+                    </span>
+                  )}
+                </div>
+                {getSection({ type: "allies" })}
+              </section>
+            )}
+
+            {list.mercenaries.length > 0 && (
+              <section>
+                <div class="header-2">
+                  <FormattedMessage id="editor.mercenaries" />{" "}
+                  {!isShowList && (
+                    <span className="print__points">
+                      [{mercenariesPoints} <FormattedMessage id="app.points" />]
+                    </span>
+                  )}
+                </div>
+                {getSection({ type: "mercenaries" })}
+              </section>
+            )}
+          </div>
+
+          <aside className="print__right">
+            {armySpecialRules && armySpecialRules.length > 0 && (
+              <section>
+                <div className="header-2">{`${armyCompositionName || armyComposition}特殊规则`}</div>
+                <ul>
+                  {armySpecialRules.map((r, i) => (
+                    <li key={`army-special-${i}`}>
+                      <b>{r.name_cn}:</b>
+                      <div dangerouslySetInnerHTML={{ __html: r.content_cn }} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <section>
+              <div className="header-2">
+                <FormattedMessage id="print.specialRules" />
+              </div>
+              {loadingAggregatedRules ? (
+                <div>Loading...</div>
+              ) : (
+                <ul>
+                  {aggregatedRules.map((r) => (
+                    <li key={r.key}>
+                      <b>{r.name}:</b>
+                      <div dangerouslySetInnerHTML={{ __html: r.content || "" }} />
+                    </li>
+                  ))}
+                </ul>
               )}
-            </div>
-            {getSection({ type: "characters" })}
-          </section>
-        )}
-
-        {list.core.length > 0 && (
-          <section>
-            <div class="header-2">
-              <FormattedMessage id="editor.core" />{" "}
-              {!isShowList && (
-                <span className="print__points">
-                  [{corePoints} <FormattedMessage id="app.points" />]
-                </span>
-              )}
-            </div>
-            {getSection({ type: "core" })}
-          </section>
-        )}
-
-        {list.special.length > 0 && (
-          <section>
-            <div class="header-2">
-              <FormattedMessage id="editor.special" />{" "}
-              {!isShowList && (
-                <span className="print__points">
-                  [{specialPoints} <FormattedMessage id="app.points" />]
-                </span>
-              )}
-            </div>
-            {getSection({ type: "special" })}
-          </section>
-        )}
-
-        {list.rare.length > 0 && (
-          <section>
-            <div class="header-2">
-              <FormattedMessage id="editor.rare" />{" "}
-              {!isShowList && (
-                <span className="print__points">
-                  [{rarePoints} <FormattedMessage id="app.points" />]
-                </span>
-              )}
-            </div>
-            {getSection({ type: "rare" })}
-          </section>
-        )}
-
-        {list.allies.length > 0 && (
-          <section>
-            <div class="header-2">
-              <FormattedMessage id="editor.allies" />{" "}
-              {!isShowList && (
-                <span className="print__points">
-                  [{alliesPoints} <FormattedMessage id="app.points" />]
-                </span>
-              )}
-            </div>
-            {getSection({ type: "allies" })}
-          </section>
-        )}
-
-        {list.mercenaries.length > 0 && (
-          <section>
-            <div class="header-2">
-              <FormattedMessage id="editor.mercenaries" />{" "}
-              {!isShowList && (
-                <span className="print__points">
-                  [{mercenariesPoints} <FormattedMessage id="app.points" />]
-                </span>
-              )}
-            </div>
-            {getSection({ type: "mercenaries" })}
-          </section>
-        )}
-
-        <div className="print-footer">
+            </section>
+          </aside>
+          <div className="print-footer"></div>
         </div>
       </main>
     </>

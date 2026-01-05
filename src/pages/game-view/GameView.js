@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { queryParts } from '../../utils/query';
 import { useDispatch, useSelector } from "react-redux";
@@ -6,6 +6,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
 
 import { Header, Main } from "../../components/page";
+import { Dialog } from "../../components/dialog";
 import { Stats } from "../../components/stats";
 import { Button } from "../../components/button";
 import { NumberInput } from "../../components/number-input";
@@ -27,7 +28,8 @@ import { getStats, getUnitName } from "../../utils/unit";
 import { editUnit } from "../../state/lists";
 import { updateSetting } from "../../state/settings";
 import { getGameSystems } from "../../utils/game-systems";
-import { getJson } from "../../utils/resourceLoader";
+import { useRules } from "../../components/rules-index/rules-map";
+import resourceLoader, { getJson } from "../../utils/resourceLoader";
 
 import "./GameView.css";
 
@@ -44,6 +46,7 @@ export const GameView = () => {
   const { language } = useLanguage();
   const intl = useIntl();
   const dispatch = useDispatch();
+  const { rulesMap, synonyms } = useRules();
   const settings = useSelector((state) => state.settings);
   const {
     showPoints,
@@ -62,6 +65,9 @@ export const GameView = () => {
   const [victoryPoints, setVictoryPoints] = useState({});
   const [troopTypeSpecialRules, setTroopTypeSpecialRules] = useState(null);
   const [unitTroopTypeMap, setUnitTroopTypeMap] = useState({});
+  const [troopDialogOpen, setTroopDialogOpen] = useState(false);
+  const [troopDialogTitle, setTroopDialogTitle] = useState("");
+  const [troopDialogContent, setTroopDialogContent] = useState("");
 
   const list = useSelector((state) =>
     state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
@@ -330,7 +336,7 @@ export const GameView = () => {
     return (
       <ul>
         {units.map((unit, index) => {
-          const stats = getStats(unit, armyComposition);
+          const stats = getStats(unit, armyComposition, { rulesMap, synonyms });
           const unitGeneratedSpellCount = getUnitGeneratedSpellCount(unit);
 
           const unitTroopTypes = getUnitTroopTypes(unit.name_en);
@@ -402,15 +408,46 @@ export const GameView = () => {
                           />
                         </>
                       )}
-                      {unit.specialRules && allTroopTypeSpecialRules.length > 0 && " "}
-                      {allTroopTypeSpecialRules.length > 0 && (
-                        <>
-                          <RulesLinksText
-                            textObject={convertRulesArrayToTextObject(allTroopTypeSpecialRules)}
-                            showPageNumbers={showPageNumbers}
-                          />
-                        </>
-                      )}
+                      {unit.specialRules && allTroopTypeSpecialRules.length > 0 && ", "}
+                      {allTroopTypeSpecialRules.map((r, idx) => {
+                        const displayName = r.name_cn || r.name || r.name_en || "";
+                        const id = r.id || (r.name || "").toLowerCase().replace(/\s+/g, "-");
+                        return (
+                          <Fragment key={id || idx}>
+                            <button
+                              className="unit__rule"
+                              onClick={async () => {
+                                try {
+                                  setTroopDialogTitle(displayName);
+                                  setTroopDialogContent("");
+                                  setTroopDialogOpen(true);
+                                  const cfg = await resourceLoader.loadResourceConfig();
+                                  let pageUrl = cfg && cfg.absoluteBase ? cfg.absoluteBase.replace(/\/$/, "") + "/troop-types-in-detail/" + id : "/troop-types-in-detail/" + id;
+                                  const resp = await fetch(pageUrl, { cache: "no-store" });
+                                  if (resp && resp.ok) {
+                                    const html = await resp.text();
+                                    try {
+                                      const doc = new DOMParser().parseFromString(html, "text/html");
+                                      const body = doc.querySelector(".body-content");
+                                      setTroopDialogContent(body ? body.innerHTML : html);
+                                    } catch (e) {
+                                      setTroopDialogContent(html);
+                                    }
+                                  } else {
+                                    setTroopDialogContent("");
+                                  }
+                                } catch (e) {
+                                  console.warn("Failed to load troop type detail", e);
+                                  setTroopDialogContent("");
+                                }
+                              }}
+                            >
+                              {displayName}
+                            </button>
+                            {idx !== allTroopTypeSpecialRules.length - 1 && ", "}
+                          </Fragment>
+                        );
+                      })}
                     </p>
                   ) : null}
                   {unit.detachments &&
@@ -712,6 +749,13 @@ export const GameView = () => {
 
       <RulesIndex />
 
+      <Dialog open={troopDialogOpen} onClose={() => setTroopDialogOpen(false)}>
+        <div className="editor__army-rule-dialog">
+          {troopDialogTitle && <div className="header-2">{troopDialogTitle}</div>}
+          <div dangerouslySetInnerHTML={{ __html: troopDialogContent }} />
+        </div>
+      </Dialog>
+
       <Header
         to={`?editor.${listId}`}
         headline={intl.formatMessage({
@@ -727,7 +771,7 @@ export const GameView = () => {
         {list.characters.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <div class="header-2">
+              <div className="header-2">
                 <FormattedMessage id="editor.characters" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
@@ -743,7 +787,7 @@ export const GameView = () => {
         {list.core.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <div class="header-2">
+              <div className="header-2">
                 <FormattedMessage id="editor.core" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
@@ -759,7 +803,7 @@ export const GameView = () => {
         {list.special.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <div class="header-2">
+              <div className="header-2">
                 <FormattedMessage id="editor.special" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
@@ -775,7 +819,7 @@ export const GameView = () => {
         {list.rare.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <div class="header-2">
+              <div className="header-2">
                 <FormattedMessage id="editor.rare" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
@@ -791,7 +835,7 @@ export const GameView = () => {
         {list.allies.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <div class="header-2">
+              <div className="header-2">
                 <FormattedMessage id="editor.allies" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
@@ -807,7 +851,7 @@ export const GameView = () => {
         {list.mercenaries.length > 0 && (
           <section className="game-view__section">
             <header className="editor__header">
-              <div class="header-2">
+              <div className="header-2">
                 <FormattedMessage id="editor.mercenaries" />{" "}
                 {showPoints && (
                   <span className="game-view__points">
@@ -823,7 +867,7 @@ export const GameView = () => {
         {showVictoryPoints && (
           <section className="game-view__section">
             <header className="editor__header">
-              <div class="header-2">
+              <div className="header-2">
                 <FormattedMessage id="misc.allVictoryPoints" />
                 {": "}
               </div>

@@ -364,3 +364,7 @@ hr {
 .page-Editor li { 
   margin:0!important;
 }
+
+.editor__army-special-rules {
+  padding : 1rem;
+}

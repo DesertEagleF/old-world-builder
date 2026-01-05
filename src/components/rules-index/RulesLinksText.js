@@ -5,11 +5,12 @@ import { normalizeRuleName } from "../../utils/string";
 import { useLanguage } from "../../utils/useLanguage";
 import { openRulesIndex } from "../../state/rules-index";
 
-import { rulesMap, synonyms } from "./rules-map";
+import { useRules } from "./rules-map";
 
 export const RulesLinksText = ({ textObject, showPageNumbers }) => {
   const dispatch = useDispatch();
   const { language } = useLanguage();
+  const { rulesMap, synonyms } = useRules();
 
   if (!textObject?.name_en) {
     return [];

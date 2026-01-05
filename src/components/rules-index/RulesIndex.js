@@ -10,7 +10,7 @@ import { Spinner } from "../../components/spinner";
 import { normalizeRuleName } from "../../utils/string";
 import { closeRulesIndex } from "../../state/rules-index";
 
-import { rulesMap, synonyms } from "./rules-map";
+import { useRules } from "./rules-map";
 import "./RulesIndex.css";
 
 export const RulesIndex = () => {
@@ -34,6 +34,40 @@ export const RulesIndex = () => {
   const listArmyComposition = list?.armyComposition || list?.army;
   const dispatch = useDispatch();
   const contentRef = useRef(null);
+  const { rulesMap, synonyms } = useRules();
+
+  const processHtmlString = (htmlString) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    const topBody = doc.querySelector('#bodyContent');
+    if (!topBody) {
+      setFetchFailed(true);
+      return;
+    }
+
+    const mwContent = topBody.querySelector('#mw-content-text');
+    // prefer finding #bodyContent inside #mw-content-text, otherwise fall back
+    const innerBody = mwContent ? mwContent.querySelector('#mw-parser-output') : null;
+
+    let finalHtml = '';
+    if (innerBody) {
+      finalHtml = innerBody.innerHTML;
+    } else if (mwContent) {
+      finalHtml = mwContent.innerHTML;
+    } else {
+      finalHtml = topBody.innerHTML;
+    }
+
+    const firstHeading = doc.querySelector('#firstHeading');
+    const h1 = firstHeading ? firstHeading.querySelector('h1') : null;
+    const headingText = h1 ? h1.innerText.trim() : null;
+    if (headingText) {
+      finalHtml = `<h2>${headingText}</h2>\n${finalHtml}`;
+    }
+
+    setContentHtml(finalHtml);
+    setFetchFailed(false);
+  };
 
   const handleClose = () => {
     setIsLoading(true);
@@ -80,15 +114,7 @@ export const RulesIndex = () => {
       setIsLoading(true);
       const response = await fetch(fullUrl);
       const htmlString = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlString, 'text/html');
-      const bodyContent = doc.querySelector('#bodyContent');
-      if (bodyContent) {
-        setContentHtml(bodyContent.innerHTML);
-        setFetchFailed(false);
-      } else {
-        setFetchFailed(true);
-      }
+      processHtmlString(htmlString);
     } catch (error) {
       setFetchFailed(true);
     } finally {
@@ -116,15 +142,7 @@ export const RulesIndex = () => {
     fetch(urlForTab)
       .then((res) => res.text())
       .then((htmlString) => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlString, "text/html");
-        const bodyContent = doc.querySelector("#bodyContent");
-        if (bodyContent) {
-          setContentHtml(bodyContent.innerHTML);
-          setFetchFailed(false);
-        } else {
-          setFetchFailed(true);
-        }
+        processHtmlString(htmlString);
       })
       .catch(() => {
         setFetchFailed(true);

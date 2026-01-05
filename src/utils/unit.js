@@ -1,18 +1,18 @@
 import classNames from "classnames";
 
 import { nameMap } from "../pages/magic";
-import { rulesMap, synonyms } from "../components/rules-index";
 import loresOfMagicWithSpells from "../assets/lores-of-magic-with-spells.json";
 import { normalizeRuleName } from "./string";
 
-export const getUnitRuleData = (unitName) => {
+export const getUnitRuleData = (unitName, maps = {}) => {
+  const { rulesMap, synonyms } = maps;
   const normalizedRuleName = normalizeRuleName(unitName);
-  const synonym = synonyms[normalizedRuleName];
-  return rulesMap[synonym || normalizedRuleName];
+  const synonym = synonyms && synonyms[normalizedRuleName];
+  return rulesMap && rulesMap[synonym || normalizedRuleName];
 };
 
-export const getUnitLeadership = (unitName) => {
-  const ruleData = getUnitRuleData(unitName);
+export const getUnitLeadership = (unitName, maps = {}) => {
+  const ruleData = getUnitRuleData(unitName, maps);
 
   if (!ruleData) {
     return false;
@@ -48,6 +48,7 @@ export const getAllOptions = (
     language: overrideLanguage,
     pageNumbers,
     armyComposition,
+    maps = {},
   } = {}
 ) => {
   const language = overrideLanguage || localStorage.getItem("lang");
@@ -280,7 +281,7 @@ export const getAllOptions = (
 
   if (pageNumbers) {
     allOptionsArray = allOptionsArray.map((option) => {
-      const page = getPage(option);
+      const page = getPage(option, maps);
 
       if (page) {
         return `${option} [${page}]`;
@@ -301,32 +302,33 @@ export const getAllOptions = (
   return null;
 };
 
-export const getPage = (name) => {
-  const page = getUnitRuleData(name)?.page || "";
+export const getPage = (name, maps = {}) => {
+  const page = getUnitRuleData(name, maps)?.page || "";
 
   return page.replace(/,/g, "");
 };
 
-export const getStats = (unit, armyComposition) => {
+export const getStats = (unit, armyComposition, maps = {}) => {
+  const { rulesMap, synonyms } = maps;
   const normalizedName =
     unit.name_en.includes("renegade") && armyComposition?.includes("renegade")
       ? normalizeRuleName(unit.name_en)
       : normalizeRuleName(unit.name_en.replace(" {renegade}", ""));
-  const synonym = synonyms[normalizedName];
-  const stats = rulesMap[synonym || normalizedName]?.stats || [];
+  const synonym = synonyms && synonyms[normalizedName];
+  const stats = (rulesMap && rulesMap[synonym || normalizedName]?.stats) || [];
   const activeMount = unit.mounts
     ? unit.mounts.find((mount) => mount.active)
     : null;
-  const mountStats = getUnitRuleData(activeMount?.name_en || "")?.stats || [];
+  const mountStats = getUnitRuleData(activeMount?.name_en || "", maps)?.stats || [];
   const detachments = unit.detachments || [];
   const detachmentStats = [];
 
   detachments.forEach((detachment) => {
     const normalizedDetachment = normalizeRuleName(detachment?.name_en || "");
-    const detachmentSynonym = synonyms[normalizedDetachment];
+    const detachmentSynonym = synonyms && synonyms[normalizedDetachment];
 
     detachmentStats.push(
-      ...(rulesMap[detachmentSynonym || normalizedDetachment]?.stats || [])
+      ...(rulesMap && (rulesMap[detachmentSynonym || normalizedDetachment]?.stats || []))
     );
   });
 

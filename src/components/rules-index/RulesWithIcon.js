@@ -6,13 +6,13 @@ import { Button } from "../button";
 import { normalizeRuleName } from "../../utils/string";
 import { useLanguage } from "../../utils/useLanguage";
 import { openRulesIndex } from "../../state/rules-index";
-
-import { rulesMap, synonyms } from "./rules-map";
+import { useRules } from "./rules-map";
 
 export const RulesWithIcon = ({ textObject }) => {
   const dispatch = useDispatch();
   const { language } = useLanguage();
   const intl = useIntl();
+  const { rulesMap, synonyms } = useRules();
 
   if (!textObject.name_en) {
     return [];

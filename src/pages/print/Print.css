@@ -24,6 +24,26 @@
   padding: 1rem;
 }
 
+.print__columns {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.print__left {
+  flex: 0 0 48%;
+  max-width: 48%;
+}
+
+.print__right {
+  flex: 0 0 48%;
+  max-width: 48%;
+}
+
+.print__right .header-2 {
+  margin-top: 0;
+}
+
 .print--two-columns ul {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

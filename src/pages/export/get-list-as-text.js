@@ -5,8 +5,8 @@ import { getGameSystems } from "../../utils/game-systems";
 import { nameMap } from "../magic";
 
 // Helper function to filter options for simple list format
-const getFilteredOptions = (unit, intl, params) => {
-  const allOptionsString = getAllOptions(unit, params);
+const getFilteredOptions = (unit, intl, params, maps = {}) => {
+  const allOptionsString = getAllOptions(unit, { ...params, maps });
 
   if (!allOptionsString) return "";
 
@@ -110,18 +110,23 @@ const getUnitsString = ({
   showCustomNotes,
   armyComposition,
   isSimpleList,
-}) => {
+}, maps = {}) => {
   if (isSimpleList) {
     return units
       .map((unit) => {
         const unitPoints = getUnitPoints(unit, { armyComposition });
         const unitName = getUnitName({ unit, language });
 
-        const filteredOptions = getFilteredOptions(unit, intl, {
-          noMagic: isShowList,
-          pageNumbers: false,
-          armyComposition,
-        });
+        const filteredOptions = getFilteredOptions(
+          unit,
+          intl,
+          {
+            noMagic: isShowList,
+            pageNumbers: false,
+            armyComposition,
+          },
+          maps
+        );
 
         // Format: "name, important options - points"
         let unitString = `${
@@ -147,6 +152,7 @@ const getUnitsString = ({
         noMagic: isShowList,
         pageNumbers: showPageNumbers,
         armyComposition,
+        maps,
       });
       let optionsString = "";
 
@@ -192,7 +198,7 @@ const getUnitsString = ({
         }${isMarkdownList ? "*" : ""}\n`;
       }
       if (showStats) {
-        const stats = getStats(unit, armyComposition);
+        const stats = getStats(unit, armyComposition, maps);
 
         if (!isCompactList && !isMarkdownList) {
           optionsString += "\n";
@@ -233,7 +239,7 @@ export const getListAsText = ({
   isMarkdownList,
   showCustomNotes,
   isSimpleList,
-}) => {
+}, maps = {}) => {
   const allPoints = getAllPoints(list);
   const lordsPoints = getPoints({ list, type: "lords" });
   const heroesPoints = getPoints({ list, type: "heroes" });
@@ -293,7 +299,7 @@ export const getListAsText = ({
       showStats: false,
       armyComposition,
       isSimpleList: true,
-    });
+    }, maps);
 
     return listString;
   }
@@ -331,7 +337,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? '' : '\n';
     
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -342,7 +348,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       intl,
       language,showStats,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   // LORDS
@@ -356,7 +362,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? '' : '\n';
     
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -367,7 +373,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       intl,
       language,showStats,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   // HEROES
@@ -381,7 +387,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? '' : '\n';
     
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -392,7 +398,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       intl,
       language,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   // CORE
@@ -406,7 +412,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? "" : "\n";
     
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -418,7 +424,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       language,
       showStats,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   // SPECIAL
@@ -432,7 +438,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? "" : "\n";
     
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -444,7 +450,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       language,
       showStats,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   // RARE
@@ -458,7 +464,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? "" : "\n";
   
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -470,7 +476,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       language,
       showStats,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   // MERCENARIES
@@ -484,7 +490,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? "" : "\n";
   
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -496,7 +502,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       language,
       showStats,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   // ALLIES
@@ -510,7 +516,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
 `
     listString += isCompactList || isMarkdownList ? "" : "\n";
 
-    listString += `${getUnitsString({
+    listString += getUnitsString({
       isCompactList,
       showSpecialRules,
       showPageNumbers,
@@ -522,7 +528,7 @@ ${game.name}, ${armyName}${armyCompositionString}, ${compositionRuleString}
       language,
       showStats,
       armyComposition
-    })}`;
+    }, maps);
   }
 
   if (isMarkdownList) {

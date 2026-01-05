@@ -18,6 +18,7 @@ import { throttle } from "../../utils/throttle";
 import { getUnitPoints, getPoints, getAllPoints } from "../../utils/points";
 import { useLanguage } from "../../utils/useLanguage";
 import { validateList } from "../../utils/validation";
+import { useRules } from "../../components/rules-index/rules-map";
 import { removeFromLocalList, updateLocalList } from "../../utils/list";
 import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
@@ -36,6 +37,7 @@ export const Editor = ({ isMobile }) => {
   const intl = useIntl();
   const dispatch = useDispatch();
   const { language } = useLanguage();
+  const { rulesMap, synonyms } = useRules();
   const [redirect, setRedirect] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const location = useLocation();
@@ -98,12 +100,14 @@ export const Editor = ({ isMobile }) => {
         revertToBaseRules();
       }
       if (mounted) {
+        // pass rulesMap/synonyms into validation so it can look up unit rules
         dispatch(
           setErrors(
             validateList({
               list,
               language,
               intl,
+              maps: { rulesMap, synonyms },
             })
           )
         );
@@ -191,6 +195,52 @@ export const Editor = ({ isMobile }) => {
     return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [list && list.patches]);
+
+  const [armyRules, setArmyRules] = useState([]);
+  const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(false);
+  const [selectedRule, setSelectedRule] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadArmyRules() {
+      if (!list) return;
+      // clear previous rules immediately when list changes
+      if (mounted) setArmyRules([]);
+      if (!list.armyComposition && !list.army) return;
+      try {
+        const data = await getJson("army-special-rules");
+        const key = list.armyComposition || list.army;
+        const dict2 = data && data[key];
+        // console.log("[Editor] armySpecialRules load -> listId:", listId, "armyCompositionKey:", key, "dict2:", dict2);
+        if (!dict2) {
+          if (mounted) setArmyRules([]);
+          return;
+        }
+        const items = Object.keys(dict2)
+          .filter((k) => {
+            const e = dict2[k];
+            return !(e && e.display === false);
+          })
+          .map((k) => ({ id: k, entry: dict2[k] }));
+        if (mounted) setArmyRules(items && items.length > 0 ? items : []);
+      } catch (e) {
+        if (mounted) setArmyRules([]);
+      }
+    };
+    loadArmyRules();
+    return () => {
+      mounted = false;
+    };
+  }, [listId, list && list.armyComposition, language]);
+
+  // console.log(
+  //   "[Editor] before render -> title:",
+  //   selectedRule && selectedRule.title,
+  //   "content:",
+  //   selectedRule && selectedRule.content,
+  //   "selectedRule:",
+  //   selectedRule
+  // );
 
   if (redirect) {
     return <Redirect to="/" />;
@@ -450,6 +500,52 @@ export const Editor = ({ isMobile }) => {
         )}
         <div style={{ height: 12 }} />
         </section>
+
+        {armyRules && armyRules.length > 0 && (
+          <section className="editor__section">
+            <header className="editor__header">
+              <div class="header-2">
+                <FormattedMessage id="editor.armySpecialRules" />
+              </div>
+            </header>
+
+            <div className="editor__army-special-rules">
+              {armyRules.map((item, i) => {
+                const entry = item.entry || {};
+                const name = entry[`name_${language}`] || entry.name_en || "";
+                return (
+                  <span key={item.id} className="unit__rule-wrapper">
+                    {name}
+                    <Button
+                      type="text"
+                      className="unit__rules"
+                      color="dark"
+                      icon="preview"
+                      onClick={() => {
+                        const title = entry[`name_${language}`] || entry.name_en || "";
+                        const content = entry[`content_${language}`] || entry.content_en || "";
+                        setSelectedRule({ title, content });
+                        setIsRuleDialogOpen(true);
+                      }}
+                    />
+                    {i < armyRules.length - 1 ? ", " : ""}
+                  </span>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        <Dialog open={isRuleDialogOpen} onClose={() => setIsRuleDialogOpen(false)}>
+          <div className="editor__army-rule-dialog">
+            {selectedRule && (
+              <>
+                <div class="header-2">{selectedRule.title}</div>
+                <div className="editor__army-rule-content">{selectedRule.content}</div>
+              </>
+            )}
+          </div>
+        </Dialog>
 
         <section>
           {errors
@@ -924,6 +1020,7 @@ export const OrderableUnitList = ({ units, type, listId, armyComposition }) => {
   const location = useLocation();
   const intl = useIntl();
   const { language } = useLanguage();
+  const { rulesMap, synonyms } = useRules();
 
   const handleMoved = (indexes) =>
     dispatch(
@@ -958,7 +1055,7 @@ export const OrderableUnitList = ({ units, type, listId, armyComposition }) => {
                 id: "app.points",
               })}`}</i>
             </div>
-            <p>{getAllOptions(unit, { armyComposition })}</p>
+              <p>{getAllOptions(unit, { armyComposition, maps: { rulesMap, synonyms } })}</p>
           </ListItem>
         ))}
     </OrderableList>

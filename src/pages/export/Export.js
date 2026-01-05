@@ -9,6 +9,7 @@ import { Header, Main } from "../../components/page";
 import { Button } from "../../components/button";
 import { Expandable } from "../../components/expandable";
 import { useLanguage } from "../../utils/useLanguage";
+import { useRules } from "../../components/rules-index/rules-map";
 
 import { getListAsText } from "./get-list-as-text";
 import "./Export.css";
@@ -58,6 +59,7 @@ export const Export = ({ isMobile }) => {
   const list = useSelector((state) =>
     state.lists.find(({ id }) => listId === id || (listId && id && id.includes(listId)))
   );
+  const { rulesMap, synonyms } = useRules();
   const listText = list
     ? getListAsText({
         list,
@@ -71,7 +73,7 @@ export const Export = ({ isMobile }) => {
         language,
         showStats: showStats,
         isSimpleList: listType === "simple",
-      })
+      }, { rulesMap, synonyms })
     : "";
   const copyText = () => {
     navigator.clipboard &&

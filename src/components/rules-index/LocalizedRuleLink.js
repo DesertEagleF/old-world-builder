@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 
 import { normalizeRuleName } from "../../utils/string";
 import { openRulesIndex } from "../../state/rules-index";
-import { rulesMap, synonyms } from "./rules-map";
+import { useRules } from "./rules-map";
 
 export const LocalizedRuleLink = ({
   ruleName,
@@ -12,6 +12,7 @@ export const LocalizedRuleLink = ({
   showPageNumber,
 }) => {
   const dispatch = useDispatch();
+  const { rulesMap, synonyms } = useRules();
   const normalizedRuleName = normalizeRuleName(ruleName);
   const synonym = synonyms[normalizedRuleName];
   const ruleData = rulesMap[synonym || normalizedRuleName];
