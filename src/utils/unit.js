@@ -71,7 +71,7 @@ export const getAllOptions = (
         if (options && options.length > 0) {
           options.forEach((option) => {
             if (option.active) {
-              selectedOptions.push(option.name_en);
+              selectedOptions.push(option[`name_${language}`] || option.name_en);
             }
           });
         }
@@ -144,7 +144,7 @@ export const getAllOptions = (
           if (subOptions && subOptions.length > 0) {
             subOptions.forEach((option) => {
               if (option.active) {
-                selectedOptions.push(option.name_en);
+                selectedOptions.push(option[`name_${language}`] || option.name_en);
               }
             });
           }
@@ -181,7 +181,7 @@ export const getAllOptions = (
           if (options && options.length > 0) {
             options.forEach((option) => {
               if (option.active) {
-                selectedOptions.push(option.name_en);
+                selectedOptions.push(option[`name_${language}`] || option.name_en);
               }
             });
           }

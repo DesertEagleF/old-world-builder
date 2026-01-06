@@ -41,6 +41,7 @@
   "i18n-it": "https://tow.huijiwiki.com/wiki/Data:it.json?action=raw",
   "i18n-pl": "https://tow.huijiwiki.com/wiki/Data:pl.json?action=raw",
   "i18n-cn": "https://tow.huijiwiki.com/wiki/Data:cn.json?action=raw",
+  "name-map": "https://tow.huijiwiki.com/wiki/Data:name-map.json?action=raw",
 
   "rules-additional": "https://tow.huijiwiki.com/wiki/Data:rules-additional.json?action=raw",
   "rules-synonyms": "https://tow.huijiwiki.com/wiki/Data:rules-synonyms.json?action=raw",
