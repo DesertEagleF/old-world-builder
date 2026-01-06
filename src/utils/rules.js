@@ -1,4 +1,5 @@
 import patchManager from "./patch";
+import patchState from "./patchState";
 
 export const rules = {
   "grand-army": {
@@ -4072,16 +4073,29 @@ export async function applySelectedRulePatches(selectedIds = []) {
   try {
     patchManager.initBaseSnapshot(rules);
     const merged = await patchManager.getMergedRulesForSelection(selectedIds);
+    // Also apply rules from patchState if available
+    const patchStateRules = patchState.getRulesMap() || {};
+    const combinedMerged = { ...merged };
+
+    // Merge patchState rules into the merged rules
+    for (const [armyComposition, armyRules] of Object.entries(patchStateRules)) {
+      if (combinedMerged[armyComposition]) {
+        combinedMerged[armyComposition] = { ...combinedMerged[armyComposition], ...armyRules };
+      } else {
+        combinedMerged[armyComposition] = armyRules;
+      }
+    }
+
     // Replace keys in-place: remove keys not present and copy new values
     for (const key of Object.keys(rules)) {
-      if (!Object.prototype.hasOwnProperty.call(merged, key)) {
+      if (!Object.prototype.hasOwnProperty.call(combinedMerged, key)) {
         delete rules[key];
       }
     }
-    for (const key of Object.keys(merged)) {
-      rules[key] = merged[key];
+    for (const key of Object.keys(combinedMerged)) {
+      rules[key] = combinedMerged[key];
     }
-    return merged;
+    return combinedMerged;
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error('applySelectedRulePatches failed:', e);

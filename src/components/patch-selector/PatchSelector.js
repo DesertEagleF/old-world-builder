@@ -246,9 +246,13 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
       try {
         patchState.setApplied(filtered);
         const mergedLocale = filtered.reduce((acc, o) => ({ ...(acc || {}), ...(o.locale || {}) }), {});
+        const mergedRules = filtered.reduce((acc, o) => ({ ...(acc || {}), ...(o.rules || {}) }), {});
         if (Object.keys(mergedLocale || {}).length) {
           patchState.setLocaleMap(mergedLocale);
           onLocaleMapChange(mergedLocale);
+        }
+        if (Object.keys(mergedRules || {}).length) {
+          patchState.setRulesMap(mergedRules);
         }
       } catch (e) {}
     }, 0);
@@ -267,13 +271,16 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
           // try locale
           let locale = null;
           try { locale = await getJson(`patches-${id}-locale`); } catch (e) {}
+          // try rules
+          let rules = null;
+          try { rules = await getJson(`patches-${id}-rules`); } catch (e) {}
           let displayName = id;
           if (locale && locale['patch-name']) {
             const l = locale['patch-name'];
             const langKey = `name_${language}`;
             displayName = (l[langKey] || l.name_en || Object.values(l).find(v => typeof v === 'string')) || id;
           }
-          return { id, type: entry.type || 'patch', data, locale, displayName };
+          return { id, type: entry.type || 'patch', data, locale, rules, displayName };
         } catch (e) {
           return { id, type: 'patch', data: null };
         }

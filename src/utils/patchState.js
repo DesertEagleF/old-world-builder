@@ -1,8 +1,10 @@
 // Simple in-memory shared state for patch applied objects and locale map.
 let _applied = [];
 let _locale = {};
+let _rules = {};
 const _appliedSubs = new Set();
 const _localeSubs = new Set();
+const _rulesSubs = new Set();
 
 export function getApplied() {
   return _applied.slice();
@@ -38,6 +40,23 @@ export function subscribeLocale(fn) {
   return () => _localeSubs.delete(fn);
 }
 
+export function getRulesMap() {
+  return { ..._rules };
+}
+
+export function setRulesMap(map) {
+  _rules = { ...(_rules || {}), ...(map || {}) };
+  // notify rules subscribers asynchronously as well
+  setTimeout(() => {
+    for (const s of _rulesSubs) s({ ..._rules });
+  }, 0);
+}
+
+export function subscribeRules(fn) {
+  _rulesSubs.add(fn);
+  return () => _rulesSubs.delete(fn);
+}
+
 const patchState = {
   getApplied,
   setApplied,
@@ -45,6 +64,9 @@ const patchState = {
   getLocaleMap,
   setLocaleMap,
   subscribeLocale,
+  getRulesMap,
+  setRulesMap,
+  subscribeRules,
 };
 
 export default patchState;

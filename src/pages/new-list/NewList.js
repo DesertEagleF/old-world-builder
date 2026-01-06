@@ -72,11 +72,19 @@ export const NewList = ({ isMobile }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When appliedPatchObjects changes, also try to load locale from patchState
+  // When appliedPatchObjects changes, also try to load locale from patchState and apply rules
   useEffect(() => {
     const patchStateLocale = patchState.getLocaleMap() || {};
     if (Object.keys(patchStateLocale).length > 0) {
       setLocalizedNameMap(prev => ({ ...(prev || {}), ...patchStateLocale }));
+    }
+    // Also apply rules from the selected patches
+    const ids = appliedPatchObjects.map(p => p.id);
+    if (ids.length > 0) {
+      applySelectedRulePatches(ids);
+    } else {
+      // If no patches selected, revert to base rules
+      revertToBaseRules();
     }
   }, [appliedPatchObjects]);
 
@@ -265,14 +273,20 @@ export const NewList = ({ isMobile }) => {
               <CustomSelect
                 id="arcane-journal"
                 options={[
-                  ...journalArmies.map((journalArmy) => ({
-                    id: journalArmy,
-                    name_en:
-                      journalArmy === army
-                        ? intl.formatMessage({ id: "new.grandArmy" })
-                        : (localizedNameMap[journalArmy]?.[`name_${language}`] || nameMap[journalArmy]?.[`name_${language}`]),
-                  })),
+                  ...journalArmies.map((journalArmy) => {
+                    const displayName = journalArmy === army
+                      ? intl.formatMessage({ id: "new.grandArmy" })
+                      : (localizedNameMap[journalArmy]?.[`name_${language}`] || nameMap[journalArmy]?.[`name_${language}`]);
+                    // Determine if this armyComposition is from a patch
+                    const source = compositionSourcesMap[army]?.[journalArmy];
+                    return {
+                      id: journalArmy,
+                      name_en: displayName,
+                      source: source || 'base',
+                    };
+                  }),
                 ]}
+                appliedPatchObjects={appliedPatchObjects}
                 onChange={handleArcaneJournalChange}
                 selected={armyComposition}
                 spaceBottom

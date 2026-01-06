@@ -17,6 +17,7 @@ import { getArmyData, getAlliesForComposition } from "../../utils/army";
 import { loadAndMergeBaseWithPatches } from "../../utils/patch";
 import { fetcher } from "../../utils/fetcher";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
+import { rules } from "../../utils/rules";
 
 import { nameMap } from "../magic";
 import { queryParts } from "../../utils/query";
@@ -25,6 +26,25 @@ import "./Add.css";
 
 let allAllies = [];
 let allMercenaries = [];
+
+// Helper function to check if a unit should be filtered out due to max=0 rule
+const shouldFilterOutUnit = (unit, armyComposition, type) => {
+  try {
+    const armyRules = rules[armyComposition];
+    if (!armyRules || !armyRules[type] || !armyRules[type].units) {
+      return false;
+    }
+
+    const unitRules = armyRules[type].units.find(unitRule =>
+      unitRule.ids && unitRule.ids.includes(unit.id)
+    );
+
+    // If unit has max=0, it should be filtered out
+    return unitRules && unitRules.max === 0;
+  } catch (e) {
+    return false;
+  }
+};
 
 export const Add = ({ isMobile }) => {
   const MainComponent = isMobile ? Main : Fragment;
@@ -330,9 +350,13 @@ export const Add = ({ isMobile }) => {
                   },
                   index
                 ) => {
-                  // Remove duplicate units
+                  // Remove duplicate units and filter out max=0 units
                   const uniqueUnits = [];
                   const tempCharacters = characters.filter((unit) => {
+                    // Filter out max=0 units
+                    if (shouldFilterOutUnit(unit, armyComposition || ally, 'characters')) {
+                      return false;
+                    }
                     if (
                       !uniqueUnits.some((name_en) => name_en === unit.name_en)
                     ) {
@@ -342,6 +366,10 @@ export const Add = ({ isMobile }) => {
                     return false;
                   });
                   const tempCore = core.filter((unit) => {
+                    // Filter out max=0 units
+                    if (shouldFilterOutUnit(unit, armyComposition || ally, 'core')) {
+                      return false;
+                    }
                     if (
                       !uniqueUnits.some((name_en) => name_en === unit.name_en)
                     ) {
@@ -351,6 +379,10 @@ export const Add = ({ isMobile }) => {
                     return false;
                   });
                   const tempSpecial = special.filter((unit) => {
+                    // Filter out max=0 units
+                    if (shouldFilterOutUnit(unit, armyComposition || ally, 'special')) {
+                      return false;
+                    }
                     if (
                       !uniqueUnits.some((name_en) => name_en === unit.name_en)
                     ) {
@@ -360,6 +392,10 @@ export const Add = ({ isMobile }) => {
                     return false;
                   });
                   const tempRare = rare.filter((unit) => {
+                    // Filter out max=0 units
+                    if (shouldFilterOutUnit(unit, armyComposition || ally, 'rare')) {
+                      return false;
+                    }
                     if (
                       !uniqueUnits.some((name_en) => name_en === unit.name_en)
                     ) {

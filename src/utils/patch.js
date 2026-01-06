@@ -243,7 +243,7 @@ export async function loadPatchesByIds(ids = []) {
         const results = await Promise.all(ids.map(async (id) => {
             const entry = map[id] || { id, type: 'patch' };
             try {
-                const data = await getJson(`patches.${id}.rules`);
+                const data = await getJson(`patches-${id}-rules`);
                 if (!data) return { id, type: entry.type || 'patch', data: null };
                 return { id, type: entry.type || 'patch', data };
             } catch (e) {
