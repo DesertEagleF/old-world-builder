@@ -56,8 +56,11 @@ export const NewList = ({ isMobile }) => {
           await applySelectedRulePatches(ids);
           // also seed our local appliedPatchObjects so the UI reflects current applied set
           setAppliedPatchObjects(applied.slice());
-          // merge locale map from patchState
-          try { setLocalizedNameMap(prev => ({ ...(prev || {}), ...(patchState.getLocaleMap() || {}) })); } catch (e) {}
+          // Also read locale from patchState as fallback
+          const patchStateLocale = patchState.getLocaleMap() || {};
+          if (Object.keys(patchStateLocale).length > 0) {
+            setLocalizedNameMap(prev => ({ ...(prev || {}), ...patchStateLocale }));
+          }
         } else {
           // ensure base rules when no applied patches
           revertToBaseRules();
@@ -69,11 +72,20 @@ export const NewList = ({ isMobile }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // When appliedPatchObjects changes, also try to load locale from patchState
+  useEffect(() => {
+    const patchStateLocale = patchState.getLocaleMap() || {};
+    if (Object.keys(patchStateLocale).length > 0) {
+      setLocalizedNameMap(prev => ({ ...(prev || {}), ...patchStateLocale }));
+    }
+  }, [appliedPatchObjects]);
+
   // Use centralized merge helper to combine gameSystems with applied patch objects
   const { armies: mergedArmies, compositionSourcesMap } = mergeGameSystemsWithPatches(gameSystems, appliedPatchObjects, game);
   const armies = mergedArmies.sort((a, b) => a.id.localeCompare(b.id));
   const baseArmy = armies.find(({ id }) => army === id);
-  let journalArmies = baseArmy?.armyComposition || [];
+  // Ensure journalArmies is always an array
+  let journalArmies = Array.isArray(baseArmy?.armyComposition) ? baseArmy.armyComposition : [];
   let compositionSources = compositionSourcesMap[baseArmy?.id] || {};
 
   const compositionRules = [
@@ -99,11 +111,13 @@ export const NewList = ({ isMobile }) => {
     },
   ];
   const listsPoints = [...lists.map((list) => list.points)].reverse();
+  // 去除listsPoints中小于等于0的值
+  const filteredListsPoints = listsPoints.filter(point => point > 0);
   const quickActions =
     compositionRule === "battle-march"
       ? [500, 600, 750]
       : lists.length
-      ? [...new Set([...listsPoints, 500, 1000, 1500, 2000, 2500])].slice(0, 5)
+      ? [...new Set([...filteredListsPoints, 500, 1000, 1500, 2000, 2500])].slice(0, 5)
       : [500, 1000, 1500, 2000, 2500];
   const createList = () => {
     const newId = getRandomId();
@@ -147,9 +161,12 @@ export const NewList = ({ isMobile }) => {
   };
   const handleArmyChange = (value) => {
     setArmy(value);
-    setArmyComposition(
-      armies.find(({ id }) => value === id).armyComposition[0]
-    );
+    const selectedArmy = armies.find(({ id }) => value === id);
+    // Ensure armyComposition is an array before accessing first element
+    const composition = Array.isArray(selectedArmy?.armyComposition) && selectedArmy.armyComposition.length > 0
+      ? selectedArmy.armyComposition[0]
+      : value;
+    setArmyComposition(composition);
     setCompositionRule("open-war");
   };
   const handleArcaneJournalChange = (value) => {
@@ -200,7 +217,7 @@ export const NewList = ({ isMobile }) => {
           <label style={{ marginBottom: 6, display: 'block' }} htmlFor="patch-selector">
             <FormattedMessage id="patches.selectedLabel" defaultMessage="Selected patches:" />
           </label>
-          <PatchSelector id="patch-selector" onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={setLocalizedNameMap} onShowPanel={() => history.push('?new.patches')} />
+          <PatchSelector id="patch-selector" onAppliedChange={setAppliedPatchObjects} onLocaleMapChange={(newLocale) => setLocalizedNameMap(prev => ({ ...(prev || {}), ...(newLocale || {}) }))} onShowPanel={() => history.push('?new.patches')} />
           {gameSystems.map(({ name, id }, index) => (
             <div
               className={classNames(
@@ -253,7 +270,7 @@ export const NewList = ({ isMobile }) => {
                     name_en:
                       journalArmy === army
                         ? intl.formatMessage({ id: "new.grandArmy" })
-                        : nameMap[journalArmy][`name_${language}`],
+                        : (localizedNameMap[journalArmy]?.[`name_${language}`] || nameMap[journalArmy]?.[`name_${language}`]),
                   })),
                 ]}
                 onChange={handleArcaneJournalChange}

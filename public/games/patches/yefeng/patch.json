@@ -5,34 +5,15 @@
     "name_cn": "TOW国服平衡性补丁(夜风)"
   },
   "brief":{
-    "brief_cn": "目前Tow无论是10个主要种族还是7个Legacy族，均有不少低性价比的“冷板凳“单位，游戏主流氛围以娱乐性质为主，本补丁试图在竞技性上进行某种程度的调整，目的是让更多”垃圾“单位有上桌价值，并且适当削弱一些明显超模单位。不排除未来在国内举办竞技向比赛房规时参考此补丁。\n此补丁在被各国赛事采纳的《Renegade Legacy》补丁基础上进一步修订，同时增加了9个主族的平衡性调整。"
+    "brief_cn": "目前Tow无论是10个主要种族还是7个Legacy族，均有不少低性价比的“冷板凳”单位，游戏主流氛围以娱乐性质为主，本补丁试图在竞技性上进行某种程度的调整，目的是让更多“垃圾”单位有上桌价值，并且适当削弱一些明显超模单位。不排除未来在国内举办竞技向比赛房规时参考此补丁。\n此补丁在被各国赛事采纳的《Renegade Legacy》补丁基础上进一步修订，同时增加了9个主族的平衡性调整。"
   },
-  "armies": [
-    {
-      "id": "vampire-counts",
-      "armyComposition": {
-        "$append": [
-          "von-carstein",
-          "lahmian",
-          "blood-dragon",
-          "necrarch",
-          "strigoi"
-        ]
-      },
+  "armies": {
+    "vampire-counts": {
+      "armyComposition": ["vampire-counts", "vc-renegade", "von-carstein", "lahmian", "blood-dragon", "necrarch", "strigoi"],
       "allies": {
-        "$append": {
-          "von-carstein": [
-            {
-              "army": "empire-of-man"
-            }
-          ],
-          "lahmian": [
-            {
-              "army": "tomb-kings-of-khemri"
-            }
-          ]
-        }
+        "von-carstein": [{"army": "empire-of-man"}],
+        "lahmian": [{"army": "tomb-kings-of-khemri"}]
       }
     }
-  ]
+  }
 }

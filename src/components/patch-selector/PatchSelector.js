@@ -248,7 +248,7 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
         const mergedLocale = filtered.reduce((acc, o) => ({ ...(acc || {}), ...(o.locale || {}) }), {});
         if (Object.keys(mergedLocale || {}).length) {
           patchState.setLocaleMap(mergedLocale);
-          try { onLocaleMapChange(prev => ({ ...(prev || {}), ...(mergedLocale || {}) })); } catch (e) {}
+          onLocaleMapChange(mergedLocale);
         }
       } catch (e) {}
     }, 0);

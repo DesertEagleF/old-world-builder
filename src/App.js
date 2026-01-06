@@ -143,7 +143,7 @@ export const App = () => {
                   <Route path="?editor.:listId.add.:type">{<Add />}</Route>
                   <Route path="?editor.:listId.:type.:unitId">{<Unit />}</Route>
                   {/* When creating a new list, show the PatchPanel in the third column */}
-                  <Route path="?new/patches">
+                  <Route path="?new.patches">
                     <PatchPanel />
                   </Route>
                 </QueryAwareSwitch>

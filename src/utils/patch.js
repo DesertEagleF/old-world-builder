@@ -6,176 +6,61 @@
  */
 import { getJson } from './resourceLoader';
 
+/**
+ * Deeply merge base data and patch data with new rules:
+ * 1. If base exists:
+ *    - Primitive (number, string, boolean): replace
+ *    - Array: replace
+ *    - Object (not array, not primitive): merge
+ * 2. If base doesn't exist: add
+ * 3. null value: delete the item
+ * @param {any} base - The base data
+ * @param {any} patch - The patch data
+ * @param {string} patchId - Optional patch identifier
+ * @returns {any} The merged result
+ */
 export function mergePatch(base, patch, patchId = null) {
-    // Support top-level operator objects on the patch itself
-    if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
-        if ('$append' in patch && Object.keys(patch).length === 1) {
-            const app = patch['$append'];
-            // array append: concatenate
-            if (Array.isArray(app)) {
-                return Array.isArray(base) ? [...base, ...app] : [...app];
-            }
-            // object append: merge per-key into object base
-            if (app && typeof app === 'object') {
-                const cloned = JSON.parse(JSON.stringify(base || {}));
-                for (const k of Object.keys(app)) {
-                    // if both sides are arrays, concatenate, else recursively merge
-                    if (Array.isArray(cloned[k]) && Array.isArray(app[k])) {
-                        cloned[k] = [...cloned[k], ...app[k]];
-                    } else {
-                        cloned[k] = mergePatch(cloned[k], app[k], patchId);
-                    }
-                }
-                return cloned;
-            }
-            // fallback: treat as empty
-            return Array.isArray(base) ? base : {};
-        }
-        // $modify: perform a recursive partial merge (fall back to clone when base undefined)
-        if ('$modify' in patch && Object.keys(patch).length === 1) {
-            return mergePatch(base, patch['$modify'], patchId);
-        }
-        // support $delete (preferred) and $remove (legacy alias)
-        if (('$delete' in patch || '$remove' in patch) && Object.keys(patch).length === 1) {
-            const del = patch['$delete'] || patch['$remove'];
-            if (Array.isArray(base)) {
-                // arrays: remove primitives or objects by id
-                if (base.length > 0 && base[0] && typeof base[0] === 'object' && 'id' in base[0]) {
-                    const ids = Array.isArray(del) ? del : [];
-                    return base.filter(b => !(b && b.id && ids.includes(b.id)));
-                }
-                return Array.isArray(del) ? base.filter(x => !del.includes(x)) : base;
-            }
-            // objects: if del is array of keys, remove those fields
-            if (del && Array.isArray(del)) {
-                const cloned = JSON.parse(JSON.stringify(base || {}));
-                for (const k of del) delete cloned[k];
-                return cloned;
-            }
-            return Array.isArray(base) ? base : {};
-        }
-        // $replace: apply partial modifications to existing structure
-        if ('$replace' in patch && Object.keys(patch).length === 1) {
-            const mod = patch['$replace'];
-            if (typeof base === 'object' && base !== null) {
-                return mergePatch(base, mod, patchId);
-            }
-            return deepClone(mod);
-        }
+    // If patch is null, delete from base
+    if (patch === null) {
+        return null;
     }
 
-    // Arrays: merge by id when both sides are arrays of objects with ids, otherwise patch replaces
-    if (Array.isArray(base) && Array.isArray(patch)) {
-        // If elements look like objects with id fields, merge by id
-        const hasId = base.some(b => b && typeof b === 'object' && 'id' in b) || patch.some(p => p && typeof p === 'object' && 'id' in p);
-        if (hasId) {
-            const baseMap = Object.fromEntries(base.map(item => [item.id, item]));
-            patch.forEach(p => {
-                if (p && typeof p === 'object' && 'id' in p && baseMap[p.id]) {
-                    baseMap[p.id] = mergePatch(baseMap[p.id], p, patchId);
-                    if (patchId && baseMap[p.id] && typeof baseMap[p.id] === 'object') baseMap[p.id].__patchedBy = patchId;
-                } else if (p && typeof p === 'object' && 'id' in p) {
-                    // clone patch object to avoid mutating original
-                    const cloned = JSON.parse(JSON.stringify(p));
-                    if (patchId && cloned && typeof cloned === 'object') cloned.__patchedBy = patchId;
-                    baseMap[p.id] = cloned;
-                } else {
-                    // non-id items appended
-                    const key = `__append_${Math.random().toString(36).slice(2)}`;
-                    baseMap[key] = p;
-                }
-            });
-            // Return array preserving original base order and then new items from patch (stable)
-            const result = [];
-            for (const b of base) {
-                if (b && typeof b === 'object' && 'id' in b) {
-                    result.push(baseMap[b.id]);
-                    delete baseMap[b.id];
-                } else {
-                    // non-id base element: pick first matching key
-                    const keys = Object.keys(baseMap);
-                    if (keys.length) {
-                        result.push(baseMap[keys[0]]);
-                        delete baseMap[keys[0]];
-                    }
-                }
-            }
-            // remaining patch-added items
-            for (const k of Object.keys(baseMap)) result.push(baseMap[k]);
-            return result;
-        }
-        // default: concatenation
-        return [...base, ...patch];
-    }
-
-        // Objects: merge recursively, supporting per-field operators
-    if (typeof base === 'object' && base !== null && typeof patch === 'object' && patch !== null) {
-        const result = { ...base };
-        for (const key of Object.keys(patch)) {
-            const pVal = patch[key];
-            // operator object for this field
-            if (pVal && typeof pVal === 'object' && !Array.isArray(pVal)) {
-                    // support $modify at field level
-                    if ('$modify' in pVal && Object.keys(pVal).length === 1) {
-                        result[key] = mergePatch(base[key], pVal['$modify'], patchId);
-                        continue;
-                    }
-                if ('$replace' in pVal && Object.keys(pVal).length === 1) {
-                    // Apply partial modifications to existing field
-                    result[key] = mergePatch(base[key], pVal['$replace'], patchId);
-                    continue;
-                }
-                if ('$append' in pVal && Object.keys(pVal).length === 1) {
-                    const app = pVal['$append'];
-                    if (Array.isArray(app)) {
-                        result[key] = Array.isArray(base[key]) ? [...base[key], ...app] : [...app];
-                    } else if (app && typeof app === 'object') {
-                        const cloned = JSON.parse(JSON.stringify(base[key] || {}));
-                        for (const ak of Object.keys(app)) {
-                            if (Array.isArray(cloned[ak]) && Array.isArray(app[ak])) {
-                                cloned[ak] = [...cloned[ak], ...app[ak]];
-                            } else {
-                                cloned[ak] = mergePatch(cloned[ak], app[ak], patchId);
-                            }
-                        }
-                        result[key] = cloned;
-                    } else {
-                        result[key] = Array.isArray(base[key]) ? base[key] : (Array.isArray(app) ? app : base[key]);
-                    }
-                    continue;
-                }
-                if (('$remove' in pVal) && Object.keys(pVal).length === 1) {
-                    const del = pVal['$remove'];
-                    if (Array.isArray(base[key])) {
-                        if (base[key].length > 0 && base[key][0] && typeof base[key][0] === 'object' && 'id' in base[key][0]) {
-                            const ids = Array.isArray(del) ? del : [];
-                            result[key] = base[key].filter(b => !(b && b.id && ids.includes(b.id)));
-                        } else {
-                            result[key] = Array.isArray(del) ? base[key].filter(x => !del.includes(x)) : base[key];
-                        }
-                    } else if (typeof base[key] === 'object' && base[key] !== null && Array.isArray(del)) {
-                        const cloned = JSON.parse(JSON.stringify(base[key]));
-                        for (const k of del) delete cloned[k];
-                        result[key] = cloned;
-                    } else {
-                        result[key] = {};
-                    }
-                    continue;
-                }
-            }
-            result[key] = mergePatch(base[key], pVal, patchId);
-        }
+    // If base doesn't exist, add the patch value
+    if (base === undefined || base === null) {
+        // Clone patch to avoid mutating the original
+        const result = JSON.parse(JSON.stringify(patch));
         return result;
     }
 
-    // primitives: patch overrides
-    // If patch is an object and we have a patchId, clone and annotate
-    if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
-        const cloned = JSON.parse(JSON.stringify(patch));
-        if (patchId) cloned.__patchedBy = patchId;
-        return cloned;
+    // If patch is not an object (primitive), replace base
+    if (typeof patch !== 'object' || patch === null || Array.isArray(patch)) {
+        return JSON.parse(JSON.stringify(patch));
     }
-    return patch;
+
+    // If base is not an object (primitive or array), replace with patch
+    if (typeof base !== 'object' || base === null || Array.isArray(base)) {
+        const result = JSON.parse(JSON.stringify(patch));
+        return result;
+    }
+
+    // Both are objects: merge recursively (use deep clone to preserve immutability)
+    const result = JSON.parse(JSON.stringify(base));
+
+    for (const key of Object.keys(patch)) {
+        const patchVal = patch[key];
+        const baseVal = base[key];
+
+        // If patch value is null, delete this key
+        if (patchVal === null) {
+            delete result[key];
+            continue;
+        }
+
+        // Recursively merge
+        result[key] = mergePatch(baseVal, patchVal, patchId);
+    }
+
+    return result;
 }
 
 // --- Rules patch utilities ---
@@ -466,6 +351,9 @@ export async function loadAndMergeBaseWithPatches(basePath, patchIds = [], filen
  * implementation but centralizes the logic here.
  */
 export function mergeGameSystemsWithPatches(gameSystems, patchList, gameId) {
+    // Ensure patchList is always an array
+    const patches = Array.isArray(patchList) ? patchList : [];
+
     // Find the base system
     const baseSystem = (gameSystems || []).find(({ id }) => id === gameId);
     if (!baseSystem) return { armies: [], compositionSourcesMap: {} };
@@ -474,7 +362,7 @@ export function mergeGameSystemsWithPatches(gameSystems, patchList, gameId) {
     let mergedArmies = (baseSystem.armies || []).map(a => JSON.parse(JSON.stringify(a)));
     let compositionSourcesMap = {};
 
-    for (const entry of (patchList || [])) {
+    for (const entry of patches) {
         const patchId = entry && entry.id;
         const type = entry && entry.type;
         const data = entry && entry.data;
@@ -482,49 +370,55 @@ export function mergeGameSystemsWithPatches(gameSystems, patchList, gameId) {
 
         if (type === 'patch' || !type) {
             // Patch: merge each army by id
-            (data.armies || []).forEach(patchArmy => {
-                const idx = mergedArmies.findIndex(a => a.id === patchArmy.id);
-                if (idx !== -1) {
-                    // Record $append source if present
-                    if (patchArmy.armyComposition) {
-                        console.log(patchArmy);
-                        console.log(patchArmy.armyComposition);
-                        Object.entries(patchArmy.armyComposition).forEach(([op, arr]) => {
-                            if (op === '$append') {
-                                if (Array.isArray(arr)) {
-                                    arr.forEach(item => {
-                                        if (!compositionSourcesMap[patchArmy.id]) compositionSourcesMap[patchArmy.id] = {};
-                                        compositionSourcesMap[patchArmy.id][item] = patchId;
-                                    });
-                                } else if (arr && typeof arr === 'object') {
-                                    Object.keys(arr).forEach(itemKey => {
-                                        if (!compositionSourcesMap[patchArmy.id]) compositionSourcesMap[patchArmy.id] = {};
-                                        compositionSourcesMap[patchArmy.id][itemKey] = patchId;
-                                    });
-                                }
+            // New structure: armies is an object instead of array
+            const patchArmies = data.armies;
+            if (patchArmies && typeof patchArmies === 'object' && !Array.isArray(patchArmies)) {
+                for (const [armyId, patchArmy] of Object.entries(patchArmies)) {
+                    const idx = mergedArmies.findIndex(a => a.id === armyId);
+                    if (idx !== -1) {
+                        // Record old armyComposition before merge
+                        const oldArmyComposition = mergedArmies[idx].armyComposition;
+                        mergedArmies[idx] = mergePatch(mergedArmies[idx], patchArmy, patchId);
+                        const newArmyComposition = mergedArmies[idx].armyComposition;
+
+                        // If armyComposition was modified, record the source
+                        if (patchArmy.armyComposition && newArmyComposition && oldArmyComposition !== newArmyComposition) {
+                            if (!compositionSourcesMap[armyId]) compositionSourcesMap[armyId] = {};
+                            if (Array.isArray(newArmyComposition) && Array.isArray(oldArmyComposition)) {
+                                // Find newly added items
+                                newArmyComposition.forEach(item => {
+                                    if (!oldArmyComposition.includes(item)) {
+                                        compositionSourcesMap[armyId][item] = patchId;
+                                    }
+                                });
                             }
-                        });
+                        }
                     }
-                    mergedArmies[idx] = mergePatch(mergedArmies[idx], patchArmy, patchId);
                 }
-            });
+            }
         } else if (type === 'full') {
             // Full: replace all matching armies
-            (data.armies || []).forEach(fullArmy => {
-                const idx = mergedArmies.findIndex(a => a.id === fullArmy.id);
-                if (idx !== -1) {
-                    mergedArmies[idx] = JSON.parse(JSON.stringify(fullArmy));
-                    if (patchId && typeof mergedArmies[idx] === 'object') mergedArmies[idx].__patchedBy = patchId;
-                    // All composition from this patch
-                    if (fullArmy.armyComposition) {
-                        if (!compositionSourcesMap[fullArmy.id]) compositionSourcesMap[fullArmy.id] = {};
-                        // assume fullArmy.armyComposition is array
-                        (fullArmy.armyComposition || []).forEach(item => {
-                            compositionSourcesMap[fullArmy.id][item] = patchId;
-                        });
+            const fullArmies = data.armies;
+            if (fullArmies && typeof fullArmies === 'object' && !Array.isArray(fullArmies)) {
+                for (const [armyId, fullArmy] of Object.entries(fullArmies)) {
+                    const idx = mergedArmies.findIndex(a => a.id === armyId);
+                    if (idx !== -1) {
+                        mergedArmies[idx] = mergePatch(mergedArmies[idx], fullArmy, patchId);
+                        if (patchId && typeof mergedArmies[idx] === 'object') mergedArmies[idx].__patchedBy = patchId;
+
+                        // Record composition sources
+                        const newArmyComposition = mergedArmies[idx].armyComposition;
+                        if (fullArmy.armyComposition && newArmyComposition) {
+                            if (!compositionSourcesMap[armyId]) compositionSourcesMap[armyId] = {};
+                            if (Array.isArray(newArmyComposition)) {
+                                newArmyComposition.forEach(item => {
+                                    compositionSourcesMap[armyId][item] = patchId;
+                                });
+                            }
+                        }
                     }
                 }
-            });
+            }
         }
     }
 
@@ -532,9 +426,12 @@ export function mergeGameSystemsWithPatches(gameSystems, patchList, gameId) {
     mergedArmies.forEach(army => {
         if (army.armyComposition) {
             if (!compositionSourcesMap[army.id]) compositionSourcesMap[army.id] = {};
-            (army.armyComposition || []).forEach(item => {
-                if (!compositionSourcesMap[army.id][item]) compositionSourcesMap[army.id][item] = 'base';
-            });
+            // Handle different armyComposition types: array or object
+            if (Array.isArray(army.armyComposition)) {
+                army.armyComposition.forEach(item => {
+                    if (!compositionSourcesMap[army.id][item]) compositionSourcesMap[army.id][item] = 'base';
+                });
+            }
         }
     });
 
