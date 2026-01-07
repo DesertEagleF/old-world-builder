@@ -68,39 +68,6 @@ function deepClone(obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
-// Resolve an asset path relative to the app's public URL or document base.
-function resolveAssetUrl(relPath) {
-    // Normalize relPath (allow leading slash or not)
-    const p = String(relPath || '').replace(/^\/*/, '');
-    if (typeof window === 'undefined') return '/' + p;
-
-    // Prefer injected PUBLIC_URL, fall back to document base or current location
-    let pub = '';
-    try {
-        if (window.__APP_PUBLIC_URL__ && window.__APP_PUBLIC_URL__ !== '%PUBLIC_URL%') pub = String(window.__APP_PUBLIC_URL__);
-    } catch (e) {}
-    if (!pub && typeof process !== 'undefined' && process.env && process.env.PUBLIC_URL) pub = process.env.PUBLIC_URL;
-
-    let base;
-    try {
-        if (pub) {
-            // Make pub absolute relative to current location if necessary
-            base = new URL(pub.replace(/\/$/, '') + '/', window.location.href).href;
-        } else {
-            const baseEl = (typeof document !== 'undefined' && document.querySelector) ? document.querySelector('base') : null;
-            base = baseEl && baseEl.href ? baseEl.href : window.location.href;
-        }
-    } catch (e) {
-        base = window.location.href;
-    }
-
-    try {
-        return new URL(p, base).href;
-    } catch (e) {
-        return '/' + p;
-    }
-}
-
 // --- Patch index cache ---
 let _patchIndexCache = null;
 let _patchIndexPromise = null;
@@ -150,11 +117,6 @@ export async function loadPatchIndex(forceReload = false) {
 export async function reloadPatchIndex() {
     _patchIndexCache = null;
     return loadPatchIndex(true);
-}
-
-export function clearPatchIndexCache() {
-    _patchIndexCache = null;
-    _patchIndexPromise = null;
 }
 
 export function mergeRulesWithPatches(baseRules, patches) {
@@ -218,21 +180,6 @@ export async function getMergedRules(baseRules, forceReload = false, selectedPat
 }
 
 /**
- * Return list of available patch entries from the index file.
- * Each entry is expected to have { id, type }.
- * If the index file is missing or invalid, returns an empty array.
- */
-export async function listAvailablePatches() {
-    try {
-        const index = await loadPatchIndex();
-        if (!Array.isArray(index)) return [];
-        return index.map(e => ({ id: e.id, type: e.type || 'patch', meta: e.meta || null }));
-    } catch (e) {
-        return [];
-    }
-}
-
-/**
  * Load specific patches by id. Returns array of { id, type, data } for found patches.
  */
 export async function loadPatchesByIds(ids = []) {
@@ -293,7 +240,7 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
         const results = await Promise.all(ids.map(async (id) => {
             const entry = map[id] || { id, type: 'patch' };
             try {
-                const key = `patches-${id}-${String(actualFilename || '').replace(/\.json$/, '')}`;
+                const key = `patches-${id}-${String(filename || '').replace(/\.json$/, '')}`;
                 const data = await getJson(key);
                 if (!data) return { id, type: entry.type || 'patch', data: null };
                 return { id, type: entry.type || 'patch', data };
@@ -319,7 +266,6 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
  */
 export async function loadAndMergeBaseWithPatches(basePath, patchIds = [], filename = null) {
     // determine filename if not provided
-    const baseUrl = resolveAssetUrl(basePath);
     const fileName = filename || basePath.split('/').pop();// + '.json'
 
     // load base
@@ -449,19 +395,8 @@ export function initBaseSnapshot(baseRules) {
     _managerState.baseSnapshot = deepClone(baseRules || {});
 }
 
-export async function getAvailablePatches(forceReload = false) {
-    if (_managerState.available && !forceReload) return _managerState.available;
-    const entries = await listAvailablePatches();
-    _managerState.available = entries;
-    return entries;
-}
-
 export async function getPatchesForIds(ids = []) {
     return await loadPatchesByIds(ids);
-}
-
-export async function getPatchFilesForIds(ids = [], filename = 'rules.json') {
-    return await loadPatchFilesByIds(ids, filename);
 }
 
 export async function getMergedPatchDataForIds(baseData, ids = [], filename = 'patch.json') {
@@ -479,16 +414,10 @@ export async function getMergedRulesForSelection(selectedIds = []) {
     return merged;
 }
 
-export function getSelectionState() {
-    return { selectedIds: [..._managerState.selectedIds], lastApplied: _managerState.lastApplied };
-}
-
 const patchManager = {
     initBaseSnapshot,
-    getAvailablePatches,
     getPatchesForIds,
     getMergedRulesForSelection,
-    getSelectionState,
 };
 
 export default patchManager;

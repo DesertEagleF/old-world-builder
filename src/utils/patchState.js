@@ -4,7 +4,6 @@ let _locale = {};
 let _rules = {};
 const _appliedSubs = new Set();
 const _localeSubs = new Set();
-const _rulesSubs = new Set();
 
 export function getApplied() {
   return _applied.slice();
@@ -46,15 +45,6 @@ export function getRulesMap() {
 
 export function setRulesMap(map) {
   _rules = { ...(_rules || {}), ...(map || {}) };
-  // notify rules subscribers asynchronously as well
-  setTimeout(() => {
-    for (const s of _rulesSubs) s({ ..._rules });
-  }, 0);
-}
-
-export function subscribeRules(fn) {
-  _rulesSubs.add(fn);
-  return () => _rulesSubs.delete(fn);
 }
 
 const patchState = {
@@ -66,7 +56,6 @@ const patchState = {
   subscribeLocale,
   getRulesMap,
   setRulesMap,
-  subscribeRules,
 };
 
 export default patchState;

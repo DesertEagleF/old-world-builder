@@ -104,8 +104,9 @@ export const Header = ({
           <>
             {headline === "Old World Builder" ? (
               <div className="header__name">
-                <Link className="header__name-link" to="/">
+                <Link className="header__name-link" to="/wiki/Editor">
                   {headline}
+                  <span className="label">ENHANCED</span>
                 </Link>
               </div>
             ) : (
