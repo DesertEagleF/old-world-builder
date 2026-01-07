@@ -293,8 +293,7 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
         const results = await Promise.all(ids.map(async (id) => {
             const entry = map[id] || { id, type: 'patch' };
             try {
-                // map to new dot-style key: patches.<id>.<filename-without-extension>
-                const key = `patches.${id}.${String(filename || '').replace(/\.json$/, '')}`;
+                const key = `patches-${id}-${String(actualFilename || '').replace(/\.json$/, '')}`;
                 const data = await getJson(key);
                 if (!data) return { id, type: entry.type || 'patch', data: null };
                 return { id, type: entry.type || 'patch', data };
