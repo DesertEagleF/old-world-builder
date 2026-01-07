@@ -32,8 +32,59 @@ export function mergePatch(base, patch, patchId = null) {
         return result;
     }
 
+    // Handle array merging logic
+    if (Array.isArray(patch)) {
+        // If base is not an array, replace with patch
+        if (!Array.isArray(base)) {
+            return JSON.parse(JSON.stringify(patch));
+        }
+
+        // Both are arrays - check if array contains objects
+        const patchHasObjects = patch.length > 0 && typeof patch[0] === 'object' && patch[0] !== null;
+        const baseHasObjects = base.length > 0 && typeof base[0] === 'object' && base[0] !== null;
+
+        if (patchHasObjects && baseHasObjects) {
+            // Both arrays contain objects - merge objects by id or merge all objects
+            const merged = [...base];
+
+            // Create a map of base objects by id for quick lookup
+            const baseMap = new Map();
+            if (base[0] && typeof base[0] === 'object' && 'id' in base[0]) {
+                base.forEach(item => {
+                    if (item && typeof item === 'object' && 'id' in item) {
+                        baseMap.set(item.id, item);
+                    }
+                });
+            }
+
+            // Merge or add patch objects
+            patch.forEach(patchItem => {
+                if (patchItem && typeof patchItem === 'object' && 'id' in patchItem && baseMap.has(patchItem.id)) {
+                    // Object with existing id - merge properties
+                    const baseItem = baseMap.get(patchItem.id);
+                    const mergedItem = mergePatch(baseItem, patchItem, patchId);
+                    const existingIndex = merged.findIndex(item => item && typeof item === 'object' && 'id' in item && item.id === patchItem.id);
+                    if (existingIndex !== -1) {
+                        merged[existingIndex] = mergedItem;
+                    }
+                } else if (patchItem && typeof patchItem === 'object' && 'id' in patchItem) {
+                    // New object with id - add to array
+                    merged.push(JSON.parse(JSON.stringify(patchItem)));
+                } else {
+                    // Object without id - add to array
+                    merged.push(JSON.parse(JSON.stringify(patchItem)));
+                }
+            });
+
+            return merged;
+        } else {
+            // Arrays contain primitives - replace entire array
+            return JSON.parse(JSON.stringify(patch));
+        }
+    }
+
     // If patch is not an object (primitive), replace base
-    if (typeof patch !== 'object' || patch === null || Array.isArray(patch)) {
+    if (typeof patch !== 'object' || patch === null) {
         return JSON.parse(JSON.stringify(patch));
     }
 
@@ -232,7 +283,7 @@ export function mergeDataWithPatches(baseData, patches) {
  * filename defaults to 'rules.json' but callers can pass 'patch.json', 'full.json', etc.
  * Returns array of { id, type, data } for found files (data is parsed JSON or null).
  */
-export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
+export async function loadPatchFilesByIds(ids = [], filename = 'rules.json', armyComposition = null) {
     if (!Array.isArray(ids) || ids.length === 0) return [];
     try {
         const index = await loadPatchIndex();
@@ -240,7 +291,30 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
         const results = await Promise.all(ids.map(async (id) => {
             const entry = map[id] || { id, type: 'patch' };
             try {
-                const key = `patches-${id}-${String(filename || '').replace(/\.json$/, '')}`;
+                // First, try to load the patch.json to check for filename mappings
+                let key = `patches-${id}`;
+                try {
+                    const patchData = await getJson(`${key}`);
+                    if (patchData && patchData.filenames) {
+                        // If armyComposition is provided, check if there's a mapping for it
+                        if (armyComposition && patchData.filenames[armyComposition]) {
+                            key = `${key}-${patchData.filenames[armyComposition]}`;
+                        } else if (patchData.filenames[filename]) {
+                            // Use the mapped filename from patch.json for the base filename
+                            key = `${key}-${patchData.filenames[filename]}`;
+                        } else {
+                            // Default behavior: append the filename
+                            key = `${key}-${String(filename || '').replace(/\.json$/, '')}`;
+                        }
+                    } else {
+                        // Default behavior: append the filename
+                        key = `${key}-${String(filename || '').replace(/\.json$/, '')}`;
+                    }
+                } catch (e) {
+                    // Fallback to default behavior
+                    key = `${key}-${String(filename || '').replace(/\.json$/, '')}`;
+                }
+
                 const data = await getJson(key);
                 if (!data) return { id, type: entry.type || 'patch', data: null };
                 return { id, type: entry.type || 'patch', data };
@@ -263,8 +337,9 @@ export async function loadPatchFilesByIds(ids = [], filename = 'rules.json') {
  * @param {string} basePath - path to base file without extension, e.g. 'games/the-old-world/vampire-counts'
  * @param {Array<string>} patchIds - array of patch ids to attempt to load
  * @param {string} filename - filename under the patch folder (defaults to same as base file name)
+ * @param {string} armyComposition - optional army composition id to use for patch filename mapping
  */
-export async function loadAndMergeBaseWithPatches(basePath, patchIds = [], filename = null) {
+export async function loadAndMergeBaseWithPatches(basePath, patchIds = [], filename = null, armyComposition = null) {
     // determine filename if not provided
     const fileName = filename || basePath.split('/').pop();// + '.json'
 
@@ -281,7 +356,7 @@ export async function loadAndMergeBaseWithPatches(basePath, patchIds = [], filen
     if (!Array.isArray(patchIds) || patchIds.length === 0) return baseData;
 
     // attempt to load patch files for provided ids
-    const patches = await loadPatchFilesByIds(patchIds, fileName);
+    const patches = await loadPatchFilesByIds(patchIds, fileName, armyComposition);
     if (!Array.isArray(patches) || patches.length === 0) return baseData;
 
     // merge using mergeDataWithPatches so operator semantics apply
