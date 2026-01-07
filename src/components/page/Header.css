@@ -51,7 +51,7 @@
 
 .header__name {
   font-family: "Gideon Roman", serif;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-top: 7px;
   color: var(--color-headline);
@@ -64,12 +64,14 @@
 
 .header__name-link,
 .header__name-link:visited {
+  font-size: 2rem;
   color: var(--color-font-light);
   text-decoration: none;
 }
 
 .header__name-link:hover,
 .header__name-link:visited:hover {
+  font-size: 2rem;
   color: var(--color-font-light);
   text-decoration: underline;
 }
