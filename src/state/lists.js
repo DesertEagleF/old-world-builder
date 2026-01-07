@@ -201,7 +201,6 @@ export const {
   duplicateUnit,
   updateList,
   deleteList,
-  duplicateList,
   toggleFolder,
 } = listsSlice.actions;
 

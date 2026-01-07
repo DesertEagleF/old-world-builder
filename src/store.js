@@ -6,7 +6,6 @@ import itemsReducer from "./state/items";
 import errorsReducer from "./state/errors";
 import rulesIndexReducer from "./state/rules-index";
 import settingsReducer from "./state/settings";
-import patchesReducer from "./state/patches";
 
 export default configureStore({
   reducer: {
@@ -16,6 +15,5 @@ export default configureStore({
     errors: errorsReducer,
     rulesIndex: rulesIndexReducer,
     settings: settingsReducer,
-    patches: patchesReducer,
   },
 });
