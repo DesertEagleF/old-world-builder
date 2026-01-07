@@ -106,8 +106,8 @@ export const Header = ({
               <div className="header__name">
                 <Link className="header__name-link" to="/wiki/Editor">
                   {headline}
-                  <span className="label">ENHANCED</span>
                 </Link>
+                <span className="label bg-primary" style={{ marginLeft: "4px" }}>ENHANCED</span>
               </div>
             ) : (
               <div className="header__name">
