@@ -278,14 +278,8 @@ export async function getAssetUrl(listKey, filename) {
     }
 }
 
-export function clearConfigCache() {
-    _config = null;
-    _loading = null;
-}
-
 export default {
     loadResourceConfig,
     getResourceUrl,
     getJson,
-    clearConfigCache,
 };
