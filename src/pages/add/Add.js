@@ -15,7 +15,6 @@ import { getRandomId } from "../../utils/id";
 import { useLanguage } from "../../utils/useLanguage";
 import { getArmyData, getAlliesForComposition } from "../../utils/army";
 import { loadAndMergeBaseWithPatches } from "../../utils/patch";
-import { fetcher } from "../../utils/fetcher";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
 import { rules } from "../../utils/rules";
 
@@ -157,19 +156,18 @@ export const Add = ({ isMobile }) => {
           )
         );
       } else {
-        fetcher({
-          url: `${list.army}`,
-          onSuccess: (data) => {
-            dispatch(
-              setArmy(
-                getArmyData({
-                  data,
-                  armyComposition: list.armyComposition || list.army,
-                })
-              )
-            );
-          },
-        });
+        (async () => {
+          const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
+          const data = await loadAndMergeBaseWithPatches(`data-${list.army}`, patchIds, list.army, list.armyComposition || list.army);
+          dispatch(
+            setArmy(
+              getArmyData({
+                data,
+                armyComposition: list.armyComposition || list.army,
+              })
+            )
+          );
+        })();
       }
     } else if (list && type === "allies" && allAllies.length === 0 && (availableAllies && availableAllies.length > 0)) {
       setAlliesLoaded(false);
@@ -195,7 +193,7 @@ export const Add = ({ isMobile }) => {
         } else {
           (async () => {
             const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
-            const data = await loadAndMergeBaseWithPatches(`data-${army}`, patchIds, army);
+            const data = await loadAndMergeBaseWithPatches(`data-${army}`, patchIds, army, armyComposition || army);
             const armyData = getArmyData({
               data,
               armyComposition: armyComposition || army,
@@ -246,7 +244,7 @@ export const Add = ({ isMobile }) => {
           } else {
             (async () => {
               const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
-              const data = await loadAndMergeBaseWithPatches(`data-${mercenary.army}`, patchIds, mercenary.army);
+              const data = await loadAndMergeBaseWithPatches(`data-${mercenary.army}`, patchIds, mercenary.army, mercenary.army);
               const armyData = getArmyData({
                 data,
                 armyComposition: mercenary.army,

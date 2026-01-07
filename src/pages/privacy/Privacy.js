@@ -4,7 +4,6 @@ import { useIntl } from "react-intl";
 import { Helmet } from "react-helmet-async";
 
 import { Header, Main } from "../../components/page";
-// import { loadScript } from "../../utils/script";
 
 export const Privacy = () => {
   const location = useLocation();

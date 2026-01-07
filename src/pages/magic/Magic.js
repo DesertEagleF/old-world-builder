@@ -434,7 +434,7 @@ export const Magic = ({ isMobile }) => {
     if (army && list && unit && !items) {
       (async () => {
         const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
-        const data = await loadAndMergeBaseWithPatches('data-magic-items', patchIds, 'magic-items');
+        const data = await loadAndMergeBaseWithPatches('data-magic-items', patchIds, 'magic-items', null);
 
         let itemCategories = army.items;
 
