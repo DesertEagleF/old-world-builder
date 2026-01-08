@@ -53,6 +53,7 @@ export const Add = ({ isMobile }) => {
   const [redirect, setRedirect] = useState(null);
   const [alliesLoaded, setAlliesLoaded] = useState(0);
   const [mercenariesLoaded, setMercenariesLoaded] = useState(0);
+  const [forceReload, setForceReload] = useState(false);
   const intl = useIntl();
   const location = useLocation();
   const { language } = useLanguage();
@@ -115,24 +116,26 @@ export const Add = ({ isMobile }) => {
     unitType,
     magicItemsArmy,
     allyArmyComposition
-  ) => (
-    <li key={unit.id} className="list">
-      <button
-        className="list__inner add__list-inner"
-        onClick={() => handleAdd(unit, allyArmyId, unitType, magicItemsArmy, allyArmyComposition)}
-      >
-        <span className="add__name">
-          {unit.minimum ? `${unit.minimum} ` : null}
-          <b>{getUnitName({ unit, language })}</b>
-        </span>
-        <i className="unit__points">{`${unit.minimum ? unit.points * unit.minimum : unit.points
-          } ${intl.formatMessage({
-            id: "app.points",
-          })}`}</i>
-      </button>
-      <RuleWithIcon name={unit.name_en} isDark className="add__rules-icon" />
-    </li>
-  );
+  ) => {
+    return (
+      <li key={unit.id} className="list">
+        <button
+          className="list__inner add__list-inner"
+          onClick={() => handleAdd(unit, allyArmyId, unitType, magicItemsArmy, allyArmyComposition)}
+        >
+          <span className="add__name">
+            {unit.minimum ? `${unit.minimum} ` : null}
+            <b>{getUnitName({ unit, language })}</b>
+          </span>
+          <i className="unit__points">{`${unit.minimum ? unit.points * unit.minimum : unit.points
+            } ${intl.formatMessage({
+              id: "app.points",
+            })}`}</i>
+        </button>
+        <RuleWithIcon name={unit.name_en} isDark className="add__rules-icon" />
+      </li>
+    );
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -141,22 +144,29 @@ export const Add = ({ isMobile }) => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (list && !army && type !== "allies") {
-      const isCustom = game.id !== "the-old-world";
 
-      if (isCustom) {
-        const data = getCustomDatasetData(list.army);
+    // Load army data when needed
+    if (list && type !== "allies") {
+      const listHasPatches = list.patches && Array.isArray(list.patches) && list.patches.length > 0;
+      const shouldReload = forceReload || !army || (listHasPatches && !army?.characters?.length);
 
-        dispatch(
-          setArmy(
-            getArmyData({
-              data,
-              armyComposition: list.armyComposition,
-            })
-          )
-        );
-      } else {
-        (async () => {
+
+      if (shouldReload) {
+        const isCustom = game.id !== "the-old-world";
+
+        if (isCustom) {
+          const data = getCustomDatasetData(list.army);
+
+          dispatch(
+            setArmy(
+              getArmyData({
+                data,
+                armyComposition: list.armyComposition,
+              })
+            )
+          );
+        } else {
+          (async () => {
           const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
           const data = await loadAndMergeBaseWithPatches(`data-${list.army}`, patchIds, list.army, list.armyComposition || list.army);
           dispatch(
@@ -167,9 +177,14 @@ export const Add = ({ isMobile }) => {
               })
             )
           );
+          // Reset forceReload flag after reloading
+          if (forceReload) {
+            setForceReload(false);
+          }
         })();
-      }
-    } else if (list && type === "allies" && allAllies.length === 0 && (availableAllies && availableAllies.length > 0)) {
+        }
+        }
+      } else if (list && type === "allies" && allAllies.length === 0 && (availableAllies && availableAllies.length > 0)) {
       setAlliesLoaded(false);
       availableAllies.forEach(({ army, armyComposition, magicItemsArmy }, index) => {
         const isCustom = game.id !== "the-old-world";
@@ -266,7 +281,7 @@ export const Add = ({ isMobile }) => {
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list, army, allies, type]);
+  }, [list, allies, type, game, forceReload]);
 
   if (redirect) {
     return <Redirect to={`?editor.${listId}.${type}.${redirect}`} />;

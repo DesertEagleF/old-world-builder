@@ -104,14 +104,12 @@ export const Datasets = ({ isMobile }) => {
       localStorage.setItem("owb.dataset", armyInput);
       setArmyInput("");
     } catch (error) {
-      console.log(error);
     }
   };
   const handleArmyFromLocalClick = () => {
     try {
       setDataset(JSON.parse(localStorage.getItem("owb.dataset")));
     } catch (error) {
-      console.log(error);
     }
   };
   const handlePreview = (data) => {

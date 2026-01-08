@@ -7,6 +7,7 @@ import { Button } from "../button";
 import { normalizeRuleName } from "../../utils/string";
 import { openRulesIndex } from "../../state/rules-index";
 import { useRules } from "./rules-map";
+import patchState from "../../utils/patchState";
 import "./RuleWithIcon.css";
 
 export const RuleWithIcon = ({ name, isDark, className }) => {
@@ -21,7 +22,32 @@ export const RuleWithIcon = ({ name, isDark, className }) => {
   const normalizedName = normalizeRuleName(name);
   const synonym = synonyms[normalizedName];
 
-  return rulesMap[normalizedName] || rulesMap[synonym] ? (
+  // Check if the rule exists in the current rules map
+  const ruleExists = rulesMap[normalizedName] || rulesMap[synonym];
+
+  // If no rule found but we have applied patches, show button anyway
+  // This handles cases where rules are loaded but naming doesn't match exactly
+  // or where the rule exists in patch data but hasn't been loaded into rulesMap yet
+  if (!ruleExists) {
+    const appliedPatches = patchState.getApplied();
+
+    if (appliedPatches && Array.isArray(appliedPatches) && appliedPatches.length > 0) {
+      // Show button for any unit when patches are applied and no rule is found
+      // This ensures patch units have functional "view details" buttons
+      return (
+        <Button
+          type="text"
+          className={classNames("rule-icon", className && className)}
+          color={isDark ? "dark" : "light"}
+          label={intl.formatMessage({ id: "misc.showRules" })}
+          icon="preview"
+          onClick={() => dispatch(openRulesIndex({ activeRule: name }))}
+        />
+      );
+    }
+  }
+
+  return ruleExists ? (
     <Button
       type="text"
       className={classNames("rule-icon", className && className)}

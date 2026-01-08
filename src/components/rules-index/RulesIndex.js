@@ -82,7 +82,27 @@ export const RulesIndex = () => {
       : normalizeRuleName(activeRule.replace(" {renegade}", ""));
   const synonym = synonyms[normalizedName];
   const ruleData = rulesMap[normalizedName] || rulesMap[synonym];
-  const rulePath = ruleData?.url;
+  let rulePath = ruleData?.url;
+
+  // If we have applied patches and no specific patch URL, we need to append patch identifiers
+  if (rulePath && list?.patches && Array.isArray(list.patches) && list.patches.length > 0) {
+    // Get the first applied patch ID (for now, we use the first patch)
+    // In the future, this could be enhanced to handle multiple patches
+    const patchId = list.patches[0].id || list.patches[0];
+    if (typeof patchId === 'string' && patchId !== 'base') {
+      // Check if this rule was modified by the patch by looking for patch-specific entries
+      const patchSpecificName = `${normalizedName}_${patchId}`;
+      const patchRuleData = rulesMap[patchSpecificName] || rulesMap[synonyms[patchSpecificName]];
+
+      if (patchRuleData && patchRuleData.url) {
+        // Use the patch-specific URL
+        rulePath = patchRuleData.url;
+      }
+      // If no patch-specific rule data found, don't modify the base URL
+      // This ensures only rules actually modified by the patch get the patch ID appended
+    }
+  }
+
   const rulePathB = rulePath ? `${rulePath}/en` : null;
   const urlForTab = rulePath
     ? `https://tow.huijiwiki.com/wiki/${selectedTab === "B" && rulePathB ? rulePathB : rulePath}`

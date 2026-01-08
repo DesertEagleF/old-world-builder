@@ -4095,6 +4095,15 @@ export async function applySelectedRulePatches(selectedIds = []) {
     for (const key of Object.keys(combinedMerged)) {
       rules[key] = combinedMerged[key];
     }
+
+    // Update global patch state so other components can see the applied patches
+    if (selectedIds && selectedIds.length > 0) {
+      const appliedPatches = selectedIds.map(id => ({ id, type: 'patch' }));
+      patchState.setApplied(appliedPatches);
+    } else {
+      patchState.setApplied([]);
+    }
+
     return combinedMerged;
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -4117,6 +4126,9 @@ export function revertToBaseRules() {
     for (const key of Object.keys(_originalRulesSnapshot)) {
       rules[key] = JSON.parse(JSON.stringify(_originalRulesSnapshot[key]));
     }
+
+    // Clear global patch state
+    patchState.setApplied([]);
   } catch (e) {
     // noop
   }

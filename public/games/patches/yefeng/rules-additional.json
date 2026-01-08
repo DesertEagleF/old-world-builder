@@ -1,0 +1,14 @@
+{
+  "test-vampire": {
+    "url": "Unit/test-vampire/yefeng-patch"
+  },
+  "test vampire": {
+    "url": "Unit/test-vampire/yefeng-patch?b=1"
+  },
+  "test vampire von-carstein": {
+    "url": "Unit/test-vampire/yefeng-patch?a=1"
+  },
+  "general": {
+    "url": "characters/the-general-characters/yefeng-patch"
+  }
+}

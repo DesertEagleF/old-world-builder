@@ -99,6 +99,21 @@ export const Editor = ({ isMobile }) => {
         // no patches -> ensure base rules
         revertToBaseRules();
       }
+
+      // Signal Add page that patches have been applied or removed
+      if (list.patches && list.patches.length > 0) {
+        sessionStorage.setItem(`patch-applied-${list.id}`, Date.now().toString());
+      } else {
+        sessionStorage.removeItem(`patch-applied-${list.id}`);
+      }
+
+      // Force reload any open Add pages for this list
+      const currentTimestamp = Date.now();
+      sessionStorage.setItem(`force-reload-${list.id}`, currentTimestamp.toString());
+
+      // Also trigger a custom event for immediate response
+      window.dispatchEvent(new CustomEvent('forceReloadAdd', { detail: { listId: list.id } }));
+
       if (mounted) {
         // pass rulesMap/synonyms into validation so it can look up unit rules
         dispatch(
