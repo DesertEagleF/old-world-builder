@@ -28,14 +28,15 @@ import {
   combosUsedElsewhere,
 } from "../../utils/magic-item-limitations";
 
-import { nameMap } from "./name-map";
+import { nameMap as baseNameMap } from "./name-map";
 import { loadAndMergeBaseWithPatches } from "../../utils/patch";
+import { getJson } from "../../utils/resourceLoader";
 import "./Magic.css";
 
 const updateIds = (items) => {
   return items.map((item) => ({
     ...item,
-    items: item.items.map((data, index) => {
+    items: (item.items || []).map((data, index) => {
       if (data.conditional) {
         return {
           ...data,
@@ -168,6 +169,7 @@ export const Magic = ({ isMobile }) => {
       );
   const [usedElsewhere, setUsedElsewhere] = useState([]);
   const [comboUsedElsewhere, setComboUsedElsewhere] = useState([]);
+  const [nameMap, setNameMap] = useState(baseNameMap);
   const getPointsText = ({
     points: regularPoints,
     perModelPoints,
@@ -241,7 +243,7 @@ export const Magic = ({ isMobile }) => {
           magicItems = [magicItem];
         } else {
           magicItems = [
-            ...(commandOptions[command].magic.selected || []),
+            ...(commandOptions[command]?.magic?.selected || []),
             magicItem,
           ];
         }
@@ -254,12 +256,12 @@ export const Magic = ({ isMobile }) => {
       }
     } else {
       if (isCommand) {
-        magicItems = commandOptions[command].magic.selected.filter(
+        magicItems = commandOptions[command]?.magic?.selected?.filter(
           ({ name_en, name }) =>
             name
               ? name !== event.target.value
               : normalizeRuleName(name_en) !== event.target.value
-        );
+        ) || [];
       } else {
         magicItems = unit.items[group].selected.filter(({ name_en, name }) =>
           name
@@ -314,7 +316,7 @@ export const Magic = ({ isMobile }) => {
     let magicItems;
 
     if (isCommand) {
-      magicItems = (commandOptions[command].magic.selected || []).map(
+      magicItems = (commandOptions[command]?.magic?.selected || []).map(
         (item) => {
           if (item.name && item.name === parentId) {
             return {
@@ -436,6 +438,26 @@ export const Magic = ({ isMobile }) => {
         const patchIds = list && Array.isArray(list.patches) ? list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name)) : [];
         const data = await loadAndMergeBaseWithPatches('data-magic-items', patchIds, 'magic-items', null);
 
+        // Load patch locale files and merge into nameMap
+        let mergedNameMap = { ...baseNameMap };
+        if (patchIds.length > 0) {
+          const localePromises = patchIds.map(async (patchId) => {
+            try {
+              const locale = await getJson(`patches-${patchId}-locale`);
+              return locale;
+            } catch (e) {
+              return null;
+            }
+          });
+          const localeResults = await Promise.all(localePromises);
+          localeResults.forEach((locale) => {
+            if (locale && typeof locale === 'object') {
+              Object.assign(mergedNameMap, locale);
+            }
+          });
+          setNameMap(mergedNameMap);
+        }
+
         let itemCategories = army.items;
 
         if (unit.magicItemsArmy) {
@@ -447,13 +469,21 @@ export const Magic = ({ isMobile }) => {
           }
         }
 
-        const allItems = itemCategories.map((itemCategory) => ({
-          items: data ? data[itemCategory] : [],
-          name_en: nameMap[itemCategory].name_en,
-          id: itemCategory,
-        }));
+        const allItems = itemCategories.map((itemCategory) => {
+          const categoryData = mergedNameMap[itemCategory] || {};
+          return {
+            items: data ? data[itemCategory] : [],
+            name_en: categoryData.name_en || itemCategory,
+            name_cn: categoryData.name_cn || categoryData.name_en || itemCategory,
+            name_de: categoryData.name_de || categoryData.name_en || itemCategory,
+            name_fr: categoryData.name_fr || categoryData.name_en || itemCategory,
+            id: itemCategory,
+          };
+        });
 
-        dispatch(setItems(updateIds(allItems)));
+        const updatedItems = updateIds(allItems);
+
+        dispatch(setItems(updatedItems));
       })();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -597,9 +627,9 @@ export const Magic = ({ isMobile }) => {
   const commandOptions = unit?.command.filter(
     (commandOption) =>
       !commandOption.armyComposition ||
-      commandOption.armyComposition.includes(
-        unit.army || list?.armyComposition || list?.army
-      )
+      (Array.isArray(commandOption.armyComposition)
+        ? commandOption.armyComposition.includes(unit.army || list?.armyComposition || list?.army)
+        : commandOption.armyComposition === (unit.army || list?.armyComposition || list?.army))
   );
   const hasCommandMagicItems = Boolean(
     commandOptions &&
@@ -610,20 +640,20 @@ export const Magic = ({ isMobile }) => {
 
   if (hasCommandMagicItems) {
     maxMagicPoints =
-      (commandOptions[command].magic.armyComposition &&
-        commandOptions[command].magic.armyComposition[
+      (commandOptions[command]?.magic?.armyComposition &&
+        commandOptions[command]?.magic?.armyComposition[
           list.armyComposition || list.army
         ]?.maxPoints) ||
-      commandOptions[command].magic.maxPoints;
+      commandOptions[command]?.magic?.maxPoints || 0;
     unitMagicPoints = getUnitMagicPoints({
-      selected: commandOptions[command].magic.selected,
+      selected: commandOptions[command]?.magic?.selected || [],
     });
     maxItemsPerCategory =
-      (commandOptions[command].magic.armyComposition &&
-        commandOptions[command].magic.armyComposition[
+      (commandOptions[command]?.magic?.armyComposition &&
+        commandOptions[command]?.magic?.armyComposition[
           list.armyComposition || list.army
         ]?.maxItemsPerCategory) ||
-      commandOptions[command].magic.maxItemsPerCategory ||
+      commandOptions[command]?.magic?.maxItemsPerCategory ||
       0;
   } else if (hasMagicItems) {
     maxMagicPoints =
@@ -707,27 +737,35 @@ export const Magic = ({ isMobile }) => {
         )}
         {items.map((itemGroup, index) => {
           const commandMagicItems = itemGroup.items.filter(
-            (item) =>
-              hasCommandMagicItems &&
-              commandOptions[command].magic.types.includes(item.type)
+            (item) => {
+              if (!item) return false;
+              return hasCommandMagicItems && commandOptions[command]?.magic?.types?.includes(item.type);
+            }
           );
+
+          const allowedTypes = unit.items[group].types;
+
           const magicItems = itemGroup.items.filter(
-            (item) =>
-              hasMagicItems &&
-              !command &&
-              unit.items[group].types.includes(item.type)
+            (item) => {
+              if (!item) return false;
+              return hasMagicItems && !command && allowedTypes.includes(item.type);
+            }
           );
+
           const itemGroupItems = (
             hasCommandMagicItems ? commandMagicItems : magicItems
           ).filter(
-            (item) =>
-              (!maxMagicPoints || item.points <= maxMagicPoints) &&
-              (!item.armyComposition ||
-                equalsOrIncludes(
-                  item.armyComposition,
-                  unit.army || list?.armyComposition || list?.army
-                ))
+            (item) => {
+              if (!item) return false;
+              const pointsOk = !maxMagicPoints || item.points <= maxMagicPoints;
+              const armyOk = !item.armyComposition || equalsOrIncludes(item.armyComposition, unit.army || list?.armyComposition || list?.army);
+              return pointsOk && armyOk;
+            }
           );
+
+          if (itemGroupItems.length === 0) {
+            return null;
+          }
 
           if (itemGroupItems.length > 0) {
             prevItemType = null;
@@ -735,7 +773,7 @@ export const Magic = ({ isMobile }) => {
           }
 
           const unitSelectedItems = hasCommandMagicItems
-            ? commandOptions[command].magic.selected ?? []
+            ? commandOptions[command]?.magic?.selected ?? []
             : unit.items[group].selected ?? [];
 
           return (
@@ -766,7 +804,7 @@ export const Magic = ({ isMobile }) => {
                     if (itemType === magicItem.type) {
                       itemCountInCategory += amount ?? 1;
 
-                      if (name_en.includes("Master")) {
+                      if (name_en && name_en.includes("Master")) {
                         masterRuneInCategory = true;
                       }
                     }
@@ -828,8 +866,9 @@ export const Magic = ({ isMobile }) => {
                       <>
                         <h3 className="magic__type">
                           <span>
-                            {nameMap[magicItem.type][`name_${language}`] ||
-                              nameMap[magicItem.type].name_en}
+                            {nameMap[magicItem.type]?.[`name_${language}`] ||
+                              nameMap[magicItem.type]?.name_en ||
+                              magicItem.type}
                           </span>
                           {maxItemsPerCategory > 0 && (
                             <i className="magic__item-count">{`${itemCountInCategory}/${maxItemsPerCategory}`}</i>

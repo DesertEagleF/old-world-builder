@@ -27,6 +27,7 @@ import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
 import patchManager from '../../utils/patch';
 import { getJson } from '../../utils/resourceLoader';
 import PatchedBadge from '../../components/patch/PatchedBadge';
+import patchState from '../../utils/patchState';
 
 import "./Editor.css";
 
@@ -37,9 +38,11 @@ export const Editor = ({ isMobile }) => {
   const intl = useIntl();
   const dispatch = useDispatch();
   const { language } = useLanguage();
-  const { rulesMap, synonyms } = useRules();
+  const { rulesMap, synonyms, loading: rulesLoading } = useRules();
   const [redirect, setRedirect] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoadingPatches, setIsLoadingPatches] = useState(false);
+  const [patchesLoaded, setPatchesLoaded] = useState(false);
   const location = useLocation();
   // Fallback: if route params didn't supply listId (we use query-style routes like
   // ?editor.<id>), extract it from location.search so the Editor still loads when
@@ -87,35 +90,79 @@ export const Editor = ({ isMobile }) => {
 
   useEffect(() => {
     let mounted = true;
+
     (async () => {
       if (!list) return;
 
+      // Only proceed if rules are fully loaded
+      if (rulesLoading) {
+        return;
+      }
+
+      // Skip if patches already loaded for this session
+      if (patchesLoaded) {
+        return;
+      }
+
       updateLocalList(list);
 
+      // Check if we need to apply patches
+      const currentPatchIds = (list.patches || []).map(p => p.id).sort();
+      const appliedPatchKey = `patches-applied-${list.id}`;
+      const lastAppliedPatches = sessionStorage.getItem(appliedPatchKey);
+      const needToApplyPatches = lastAppliedPatches !== JSON.stringify(currentPatchIds);
+
+      // Always ensure patchState is set correctly (it's in-memory and lost on refresh)
       if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
-        const ids = list.patches.map((p) => p.id);
-        await applySelectedRulePatches(ids);
+        const appliedPatches = list.patches.map(p => ({ id: p.id, type: 'patch' }));
+        patchState.setApplied(appliedPatches);
       } else {
-        // no patches -> ensure base rules
-        revertToBaseRules();
+        patchState.setApplied([]);
       }
 
-      // Signal Add page that patches have been applied or removed
-      if (list.patches && list.patches.length > 0) {
-        sessionStorage.setItem(`patch-applied-${list.id}`, Date.now().toString());
-      } else {
-        sessionStorage.removeItem(`patch-applied-${list.id}`);
+      if (needToApplyPatches) {
+        if (mounted) {
+          setIsLoadingPatches(true);
+        }
+
+        // Apply patches first and wait for completion
+        if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
+          const ids = list.patches.map((p) => p.id);
+          await applySelectedRulePatches(ids);
+        } else {
+          // no patches -> ensure base rules
+          revertToBaseRules();
+        }
+
+        // Remember that we've applied these patches
+        sessionStorage.setItem(appliedPatchKey, JSON.stringify(currentPatchIds));
+
+        // Signal Add page that patches have been applied or removed
+        if (list.patches && list.patches.length > 0) {
+          sessionStorage.setItem(`patch-applied-${list.id}`, Date.now().toString());
+        } else {
+          sessionStorage.removeItem(`patch-applied-${list.id}`);
+        }
+
+        // Force reload any open Add pages for this list
+        const currentTimestamp = Date.now();
+        sessionStorage.setItem(`force-reload-${list.id}`, currentTimestamp.toString());
+
+        // Also trigger a custom event for immediate response
+        window.dispatchEvent(new CustomEvent('forceReloadAdd', { detail: { listId: list.id } }));
       }
 
-      // Force reload any open Add pages for this list
-      const currentTimestamp = Date.now();
-      sessionStorage.setItem(`force-reload-${list.id}`, currentTimestamp.toString());
-
-      // Also trigger a custom event for immediate response
-      window.dispatchEvent(new CustomEvent('forceReloadAdd', { detail: { listId: list.id } }));
-
+      // Only run validation if component is still mounted
       if (mounted) {
-        // pass rulesMap/synonyms into validation so it can look up unit rules
+        // Clear loading state
+        setIsLoadingPatches(false);
+        // Mark patches as loaded to prevent re-running
+        setPatchesLoaded(true);
+
+        // Clear previous errors first
+        dispatch(setErrors([]));
+
+        // Then run validation with updated rules
         dispatch(
           setErrors(
             validateList({
@@ -132,7 +179,12 @@ export const Editor = ({ isMobile }) => {
     return () => {
       mounted = false;
     };
-  }, [list, dispatch, language, intl]);
+  }, [list?.id, list?.patches, dispatch, language, intl, rulesLoading, patchesLoaded]);
+
+  // Reset patchesLoaded state when list changes
+  useEffect(() => {
+    setPatchesLoaded(false);
+  }, [list?.id]);
 
   const [fetchedPatchNames, setFetchedPatchNames] = useState({});
   const getPatchDisplayName = (patch) => {
@@ -226,7 +278,6 @@ export const Editor = ({ isMobile }) => {
         const data = await getJson("army-special-rules");
         const key = list.armyComposition || list.army;
         const dict2 = data && data[key];
-        // console.log("[Editor] armySpecialRules load -> listId:", listId, "armyCompositionKey:", key, "dict2:", dict2);
         if (!dict2) {
           if (mounted) setArmyRules([]);
           return;
@@ -247,15 +298,6 @@ export const Editor = ({ isMobile }) => {
       mounted = false;
     };
   }, [listId, list && list.armyComposition, language]);
-
-  // console.log(
-  //   "[Editor] before render -> title:",
-  //   selectedRule && selectedRule.title,
-  //   "content:",
-  //   selectedRule && selectedRule.content,
-  //   "selectedRule:",
-  //   selectedRule
-  // );
 
   if (redirect) {
     return <Redirect to="/" />;
@@ -563,13 +605,18 @@ export const Editor = ({ isMobile }) => {
         </Dialog>
 
         <section>
-          {errors
+          {!isLoadingPatches && errors
             .filter(({ section }) => section === "global")
             .map(({ message }) => (
               <ErrorMessage key={message} spaceAfter spaceBefore={isMobile}>
                 <FormattedMessage id={message} />
               </ErrorMessage>
             ))}
+          {isLoadingPatches && (
+            <ErrorMessage spaceAfter spaceBefore={isMobile}>
+              <FormattedMessage id="misc.loading" defaultMessage="Loading..." />
+            </ErrorMessage>
+          )}
         </section>
         {list.lords && (
           <section className="editor__section">
@@ -685,7 +732,7 @@ export const Editor = ({ isMobile }) => {
               armyComposition={armyComposition}
             />
 
-            {errors
+            {!isLoadingPatches && errors
               .filter(({ section }) => section === "characters")
               .map(({ message, name, diff, min, max, option }, index) => (
                 <ErrorMessage key={message + index} spaceBefore>
@@ -744,7 +791,7 @@ export const Editor = ({ isMobile }) => {
             armyComposition={armyComposition}
           />
 
-          {errors
+          {!isLoadingPatches && errors
             .filter(({ section }) => section === "core")
             .map(({ message, name, min, max, diff, option }, index) => (
               <ErrorMessage key={message + index} spaceBefore>
@@ -801,7 +848,7 @@ export const Editor = ({ isMobile }) => {
             armyComposition={armyComposition}
           />
 
-          {errors
+          {!isLoadingPatches && errors
             .filter(({ section }) => section === "special")
             .map(({ message, name, diff, min, max, option }, index) => (
               <ErrorMessage key={message + index} spaceBefore>
@@ -858,7 +905,7 @@ export const Editor = ({ isMobile }) => {
             armyComposition={armyComposition}
           />
 
-          {errors
+          {!isLoadingPatches && errors
             .filter(({ section }) => section === "rare")
             .map(({ message, name, diff, min, max, option }, index) => (
               <ErrorMessage key={message + index} spaceBefore>
@@ -922,7 +969,7 @@ export const Editor = ({ isMobile }) => {
                 armyComposition={armyComposition}
               />
 
-              {errors
+              {!isLoadingPatches && errors
                 .filter(({ section }) => section === "mercenaries")
                 .map(({ message, name, diff, min, max, option }, index) => (
                   <ErrorMessage key={message + index} spaceBefore>
@@ -981,7 +1028,7 @@ export const Editor = ({ isMobile }) => {
               armyComposition={armyComposition}
             />
 
-            {errors
+            {!isLoadingPatches && errors
               .filter(({ section }) => section === "allies")
               .map(({ message, name, diff, min, max, option }, index) => (
                 <ErrorMessage key={message + index} spaceBefore>

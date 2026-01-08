@@ -73,6 +73,7 @@
   "misc.collapseFolder": "Collapse folder",
   "misc.folderName": "Name:",
   "misc.confirm": "Confirm",
+  "misc.loading": "Ładowanie...",
   "patches.title": "Zarządzaj poprawkami",
   "patches.reload": "Przeładuj poprawki",
   "patches.expand": "Pokaż poprawki",

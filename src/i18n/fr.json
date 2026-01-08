@@ -73,6 +73,7 @@
   "misc.collapseFolder": "Réduire le dossier",
   "misc.folderName": "Nom:",
   "misc.confirm": "Confirmer",
+  "misc.loading": "Chargement...",
   "patches.title": "Gérer les patches",
   "patches.reload": "Recharger les patches",
   "patches.expand": "Afficher les patches",

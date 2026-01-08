@@ -1,0 +1,32 @@
+{
+    "general": [
+        {
+            "name_cn": "测试之剑",
+            "name_en": "Test blade",
+            "points": 84,
+            "type": "weapon",
+            "onePerArmy": true,
+            "name": "test blade"
+        }
+    ],
+    "von-carstein": [
+        {
+            "name_cn": "杀猪刀",
+            "name_en": "Killing Blade",
+            "points": 92,
+            "type": "weapon",
+            "onePerArmy": true,
+            "name": "killing blade"
+        }
+    ],
+  "vampire-counts": [
+        {
+            "name_cn": "吸血刀",
+            "name_en": "Sucking Blade",
+            "points": 62,
+            "type": "weapon",
+            "onePerArmy": true,
+            "name": "sucking blade"
+        }
+    ]
+}

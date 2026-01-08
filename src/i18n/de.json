@@ -73,6 +73,7 @@
   "misc.collapseFolder": "Ordner reduzieren",
   "misc.folderName": "Name:",
   "misc.confirm": "Bestätigen",
+  "misc.loading": "Laden...",
   "patches.title": "Patches verwalten",
   "patches.reload": "Patches neu laden",
   "patches.expand": "Patches anzeigen",

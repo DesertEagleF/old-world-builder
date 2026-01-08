@@ -157,7 +157,7 @@ export const combosUsedElsewhere = (items, list, excludeId) => {
 
           for (let itemGroup in unit.items) {
             // get all items that match the current item's category
-            let targetCategoryItems = unit.items[itemGroup].selected.filter(
+            let targetCategoryItems = (unit.items[itemGroup].selected || []).filter(
               (targetItem) => targetItem.type === itemType
             );
             if (targetCategoryItems.length > 0) {

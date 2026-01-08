@@ -7,6 +7,7 @@
   "patches-yefeng-locale": "https://tow.huijiwiki.com/wiki/Data:yefeng/locale.json?action=raw",
   "patches-yefeng-vampire-counts": "https://tow.huijiwiki.com/wiki/Data:yefeng/test-vampire-counts.json?action=raw",
   "patches-yefeng-rules-additional": "https://tow.huijiwiki.com/wiki/Data:yefeng/rules-additional.json?action=raw",
+  "patches-yefeng-magic-items": "https://tow.huijiwiki.com/wiki/Data:yefeng/magic-items.json?action=raw",
 
   "data-beastmen-brayherds": "https://tow.huijiwiki.com/wiki/Data:beastmen-brayherds.json?action=raw",
   "data-chaos-dwarfs": "https://tow.huijiwiki.com/wiki/Data:chaos-dwarfs.json?action=raw",

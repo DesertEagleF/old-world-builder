@@ -75,6 +75,7 @@
   "misc.folderName": "名称：",
   "misc.confirm": "确定",
   "misc.changeLanguage": "更改语言",
+  "misc.loading": "加载中...",
   "patches.title": "管理补丁",
   "patches.reload": "重新加载补丁列表",
   "misc.sort": "排序",

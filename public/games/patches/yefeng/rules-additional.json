@@ -10,5 +10,14 @@
   },
   "general": {
     "url": "characters/the-general-characters/yefeng-patch"
+  },
+  "test blade": {
+    "url": "Magic/test-blade/yefeng-patch"
+  },
+  "killing blade": {
+    "url": "Magic/killing-blade/yefeng-patch"
+  },
+  "sucking blade": {
+    "url": "Magic/sucking-blade/yefeng-patch"
   }
 }
