@@ -4,6 +4,7 @@ import { equalsOrIncludes } from "./string";
 import { getUnitPoints } from "./points";
 import { getUnitName, getUnitLeadership, getUnitRuleData } from "./unit";
 import { joinWithAnd, joinWithOr } from "./string";
+import patchState from "./patchState";
 
 const filterByTroopType = (unit, maps) => {
   const ruleData = getUnitRuleData(unit.name_en, maps);
@@ -155,24 +156,16 @@ export const validateList = ({ list, language, intl, maps = {} }) => {
     rareUnits +
     mercUnits +
     allyUnits;
-  const characterUnitsRules = rules[list.armyComposition]
-    ? rules[list.armyComposition].characters.units
-    : rules["grand-army"].characters.units;
-  const coreUnitsRules = rules[list.armyComposition]
-    ? rules[list.armyComposition].core.units
-    : rules["grand-army"].core.units;
-  const specialUnitsRules = rules[list.armyComposition]
-    ? rules[list.armyComposition].special.units
-    : rules["grand-army"].special.units;
-  const rareUnitsRules = rules[list.armyComposition]
-    ? rules[list.armyComposition].rare.units
-    : rules["grand-army"].rare.units;
-  const alliesUnitsRules = rules[list.armyComposition]
-    ? rules[list.armyComposition]?.allies?.units
-    : rules["grand-army"]?.allies?.units;
-  const mercenariesUnitsRules = rules[list.armyComposition]
-    ? rules[list.armyComposition]?.mercenaries?.units
-    : rules["grand-army"]?.mercenaries?.units;
+  // Get merged rules from patchState (includes patched rules) or fallback to static rules
+  const mergedRules = patchState.getRulesMap();
+  const armyRules = mergedRules[list.armyComposition] || rules[list.armyComposition] || rules["grand-army"];
+
+  const characterUnitsRules = armyRules?.characters?.units;
+  const coreUnitsRules = armyRules?.core?.units;
+  const specialUnitsRules = armyRules?.special?.units;
+  const rareUnitsRules = armyRules?.rare?.units;
+  const alliesUnitsRules = armyRules?.allies?.units;
+  const mercenariesUnitsRules = armyRules?.mercenaries?.units;
 
   // Not enough non-character units
   if (!list.compositionRule || !list.compositionRule.includes("battle-march")) {

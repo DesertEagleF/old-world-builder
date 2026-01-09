@@ -22,10 +22,13 @@ import { useRules } from "../../components/rules-index/rules-map";
 import { removeFromLocalList, updateLocalList } from "../../utils/list";
 import { deleteList, moveUnit } from "../../state/lists";
 import { setErrors } from "../../state/errors";
+import { setArmy } from "../../state/army";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
 import patchManager from '../../utils/patch';
 import { getJson } from '../../utils/resourceLoader';
+import { getArmyData } from "../../utils/army";
+import { loadAndMergeBaseWithPatches } from '../../utils/patch';
 import PatchedBadge from '../../components/patch/PatchedBadge';
 import patchState from '../../utils/patchState';
 
@@ -101,6 +104,13 @@ export const Editor = ({ isMobile }) => {
 
       // Skip if patches already loaded for this session
       if (patchesLoaded) {
+        // Still need to ensure patchState is set correctly even if patches were already loaded
+        if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
+          const appliedPatches = list.patches.map(p => ({ id: p.id, type: 'patch' }));
+          patchState.setApplied(appliedPatches);
+        } else {
+          patchState.setApplied([]);
+        }
         return;
       }
 
@@ -179,12 +189,59 @@ export const Editor = ({ isMobile }) => {
     return () => {
       mounted = false;
     };
-  }, [list?.id, list?.patches, dispatch, language, intl, rulesLoading, patchesLoaded]);
+  }, [list?.id, list?.patches, list, dispatch, language, intl, rulesLoading, patchesLoaded, rulesMap, synonyms]);
 
   // Reset patchesLoaded state when list changes
   useEffect(() => {
     setPatchesLoaded(false);
   }, [list?.id]);
+
+  // Load army data with patches for Editor interface (needed for patched-badge display)
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadArmyForEditor() {
+      if (!list) return;
+
+      const listHasPatches = list.patches && Array.isArray(list.patches) && list.patches.length > 0;
+
+      if (listHasPatches) {
+        try {
+          console.log('[Editor] Loading army data with patches for patched-badge display');
+          const gameSystems = getGameSystems();
+          const game = gameSystems.find((g) => g.id === list.game);
+          const isCustom = game.id !== "the-old-world";
+
+          if (isCustom) {
+            const data = getCustomDatasetData(list.army);
+            if (mounted) {
+              dispatch(setArmy(getArmyData({
+                data,
+                armyComposition: list.armyComposition,
+              })));
+            }
+          } else {
+            const patchIds = list.patches.map(p => (typeof p === 'string' ? p : p.id || p.name));
+            const data = await loadAndMergeBaseWithPatches(`data-${list.army}`, patchIds, list.army, list.armyComposition || list.army);
+            if (mounted) {
+              dispatch(setArmy(getArmyData({
+                data,
+                armyComposition: list.armyComposition || list.army,
+              })));
+            }
+          }
+        } catch (e) {
+          console.error('[Editor] Failed to load army data with patches:', e);
+        }
+      }
+    }
+
+    loadArmyForEditor();
+
+    return () => {
+      mounted = false;
+    };
+  }, [list, dispatch]);
 
   const [fetchedPatchNames, setFetchedPatchNames] = useState({});
   const getPatchDisplayName = (patch) => {
@@ -297,7 +354,7 @@ export const Editor = ({ isMobile }) => {
     return () => {
       mounted = false;
     };
-  }, [listId, list && list.armyComposition, language]);
+  }, [listId, list, list?.armyComposition, language]);
 
   if (redirect) {
     return <Redirect to="/" />;

@@ -161,6 +161,36 @@ export const Add = ({ isMobile }) => {
   }, [location.pathname]);
 
   useEffect(() => {
+    // Listen for forceReloadAdd custom event from Editor
+    const handleForceReloadAdd = (event) => {
+      if (event.detail && event.detail.listId === listId) {
+        console.log("[Add] Received forceReloadAdd event for list:", listId);
+        setForceReload(true);
+      }
+    };
+
+    // Listen for sessionStorage changes (fallback for older browsers)
+    const handleStorageChange = (event) => {
+      if (event.key === `force-reload-${listId}` && event.newValue) {
+        console.log("[Add] Received forceReload signal from sessionStorage for list:", listId);
+        setForceReload(true);
+      }
+    };
+
+    if (listId) {
+      window.addEventListener("forceReloadAdd", handleForceReloadAdd);
+      window.addEventListener("storage", handleStorageChange);
+    }
+
+    return () => {
+      if (listId) {
+        window.removeEventListener("forceReloadAdd", handleForceReloadAdd);
+        window.removeEventListener("storage", handleStorageChange);
+      }
+    };
+  }, [listId]);
+
+  useEffect(() => {
 
     // Load army data when needed
     if (list && type !== "allies") {

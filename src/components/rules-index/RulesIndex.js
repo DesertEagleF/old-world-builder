@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { useParams, useLocation } from "react-router-dom";
 import { queryParts } from "../../utils/query";
@@ -9,7 +9,6 @@ import { Dialog } from "../../components/dialog";
 import { Spinner } from "../../components/spinner";
 import { normalizeRuleName } from "../../utils/string";
 import { closeRulesIndex } from "../../state/rules-index";
-import PatchedBadge from "../patch/PatchedBadge";
 
 import { useRules } from "./rules-map";
 import "./RulesIndex.css";
@@ -37,7 +36,7 @@ export const RulesIndex = () => {
   const contentRef = useRef(null);
   const { rulesMap, synonyms } = useRules();
 
-  const processHtmlString = (htmlString) => {
+  const processHtmlString = useCallback((htmlString) => {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -68,7 +67,7 @@ export const RulesIndex = () => {
 
     setContentHtml(finalHtml);
     setFetchFailed(false);
-  };
+  }, [setContentHtml, setFetchFailed]);
 
   const handleClose = () => {
     setIsLoading(true);
@@ -85,23 +84,26 @@ export const RulesIndex = () => {
   const ruleData = rulesMap[normalizedName] || rulesMap[synonym];
   let rulePath = ruleData?.url;
 
-  // If we have applied patches and no specific patch URL, we need to append patch identifiers
+  // If we have applied patches and no specific patch URL, we need to check for patch-specific rule data
   if (rulePath && list?.patches && Array.isArray(list.patches) && list.patches.length > 0) {
-    // Get the first applied patch ID (for now, we use the first patch)
-    // In the future, this could be enhanced to handle multiple patches
-    const patchId = list.patches[0].id || list.patches[0];
-    if (typeof patchId === 'string' && patchId !== 'base') {
-      // Check if this rule was modified by the patch by looking for patch-specific entries
-      const patchSpecificName = `${normalizedName}_${patchId}`;
-      const patchRuleData = rulesMap[patchSpecificName] || rulesMap[synonyms[patchSpecificName]];
+    // Try to find patch-specific rule data from all applied patches
+    for (const patch of list.patches) {
+      const patchId = patch.id || patch;
+      if (typeof patchId === 'string' && patchId !== 'base') {
+        // Check if this rule was modified by the patch by looking for patch-specific entries
+        const patchSpecificName = `${normalizedName}_${patchId}`;
+        const patchRuleData = rulesMap[patchSpecificName] || rulesMap[synonyms[patchSpecificName]];
 
-      if (patchRuleData && patchRuleData.url) {
-        // Use the patch-specific URL
-        rulePath = patchRuleData.url;
+        if (patchRuleData && patchRuleData.url) {
+          // Use the patch-specific URL
+          rulePath = patchRuleData.url;
+          console.log(`[RulesIndex] Found patch-specific rule data for ${patchSpecificName}, using URL: ${rulePath}`);
+          break;
+        }
       }
-      // If no patch-specific rule data found, don't modify the base URL
-      // This ensures only rules actually modified by the patch get the patch ID appended
     }
+    // If no patch-specific rule data found, don't modify the base URL
+    // This ensures only rules actually modified by the patch get the patch ID appended
   }
 
   const rulePathB = rulePath ? `${rulePath}/en` : null;
@@ -109,7 +111,7 @@ export const RulesIndex = () => {
     ? `https://tow.huijiwiki.com/wiki/${selectedTab === "B" && rulePathB ? rulePathB : rulePath}`
     : null;
 
-  const handleLinkClick = async (event) => {
+  const handleLinkClick = useCallback(async (event) => {
     const link = event.target.closest('a');
     if (!link) return;
 
@@ -141,7 +143,7 @@ export const RulesIndex = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [urlForTab, processHtmlString]);
 
   useEffect(() => {
     if (!contentRef.current) return;
@@ -152,7 +154,7 @@ export const RulesIndex = () => {
     return () => {
       contentElement.removeEventListener('click', handleLinkClick);
     };
-  }, [contentHtml, urlForTab, selectedTab]);
+  }, [contentHtml, urlForTab, selectedTab, handleLinkClick]);
 
   useEffect(() => {
     if (!urlForTab || !open) return;
@@ -169,7 +171,7 @@ export const RulesIndex = () => {
         setFetchFailed(true);
       })
       .finally(() => setIsLoading(false));
-  }, [urlForTab, open]);
+  }, [urlForTab, open, processHtmlString]);
 
   return (
     <Dialog open={open} onClose={handleClose}>
