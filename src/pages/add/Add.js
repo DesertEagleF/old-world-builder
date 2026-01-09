@@ -18,6 +18,7 @@ import { loadAndMergeBaseWithPatches } from "../../utils/patch";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
 import { rules } from "../../utils/rules";
 import patchState from "../../utils/patchState";
+import PatchedBadge from "../../components/patch/PatchedBadge";
 
 import { nameMap } from "../magic";
 import { queryParts } from "../../utils/query";
@@ -136,6 +137,12 @@ export const Add = ({ isMobile }) => {
           <span className="add__name">
             {unit.minimum ? `${unit.minimum} ` : null}
             <b>{getUnitName({ unit, language })}</b>
+            {unit.__patchedBy && (
+              <PatchedBadge
+                text={unit.__patchedBy}
+                className="unit__patch-badge"
+              />
+            )}
           </span>
           <i className="unit__points">{`${unit.minimum ? unit.points * unit.minimum : unit.points
             } ${intl.formatMessage({
@@ -158,8 +165,8 @@ export const Add = ({ isMobile }) => {
     // Load army data when needed
     if (list && type !== "allies") {
       const listHasPatches = list.patches && Array.isArray(list.patches) && list.patches.length > 0;
-      const shouldReload = forceReload || !army || (listHasPatches && !army?.characters?.length);
 
+      const shouldReload = forceReload || !army || (listHasPatches && !army?.characters?.length);
 
       if (shouldReload) {
         const isCustom = game.id !== "the-old-world";

@@ -307,7 +307,7 @@ export const Editor = ({ isMobile }) => {
     if (isMobile) {
       return (
         <>
-          <Header to="/" />
+          <Header to="?" />
           <Main loading />
         </>
       );
@@ -493,7 +493,7 @@ export const Editor = ({ isMobile }) => {
 
       {isMobile && (
         <Header
-          to="/"
+          to="?"
           headline={list.name}
           subheadline={
             <>
@@ -520,7 +520,7 @@ export const Editor = ({ isMobile }) => {
         {!isMobile && (
           <Header
             isSection
-            to="/"
+            to="?"
             headline={list.name}
             subheadline={
               <>
@@ -1083,6 +1083,20 @@ export const OrderableUnitList = ({ units, type, listId, armyComposition }) => {
   const intl = useIntl();
   const { language } = useLanguage();
   const { rulesMap, synonyms } = useRules();
+  const army = useSelector((state) => state.army);
+
+  // Helper function to find if a unit is from a patch
+  const getUnitPatchInfo = (unit) => {
+    if (!army || !army[type]) return null;
+
+    // Try to find the unit in army data by matching id or name
+    const foundUnit = army[type].find(u => {
+      // Match by id or by name_en
+      return u.id === unit.id || u.name_en === unit.name_en;
+    });
+
+    return foundUnit?.__patchedBy || null;
+  };
 
   const handleMoved = (indexes) =>
     dispatch(
@@ -1096,30 +1110,41 @@ export const OrderableUnitList = ({ units, type, listId, armyComposition }) => {
   return (
     <OrderableList id={type} onMoved={handleMoved}>
       {units?.length > 0 &&
-        units.map((unit, index) => (
-          <ListItem
-            key={index}
-            to={`?editor.${listId}.${type}.${unit.id}`}
-            className="editor__list"
-            active={location.pathname.includes(unit.id)}
-          >
-            <div className="editor__list-inner">
-              {unit.strength || unit.minimum ? (
-                <span>{`${unit.strength || unit.minimum}`}</span>
-              ) : null}
-              <b>{getUnitName({ unit, language })}</b>
-              <i>{`${getUnitPoints(
-                { ...unit, type },
-                {
-                  armyComposition,
-                }
-              )} ${intl.formatMessage({
-                id: "app.points",
-              })}`}</i>
-            </div>
-              <p>{getAllOptions(unit, { armyComposition, maps: { rulesMap, synonyms } })}</p>
-          </ListItem>
-        ))}
+        units.map((unit, index) => {
+          // Get patch info either from unit directly or from army data
+          const patchedBy = unit.__patchedBy || getUnitPatchInfo(unit);
+
+          return (
+            <ListItem
+              key={index}
+              to={`?editor.${listId}.${type}.${unit.id}`}
+              className="editor__list"
+              active={location.pathname.includes(unit.id)}
+            >
+              <div className="editor__list-inner">
+                {unit.strength || unit.minimum ? (
+                  <span>{`${unit.strength || unit.minimum}`}</span>
+                ) : null}
+                <b>{getUnitName({ unit, language })}</b>
+                {patchedBy && (
+                  <PatchedBadge
+                    text={patchedBy}
+                    className="unit__patch-badge"
+                  />
+                )}
+                <i>{`${getUnitPoints(
+                  { ...unit, type },
+                  {
+                    armyComposition,
+                  }
+                )} ${intl.formatMessage({
+                  id: "app.points",
+                })}`}</i>
+              </div>
+                <p>{getAllOptions(unit, { armyComposition, maps: { rulesMap, synonyms } })}</p>
+            </ListItem>
+          );
+        })}
     </OrderableList>
   );
 };

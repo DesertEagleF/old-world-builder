@@ -7,11 +7,13 @@ export const synonyms = {};
 
 let cached = null;
 let lastAppliedPatches = null;
+let isLoading = false;
 
 // Function to clear cache when patch state changes
 export function clearRulesCache() {
   cached = null;
   lastAppliedPatches = null;
+  isLoading = false;
 }
 
 export async function loadRulesMap() {
@@ -26,6 +28,14 @@ export async function loadRulesMap() {
   if (cached && JSON.stringify(lastAppliedPatches) !== JSON.stringify(currentAppliedPatches)) {
     cached = null;
   }
+
+  // If already loading, return the cached promise
+  if (isLoading && cached) {
+    return cached;
+  }
+
+  isLoading = true;
+
   try {
     const [remote, additional, remoteSynonyms] = await Promise.all([
       resourceLoader.getJson("rules-index-export"),
@@ -98,29 +108,40 @@ export async function loadRulesMap() {
     // Cache the result and update the last applied patches reference
     cached = { rulesMap: { ...rulesMap }, synonyms: { ...synonyms } };
     lastAppliedPatches = currentAppliedPatches ? [...currentAppliedPatches] : null;
+    isLoading = false;
     return cached;
   } catch (e) {
     Object.assign(rulesMap, {});
     Object.assign(synonyms, {});
     cached = { rulesMap: {}, synonyms: {} };
     lastAppliedPatches = currentAppliedPatches ? [...currentAppliedPatches] : null;
+    isLoading = false;
     return cached;
   }
 }
 
 export function useRules() {
-  const [state, setState] = useState({ rulesMap: {}, synonyms: {}, loading: true });
+  const [state, setState] = useState(() => {
+    // Initialize with cached data if available
+    return cached || { rulesMap: {}, synonyms: {}, loading: true };
+  });
 
   useEffect(() => {
     let mounted = true;
+    let unsubscribe = null;
 
-    // Load initial rules
-    loadRulesMap().then((data) => {
-      if (mounted) setState({ ...data, loading: false });
-    });
+    // If we have cached data, use it immediately without loading again
+    if (cached) {
+      setState({ ...cached, loading: false });
+    } else {
+      // Load initial rules
+      loadRulesMap().then((data) => {
+        if (mounted) setState({ ...data, loading: false });
+      });
+    }
 
     // Subscribe to patch changes to clear cache and reload when patches change
-    const unsubscribe = patchState.subscribeApplied(() => {
+    unsubscribe = patchState.subscribeApplied(() => {
       if (mounted) {
         // Clear cache when patch state changes
         clearRulesCache();
@@ -135,7 +156,7 @@ export function useRules() {
 
     return () => {
       mounted = false;
-      unsubscribe();
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 

@@ -38,6 +38,7 @@ export const RulesIndex = () => {
   const { rulesMap, synonyms } = useRules();
 
   const processHtmlString = (htmlString) => {
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
     const topBody = doc.querySelector('#bodyContent');
@@ -45,7 +46,6 @@ export const RulesIndex = () => {
       setFetchFailed(true);
       return;
     }
-
     const mwContent = topBody.querySelector('#mw-content-text');
     // prefer finding #bodyContent inside #mw-content-text, otherwise fall back
     const innerBody = mwContent ? mwContent.querySelector('#mw-parser-output') : null;
