@@ -356,9 +356,9 @@ export const Export = ({ isMobile }) => {
 
         <hr />
 
-        <h2 className="export__subtitle">
+        <div class="header-2" className="export__subtitle">
           <FormattedMessage id="export.owbTitle" />
-        </h2>
+        </div>
         <p>
           <FormattedMessage id="export.dowloadInfo" />
         </p>

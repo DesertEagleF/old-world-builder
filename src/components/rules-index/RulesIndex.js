@@ -9,6 +9,7 @@ import { Dialog } from "../../components/dialog";
 import { Spinner } from "../../components/spinner";
 import { normalizeRuleName } from "../../utils/string";
 import { closeRulesIndex } from "../../state/rules-index";
+import PatchedBadge from "../patch/PatchedBadge";
 
 import { useRules } from "./rules-map";
 import "./RulesIndex.css";
@@ -62,7 +63,7 @@ export const RulesIndex = () => {
     const h1 = firstHeading ? firstHeading.querySelector('h1') : null;
     const headingText = h1 ? h1.innerText.trim() : null;
     if (headingText) {
-      finalHtml = `<h2>${headingText}</h2>\n${finalHtml}`;
+      finalHtml = `<div class="header-2">${headingText}</div>\n${finalHtml}`;
     }
 
     setContentHtml(finalHtml);

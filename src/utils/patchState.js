@@ -44,7 +44,13 @@ export function getRulesMap() {
 }
 
 export function setRulesMap(map) {
-  _rules = { ...(_rules || {}), ...(map || {}) };
+  if (!map) return;
+  // Create a copy to avoid circular references
+  const newRules = {};
+  for (const key of Object.keys(map)) {
+    newRules[key] = map[key];
+  }
+  _rules = newRules;
 }
 
 const patchState = {

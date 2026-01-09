@@ -17,6 +17,7 @@ import { getArmyData, getAlliesForComposition } from "../../utils/army";
 import { loadAndMergeBaseWithPatches } from "../../utils/patch";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
 import { rules } from "../../utils/rules";
+import patchState from "../../utils/patchState";
 
 import { nameMap } from "../magic";
 import { queryParts } from "../../utils/query";
@@ -25,11 +26,20 @@ import "./Add.css";
 
 let allAllies = [];
 let allMercenaries = [];
-
 // Helper function to check if a unit should be filtered out due to max=0 rule
 const shouldFilterOutUnit = (unit, armyComposition, type) => {
   try {
-    const armyRules = rules[armyComposition];
+    // Get rules from patchState (includes patched rules)
+    const mergedRules = patchState.getRulesMap();
+
+    // First try with armyComposition
+    let armyRules = mergedRules[armyComposition];
+
+    // Fallback to static rules
+    if (!armyRules) {
+      armyRules = rules[armyComposition];
+    }
+
     if (!armyRules || !armyRules[type] || !armyRules[type].units) {
       return false;
     }
@@ -38,8 +48,8 @@ const shouldFilterOutUnit = (unit, armyComposition, type) => {
       unitRule.ids && unitRule.ids.includes(unit.id)
     );
 
-    // If unit has max=0, it should be filtered out
-    return unitRules && unitRules.max === 0;
+    // If unit has max=0 (explicitly set), it should be filtered out
+    return unitRules && typeof unitRules.max === 'number' && unitRules.max === 0;
   } catch (e) {
     return false;
   }

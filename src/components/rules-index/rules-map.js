@@ -49,14 +49,14 @@ export async function loadRulesMap() {
           const patchId = patch.id || patch;
           if (typeof patchId === 'string') {
             try {
-              // Try to load patch-specific rules-additional file first (for links)
-              const patchRulesAdditional = await resourceLoader.getJson(`patches-${patchId}-rules-additional`);
-              if (patchRulesAdditional) {
-                return patchRulesAdditional;
-              }
-              // Fallback to patch-specific rules file (for army composition)
+              // Try to load patch-specific rules file first (for army composition)
               const patchRules = await resourceLoader.getJson(`patches-${patchId}-rules`);
-              return patchRules;
+              if (patchRules) {
+                return patchRules;
+              }
+              // Fallback to patch-specific rules-additional file (for links)
+              const patchRulesAdditional = await resourceLoader.getJson(`patches-${patchId}-rules-additional`);
+              return patchRulesAdditional;
             } catch (e) {
               // Ignore if no rules file found for this patch
               return null;
@@ -68,9 +68,18 @@ export async function loadRulesMap() {
         const patchRulesResults = await Promise.all(patchRulePromises);
 
         // Merge patch rules into combined rules
-        patchRulesResults.forEach((patchRules) => {
+        patchRulesResults.forEach((patchRules, index) => {
           if (patchRules && typeof patchRules === "object") {
-            Object.assign(combinedRules, patchRules);
+            const patchId = appliedPatches[index]?.id || appliedPatches[index];
+            // Mark patch rules with __patchedBy
+            const markedPatchRules = {};
+            Object.keys(patchRules).forEach(key => {
+              markedPatchRules[key] = {
+                ...patchRules[key],
+                __patchedBy: patchId
+              };
+            });
+            Object.assign(combinedRules, markedPatchRules);
           }
         });
       } catch (e) {

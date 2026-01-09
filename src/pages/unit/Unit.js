@@ -39,6 +39,7 @@ import {
   isWizard,
 } from "../../utils/unit";
 import { getGameSystems, getCustomDatasetData } from "../../utils/game-systems";
+import PatchedBadge from "../../components/patch/PatchedBadge";
 
 import "./Unit.css";
 
@@ -610,10 +611,18 @@ export const Unit = ({ isMobile, previewData = {} }) => {
           moreButton={moreButtons}
           headline={getUnitName({ unit, language })}
           headlineIcon={
-            <RuleWithIcon
-              name={unit.name_en}
-              className="unit__header-rule-icon"
-            />
+            <>
+              {unit.__patchedBy && (
+                <PatchedBadge
+                  text={unit.__patchedBy}
+                  className="unit__patch-badge"
+                />
+              )}
+              <RuleWithIcon
+                name={unit.name_en}
+                className="unit__header-rule-icon"
+              />
+            </>
           }
           subheadline={`${getUnitPoints(
             { ...unit, type },
@@ -637,11 +646,19 @@ export const Unit = ({ isMobile, previewData = {} }) => {
             moreButton={isPreview ? null : moreButtons}
             headline={getUnitName({ unit, language })}
             headlineIcon={
-              <RuleWithIcon
-                name={unit.name_en}
-                isDark
-                className="unit__header-rule-icon"
-              />
+              <>
+                {unit.__patchedBy && (
+                  <PatchedBadge
+                    text={unit.__patchedBy}
+                    className="unit__patch-badge"
+                  />
+                )}
+                <RuleWithIcon
+                  name={unit.name_en}
+                  isDark
+                  className="unit__header-rule-icon"
+                />
+              </>
             }
             subheadline={`${getUnitPoints(
               { ...unit, type },
@@ -708,9 +725,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         {unit.command && unit.command.length > 0 && (
           <>
             {type !== "characters" && (
-              <h2 className="unit__subline">
+              <div class="header-2" className="unit__subline">
                 <FormattedMessage id="unit.command" />
-              </h2>
+              </div>
             )}
             {unit.command
               .filter(
@@ -945,9 +962,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         )}
         {unit.equipment && unit.equipment.length > 0 && (
           <>
-            <h2 className="unit__subline">
+            <div class="header-2" className="unit__subline">
               <FormattedMessage id="unit.equipment" />
-            </h2>
+            </div>
             {unit.equipment
               .filter(
                 (unitEquipment) =>
@@ -1003,9 +1020,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         )}
         {unit.armor && unit.armor.length > 0 && (
           <>
-            <h2 className="unit__subline">
+            <div class="header-2" className="unit__subline">
               <FormattedMessage id="unit.armor" />
-            </h2>
+            </div>
             {unit.armor
               .filter(
                 (unitArmor) =>
@@ -1069,9 +1086,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         )}
         {unit.options && unit.options.length > 0 && (
           <>
-            <h2 className="unit__subline">
+            <div class="header-2" className="unit__subline">
               <FormattedMessage id="unit.options" />
-            </h2>
+            </div>
             {unit.options
               .filter(
                 (unitOption) =>
@@ -1262,9 +1279,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         )}
         {unit.regimentalUnit && (
           <>
-            <h2 className="unit__subline unit__detachments-headline">
+            <div class="header-2" className="unit__subline unit__detachments-headline">
               <FormattedMessage id="unit.detachments" />
-            </h2>
+            </div>
             {detachments &&
               detachments.map(({ name_en, id, ...detachment }) => (
                 <Fragment key={id}>
@@ -1649,9 +1666,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         )}
         {unit.mounts && unit.mounts.length > 0 && (
           <>
-            <h2 className="unit__subline">
+            <div class="header-2" className="unit__subline">
               <FormattedMessage id="unit.mount" />
-            </h2>
+            </div>
             {unit.mounts
               .filter(
                 ({ armyComposition }) =>
@@ -1770,9 +1787,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
         )}
         {isWizard(unit) && lores && lores.length ? (
           <>
-            <h2 className="unit__subline">
+            <div class="header-2" className="unit__subline">
               <FormattedMessage id="unit.lore" />
-            </h2>
+            </div>
             {lores
               .filter((lore, index) => {
                 if (
@@ -1947,9 +1964,9 @@ export const Unit = ({ isMobile, previewData = {} }) => {
 
         {specialRules && specialRules.name_en ? (
           <>
-            <h2 className="unit__subline unit__subline--space-before">
+            <div class="header-2" className="unit__subline unit__subline--space-before">
               <FormattedMessage id="unit.specialRules" />
-            </h2>
+            </div>
             <p>
               <RulesLinksText textObject={specialRules} />
             </p>

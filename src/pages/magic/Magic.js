@@ -31,6 +31,7 @@ import {
 import { nameMap as baseNameMap } from "./name-map";
 import { loadAndMergeBaseWithPatches } from "../../utils/patch";
 import { getJson } from "../../utils/resourceLoader";
+import PatchedBadge from "../../components/patch/PatchedBadge";
 import "./Magic.css";
 
 const updateIds = (items) => {
@@ -571,6 +572,12 @@ export const Magic = ({ isMobile }) => {
                 / *\{[^)]*\}/g,
                 ""
               )}
+              {magicItem.__patchedBy && (
+                <PatchedBadge
+                  text={magicItem.__patchedBy}
+                  className="magic__item-patch-badge"
+                />
+              )}
             </span>
             <i className="checkbox__points">
               {getPointsText({
@@ -779,9 +786,9 @@ export const Magic = ({ isMobile }) => {
           return (
             <Fragment key={itemGroup.name_de}>
               {itemGroupItems.length > 0 && (
-                <h2 className="unit__subline">
+                <div class="header-2" className="unit__subline">
                   {itemGroup[`name_${language}`] || itemGroup.name_en}
-                </h2>
+                </div>
               )}
               {itemGroupItems.map((magicItem) => {
                 if (prevItemType !== magicItem.type) {

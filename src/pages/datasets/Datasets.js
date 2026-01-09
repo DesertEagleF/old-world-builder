@@ -137,7 +137,7 @@ export const Datasets = ({ isMobile }) => {
 
       <Main className="datasets">
         <div className="datasets__info">
-          <h2 className="page-headline">Datasets Editor</h2>
+          <div className="header-2 page-headline">Datasets Editor</div>
           <ErrorMessage spaceBefore spaceAfter>
             Attention: The Datasets Editor has not been updated for some time
             and no longer reflects the current format of the datasets.

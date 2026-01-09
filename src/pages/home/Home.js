@@ -23,6 +23,7 @@ import { updateLocalList, updateListsFolder } from "../../utils/list";
 import { setLists, toggleFolder, updateList } from "../../state/lists";
 import { updateSetting } from "../../state/settings";
 import { getRandomId } from "../../utils/id";
+import PatchedBadge from "../../components/patch/PatchedBadge";
 
 import "./Home.css";
 
@@ -682,7 +683,15 @@ export const Home = ({ isMobile }) => {
                     <Icon symbol="folder" className="home__folder-icon" />
                   ) : null}
                   <span className="home__list-item">
-                    <div className="home__headline">{name}</div>
+                    <div className="home__headline">
+                      {name}
+                      {list.patches && list.patches.length > 0 && (
+                        <PatchedBadge
+                          text={list.patches[list.patches.length - 1]?.displayName || list.patches[list.patches.length - 1]?.id}
+                          className="home__patch-badge"
+                        />
+                      )}
+                    </div>
                     {description && (
                       <p className="home__description">{description}</p>
                     )}

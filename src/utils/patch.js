@@ -29,6 +29,10 @@ export function mergePatch(base, patch, patchId = null) {
     if (base === undefined || base === null) {
         // Clone patch to avoid mutating the original
         const result = JSON.parse(JSON.stringify(patch));
+        // Mark items from patch with __patchedBy
+        if (patchId && result && typeof result === 'object') {
+            result.__patchedBy = patchId;
+        }
         return result;
     }
 
@@ -36,7 +40,16 @@ export function mergePatch(base, patch, patchId = null) {
     if (Array.isArray(patch)) {
         // If base is not an array, replace with patch
         if (!Array.isArray(base)) {
-            return JSON.parse(JSON.stringify(patch));
+            const result = JSON.parse(JSON.stringify(patch));
+            // Mark items from patch with __patchedBy
+            if (patchId && Array.isArray(result)) {
+                result.forEach(item => {
+                    if (item && typeof item === 'object') {
+                        item.__patchedBy = patchId;
+                    }
+                });
+            }
+            return result;
         }
 
         // Both are arrays - check if array contains objects
@@ -69,10 +82,16 @@ export function mergePatch(base, patch, patchId = null) {
                     }
                 } else if (patchItem && typeof patchItem === 'object' && 'id' in patchItem) {
                     // New object with id - add to array
-                    merged.push(JSON.parse(JSON.stringify(patchItem)));
+                    const newItem = JSON.parse(JSON.stringify(patchItem));
+                    newItem.__patchedBy = patchId;
+                    merged.push(newItem);
                 } else {
                     // Object without id - add to array
-                    merged.push(JSON.parse(JSON.stringify(patchItem)));
+                    const newItem = JSON.parse(JSON.stringify(patchItem));
+                    if (patchId && newItem && typeof newItem === 'object') {
+                        newItem.__patchedBy = patchId;
+                    }
+                    merged.push(newItem);
                 }
             });
 
@@ -109,6 +128,11 @@ export function mergePatch(base, patch, patchId = null) {
 
         // Recursively merge
         result[key] = mergePatch(baseVal, patchVal, patchId);
+    }
+
+    // Mark items from patch with __patchedBy
+    if (patchId && typeof result === 'object' && result !== null) {
+        result.__patchedBy = patchId;
     }
 
     return result;

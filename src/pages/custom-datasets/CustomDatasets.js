@@ -144,9 +144,9 @@ export const CustomDatasets = () => {
       <Header headline="Old World Builder" hasMainNavigation hasHomeButton />
 
       <Main compact className="custom">
-      <h2 className="page-headline">
+      <div className="header-2 page-headline">
         <FormattedMessage id="footer.custom-datasets" />
-      </h2>
+      </div>
       <p>Manage and add custom game systems and datasets.</p>
       <p className="unit__notes">
         <Icon symbol="error" className="unit__notes-icon" />

@@ -24,9 +24,9 @@ export const Help = () => {
       <Header headline="Old World Builder" hasMainNavigation hasHomeButton />
 
       <Main compact>
-        <h2 className="page-headline">
+        <div class="header-2" className="page-headline">
           <FormattedMessage id="help.title" />
-        </h2>
+        </div>
       </Main>
     </>
   );
