@@ -129,6 +129,7 @@ export function useRules() {
   useEffect(() => {
     let mounted = true;
     let unsubscribe = null;
+    let isLoading = false;
 
     // If we have cached data, use it immediately without loading again
     if (cached) {
@@ -142,14 +143,23 @@ export function useRules() {
 
     // Subscribe to patch changes to clear cache and reload when patches change
     unsubscribe = patchState.subscribeApplied(() => {
-      if (mounted) {
+      if (mounted && !isLoading) {
+        isLoading = true;
         // Clear cache when patch state changes
         clearRulesCache();
         setState(prev => ({ ...prev, loading: true }));
 
         // Reload rules with new patch state
         loadRulesMap().then((data) => {
-          if (mounted) setState({ ...data, loading: false });
+          if (mounted) {
+            setState({ ...data, loading: false });
+            isLoading = false;
+          }
+        }).catch(() => {
+          if (mounted) {
+            setState(prev => ({ ...prev, loading: false }));
+            isLoading = false;
+          }
         });
       }
     });

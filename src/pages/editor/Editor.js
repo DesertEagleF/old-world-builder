@@ -25,7 +25,7 @@ import { setErrors } from "../../state/errors";
 import { setArmy } from "../../state/army";
 import { applySelectedRulePatches, revertToBaseRules } from '../../utils/rules';
 import { getGameSystems, getCustomDatasetData } from '../../utils/game-systems';
-import patchManager from '../../utils/patch';
+import { getMergedPatchDataForIds } from '../../utils/patch';
 import { getJson } from '../../utils/resourceLoader';
 import { getArmyData } from "../../utils/army";
 import { loadAndMergeBaseWithPatches } from '../../utils/patch';
@@ -104,13 +104,6 @@ export const Editor = ({ isMobile }) => {
 
       // Skip if patches already loaded for this session
       if (patchesLoaded) {
-        // Still need to ensure patchState is set correctly even if patches were already loaded
-        if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
-          const appliedPatches = list.patches.map(p => ({ id: p.id, type: 'patch' }));
-          patchState.setApplied(appliedPatches);
-        } else {
-          patchState.setApplied([]);
-        }
         return;
       }
 
@@ -122,12 +115,14 @@ export const Editor = ({ isMobile }) => {
       const lastAppliedPatches = sessionStorage.getItem(appliedPatchKey);
       const needToApplyPatches = lastAppliedPatches !== JSON.stringify(currentPatchIds);
 
-      // Always ensure patchState is set correctly (it's in-memory and lost on refresh)
-      if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
-        const appliedPatches = list.patches.map(p => ({ id: p.id, type: 'patch' }));
-        patchState.setApplied(appliedPatches);
-      } else {
-        patchState.setApplied([]);
+      // Only set patchState when actually applying patches
+      if (needToApplyPatches) {
+        if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
+          const appliedPatches = list.patches.map(p => ({ id: p.id, type: 'patch' }));
+          patchState.setApplied(appliedPatches);
+        } else {
+          patchState.setApplied([]);
+        }
       }
 
       if (needToApplyPatches) {
@@ -189,7 +184,7 @@ export const Editor = ({ isMobile }) => {
     return () => {
       mounted = false;
     };
-  }, [list?.id, list?.patches, list, dispatch, language, intl, rulesLoading, patchesLoaded, rulesMap, synonyms]);
+  }, [list?.id, JSON.stringify(list?.patches), dispatch, language, intl, rulesLoading, patchesLoaded, JSON.stringify(rulesMap), JSON.stringify(synonyms)]);
 
   // Reset patchesLoaded state when list changes
   useEffect(() => {
@@ -260,17 +255,26 @@ export const Editor = ({ isMobile }) => {
   useEffect(() => {
     let mounted = true;
     async function loadPatchNames() {
-      if (!list || !Array.isArray(list.patches) || list.patches.length === 0) return;
+      if (!list || !Array.isArray(list.patches) || list.patches.length === 0) {
+        if (mounted) setFetchedPatchNames({});
+        return;
+      }
       const ids = list.patches
         .map((p) => (typeof p === 'string' ? p : p && p.id ? p.id : (p && typeof p.name === 'string' ? p.name : null)))
         .filter(Boolean);
-      if (ids.length === 0) return;
+      if (ids.length === 0) {
+        if (mounted) setFetchedPatchNames({});
+        return;
+      }
 
-      const next = { ...(fetchedPatchNames || {}) };
+      const next = {};
       await Promise.all(
         ids.map(async (id) => {
-          if (Object.prototype.hasOwnProperty.call(next, id)) return;
-            try {
+          if (Object.prototype.hasOwnProperty.call(fetchedPatchNames, id)) {
+            next[id] = fetchedPatchNames[id];
+            return;
+          }
+          try {
             const j = await getJson(`patches-${id}-patch`);
             if (!j) {
               next[id] = id;
@@ -296,20 +300,25 @@ export const Editor = ({ isMobile }) => {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list && list.patches, language]);
+  }, [list?.id, list?.patches?.length, language]);
 
   const [, setFetchedPatchData] = useState({});
   useEffect(() => {
     let mounted = true;
     async function loadPatchPayloads() {
-      if (!list || !Array.isArray(list.patches) || list.patches.length === 0) return;
+      if (!list || !Array.isArray(list.patches) || list.patches.length === 0) {
+        if (mounted) setFetchedPatchData({});
+        return;
+      }
       const ids = list.patches
         .map((p) => (typeof p === 'string' ? p : p && p.id ? p.id : (p && typeof p.name === 'string' ? p.name : null)))
         .filter(Boolean);
-      if (ids.length === 0) return;
+      if (ids.length === 0) {
+        if (mounted) setFetchedPatchData({});
+        return;
+      }
       try {
-        const merged = await patchManager.getMergedPatchDataForIds({}, ids, 'patch');
+        const merged = await getMergedPatchDataForIds({}, ids, 'patch');
         if (mounted) setFetchedPatchData(merged || {});
       } catch (e) {
         if (mounted) setFetchedPatchData({});
@@ -317,8 +326,7 @@ export const Editor = ({ isMobile }) => {
     }
     loadPatchPayloads();
     return () => { mounted = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list && list.patches]);
+  }, [list?.id, list?.patches?.length]);
 
   const [armyRules, setArmyRules] = useState([]);
   const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(false);
@@ -327,10 +335,12 @@ export const Editor = ({ isMobile }) => {
   useEffect(() => {
     let mounted = true;
     async function loadArmyRules() {
-      if (!list) return;
+      if (!list || (!list.armyComposition && !list.army)) {
+        if (mounted) setArmyRules([]);
+        return;
+      }
       // clear previous rules immediately when list changes
       if (mounted) setArmyRules([]);
-      if (!list.armyComposition && !list.army) return;
       try {
         const data = await getJson("army-special-rules");
         const key = list.armyComposition || list.army;
@@ -354,7 +364,7 @@ export const Editor = ({ isMobile }) => {
     return () => {
       mounted = false;
     };
-  }, [listId, list, list?.armyComposition, language]);
+  }, [list?.armyComposition, list?.army, language]);
 
   if (redirect) {
     return <Redirect to="/" />;

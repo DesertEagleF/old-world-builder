@@ -84,26 +84,49 @@ export const RulesIndex = () => {
   const ruleData = rulesMap[normalizedName] || rulesMap[synonym];
   let rulePath = ruleData?.url;
 
-  // If we have applied patches and no specific patch URL, we need to check for patch-specific rule data
-  if (rulePath && list?.patches && Array.isArray(list.patches) && list.patches.length > 0) {
+  // If we have applied patches, check for patch-specific rule data
+  let patchRuleData = null;
+  if (list?.patches && Array.isArray(list.patches) && list.patches.length > 0) {
     // Try to find patch-specific rule data from all applied patches
     for (const patch of list.patches) {
       const patchId = patch.id || patch;
       if (typeof patchId === 'string' && patchId !== 'base') {
-        // Check if this rule was modified by the patch by looking for patch-specific entries
+        // First try to find patch-specific entries (with patch ID suffix)
         const patchSpecificName = `${normalizedName}_${patchId}`;
-        const patchRuleData = rulesMap[patchSpecificName] || rulesMap[synonyms[patchSpecificName]];
+        patchRuleData = rulesMap[patchSpecificName] || rulesMap[synonyms[patchSpecificName]];
 
-        if (patchRuleData && patchRuleData.url) {
-          // Use the patch-specific URL
-          rulePath = patchRuleData.url;
-          console.log(`[RulesIndex] Found patch-specific rule data for ${patchSpecificName}, using URL: ${rulePath}`);
-          break;
+        if (patchRuleData) {
+          if (patchRuleData.url) {
+            // Use the patch-specific URL
+            rulePath = patchRuleData.url;
+            console.log(`[RulesIndex] Found patch-specific rule data for ${patchSpecificName}, using URL: ${rulePath}`);
+            break;
+          } else if (!rulePath) {
+            // If no base rulePath exists but we have patch-specific data without URL,
+            // still use the patch-specific name for fallback handling
+            rulePath = patchSpecificName;
+          }
+        }
+
+        // If no patch-specific data found, try to find base rule data marked with __patchedBy
+        // This handles cases where patch rules are added without patch ID suffix
+        if (!patchRuleData) {
+          const baseRuleData = rulesMap[normalizedName] || rulesMap[synonym];
+          if (baseRuleData && baseRuleData.__patchedBy === patchId) {
+            patchRuleData = baseRuleData;
+            if (baseRuleData.url) {
+              rulePath = baseRuleData.url;
+              console.log(`[RulesIndex] Found base rule marked with patch ${patchId}, using URL: ${rulePath}`);
+              break;
+            } else if (!rulePath) {
+              rulePath = normalizedName;
+            }
+          }
         }
       }
     }
-    // If no patch-specific rule data found, don't modify the base URL
-    // This ensures only rules actually modified by the patch get the patch ID appended
+    // If no patch-specific rule data found at all, use base URL if it exists
+    // This ensures rules modified by patches get correct URLs while base rules still work
   }
 
   const rulePathB = rulePath ? `${rulePath}/en` : null;
@@ -241,9 +264,29 @@ export const RulesIndex = () => {
           </div>
         </>
       ) : (
-        <p>
-          <FormattedMessage id="editor.noRuleFound" />
-        </p>
+        <>
+          {/* If we have patch-specific data, show additional info */}
+          {patchRuleData ? (
+            <div>
+              <div class="header-2">{activeRule}</div>
+              <p>
+                <FormattedMessage id="editor.noRuleFound" />
+              </p>
+              {patchRuleData.__patchedBy && (
+                <p>
+                  <FormattedMessage
+                    id="rulesIndex.patchModified"
+                    values={{ patchName: patchRuleData.__patchedBy }}
+                  />
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>
+              <FormattedMessage id="editor.noRuleFound" />
+            </p>
+          )}
+        </>
       )}
     </Dialog>
   );
