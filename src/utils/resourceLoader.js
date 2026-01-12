@@ -132,54 +132,6 @@ export async function getResourceUrl(logicalPath) {
         return null;
     }
 
-    // Dynamic resolution for patch files: allow keys like `patches-<id>` or
-    // `patches-<id>-<filename>` to be resolved from the `patches` index URL.
-    // This avoids needing a config entry for every patch file.
-    if (typeof val === 'undefined' && typeof logicalPath === 'string' && logicalPath.indexOf('patches-') === 0) {
-        try {
-            // remainder after 'patches-'
-            const rest = logicalPath.slice('patches-'.length);
-            const firstDash = rest.indexOf('-');
-            let id, filePart;
-            if (firstDash === -1) {
-                id = rest;
-                filePart = 'patch';
-            } else {
-                id = rest.slice(0, firstDash);
-                filePart = rest.slice(firstDash + 1);
-            }
-
-            // derive a template from the configured `patches` index URL (or fallback)
-            const indexUrl = (cfg && cfg.patches) ? cfg.patches : CONFIG_NAME_OL;
-            if (typeof indexUrl === 'string' && indexUrl.length) {
-                // try to find the `Data:` marker and preserve query string if present
-                const qIdx = indexUrl.indexOf('?');
-                const query = qIdx !== -1 ? indexUrl.slice(qIdx) : '?action=raw';
-                const dataMarkerIdx = indexUrl.search(/Data:/i);
-                if (dataMarkerIdx !== -1) {
-                    const prefix = indexUrl.slice(0, dataMarkerIdx + 5); // include 'Data:'
-                    // Construct Data:<id>/<filePart>.json + original query (or default)
-                    const built = prefix + id + '/' + filePart + '.json' + query;
-                    if (/^https?:\/\//i.test(built)) return built;
-                }
-
-                // Fallback: try replacing last path segment with id/file.json
-                try {
-                    const u = new URL(indexUrl);
-                    const parts = u.pathname.split('/');
-                    // replace last segment with Data:<id>/<file>.json-style path if possible
-                    parts[parts.length - 1] = `Data:${id}/${filePart}.json`;
-                    u.pathname = parts.join('/');
-                    return u.toString().replace(/\/?$/, '') + (u.search || '?action=raw');
-                } catch (e) {
-                    // ignore URL parsing errors
-                }
-            }
-        } catch (e) {
-            // fall through to warning below
-        }
-    }
-
     // If value is array or other, not a URL — cannot resolve to single URL
     console.warn('resourceLoader: mapping for', logicalPath, 'is not a URL string');
     return null;
@@ -225,7 +177,11 @@ export async function getJson(logicalPath) {
             console.warn('resourceLoader.getJson: no URL for', logicalPath);
             return null;
         }
-        const res = await fetch(url, { cache: 'no-store' });
+        // Use default cache strategy which follows HTTP caching standards
+        // This includes ETag, Last-Modified, and conditional requests
+        // When server returns 304 Not Modified, browser uses cached version
+        // When resource changes, it gets re-fetched automatically
+        const res = await fetch(url, { cache: 'default' });
         if (!res.ok) {
             console.warn('resourceLoader.getJson: fetch failed', url, res.status);
             return null;

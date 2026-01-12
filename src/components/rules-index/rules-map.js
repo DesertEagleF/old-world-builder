@@ -8,18 +8,22 @@ export const synonyms = {};
 let cached = null;
 let lastAppliedPatches = null;
 let isLoading = false;
+let baseRulesCache = null; // Cache for base rules (rules-index-export, rules-additional, rules-synonyms)
 
 // Function to clear cache when patch state changes
 export function clearRulesCache() {
   cached = null;
   lastAppliedPatches = null;
   isLoading = false;
+  // Don't clear baseRulesCache - it should persist across patch changes
+  // baseRulesCache remains for base rules which are shared across patches
+  // baseRulesLastLoaded remains to track when base rules were loaded
 }
 
 export async function loadRulesMap() {
   const currentAppliedPatches = patchState.getApplied();
 
-  // If we have cached data and patch state hasn't changed, return cached
+  // If we have cached data and patch state hasn't changed, return cached immediately
   if (cached && JSON.stringify(lastAppliedPatches) === JSON.stringify(currentAppliedPatches)) {
     return cached;
   }
@@ -29,22 +33,43 @@ export async function loadRulesMap() {
     cached = null;
   }
 
-  // If already loading, return the cached promise
-  if (isLoading && cached) {
-    return cached;
+  // If already loading, return a new promise that resolves when the current loading completes
+  if (isLoading) {
+    return new Promise((resolve) => {
+      const checkLoading = () => {
+        if (!isLoading && cached) {
+          resolve(cached);
+        } else {
+          setTimeout(checkLoading, 100);
+        }
+      };
+      checkLoading();
+    });
   }
 
   isLoading = true;
 
   try {
-    const [remote, additional, remoteSynonyms] = await Promise.all([
-      resourceLoader.getJson("rules-index-export"),
-      resourceLoader.getJson("rules-additional"),
-      resourceLoader.getJson("rules-synonyms"),
-    ]);
-    const remoteMap = remote && typeof remote === "object" ? remote : {};
-    const add = additional && typeof additional === "object" ? additional : {};
-    const syn = remoteSynonyms && typeof remoteSynonyms === "object" ? remoteSynonyms : {};
+    // Only load base rules if we don't have them cached
+    if (!baseRulesCache) {
+      console.log('Loading base rules from network...');
+      const [remote, additional, remoteSynonyms] = await Promise.all([
+        resourceLoader.getJson("rules-index-export"),
+        resourceLoader.getJson("rules-additional"),
+        resourceLoader.getJson("rules-synonyms"),
+      ]);
+      baseRulesCache = {
+        remoteMap: remote && typeof remote === "object" ? remote : {},
+        add: additional && typeof additional === "object" ? additional : {},
+        syn: remoteSynonyms && typeof remoteSynonyms === "object" ? remoteSynonyms : {},
+      };
+      console.log('Base rules loaded and cached');
+    } else {
+      console.log('Using cached base rules');
+    }
+
+    // Use cached base rules
+    const { remoteMap, add, syn } = baseRulesCache;
 
     // Start with base rules
     const combinedRules = { ...remoteMap, ...add };
@@ -129,7 +154,6 @@ export function useRules() {
   useEffect(() => {
     let mounted = true;
     let unsubscribe = null;
-    let isLoading = false;
 
     // If we have cached data, use it immediately without loading again
     if (cached) {
@@ -140,29 +164,6 @@ export function useRules() {
         if (mounted) setState({ ...data, loading: false });
       });
     }
-
-    // Subscribe to patch changes to clear cache and reload when patches change
-    unsubscribe = patchState.subscribeApplied(() => {
-      if (mounted && !isLoading) {
-        isLoading = true;
-        // Clear cache when patch state changes
-        clearRulesCache();
-        setState(prev => ({ ...prev, loading: true }));
-
-        // Reload rules with new patch state
-        loadRulesMap().then((data) => {
-          if (mounted) {
-            setState({ ...data, loading: false });
-            isLoading = false;
-          }
-        }).catch(() => {
-          if (mounted) {
-            setState(prev => ({ ...prev, loading: false }));
-            isLoading = false;
-          }
-        });
-      }
-    });
 
     return () => {
       mounted = false;

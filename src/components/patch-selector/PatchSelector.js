@@ -120,6 +120,9 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
     return null;
   }
 
+  // Track applied patches from patchState to avoid notifying parent unnecessarily
+  const lastAppliedIdsRef = useRef([]);
+
   // sync selection with global patchState so different instances stay consistent
   useEffect(() => {
     const unsub = patchState.subscribeApplied((objs) => {
@@ -129,21 +132,31 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
       const filteredIds = filteredObjects.map(o => o.id);
       // Always mirror the authoritative applied set from patchState (Confirm is authoritative)
       // This ensures that an applied empty set ("(none)") clears any other selections.
-      setSelection({ ids: filteredIds.slice(), order: filteredIds.slice() });
-      setAppliedIds(filteredIds.slice());
-      // notify local consumer (e.g. NewList) asynchronously with full objects
-      // schedule as macrotask to avoid re-entrant updates across subscribers
-      setTimeout(() => {
-        try { onAppliedChange(filteredObjects); } catch (e) {}
-      }, 0);
+      // Only update selection if it actually changed to avoid unnecessary re-renders
+      const currentSelection = selection.ids;
+      if (JSON.stringify(currentSelection) !== JSON.stringify(filteredIds)) {
+        setSelection({ ids: filteredIds.slice(), order: filteredIds.slice() });
+        setAppliedIds(filteredIds.slice());
+      }
+
+      // Only notify parent if the applied patches actually changed
+      if (JSON.stringify(filteredIds) !== JSON.stringify(lastAppliedIdsRef.current)) {
+        lastAppliedIdsRef.current = filteredIds;
+        // Schedule notification in a macrotask to avoid re-entrant updates
+        setTimeout(() => {
+          try { onAppliedChange(filteredObjects); } catch (e) {}
+        }, 0);
+      }
     });
-    // also reconcile initial
+
     // Initialize selection to current applied set (may be empty) so instances stay consistent
     const initial = patchState.getApplied() || [];
     const ids = (initial || []).map(o => o.id);
     const filtered = ids.filter(id => (availableRef.current || []).find(a => a.id === id));
     setSelection({ ids: filtered.slice(), order: filtered.slice() });
     setAppliedIds(filtered.slice());
+    lastAppliedIdsRef.current = filtered;
+
     return unsub;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -235,15 +248,23 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
 
   async function confirm() {
     const ids = selection.order.slice();
+    console.log('PatchSelector: confirming patches:', ids);
     // mark as applied and load objects (confirm keeps same behavior)
     setAppliedIds(ids);
     const objects = await loadPatchObjects(ids);
     const filtered = objects.filter(Boolean);
+    console.log('PatchSelector: loaded patch objects:', filtered);
     // schedule notifications in a macrotask to fully decouple from React's
     // current render cycle and avoid re-entrant update errors
     setTimeout(() => {
-      try { onAppliedChange(filtered); } catch (e) {}
       try {
+        console.log('PatchSelector: calling onAppliedChange with:', filtered);
+        onAppliedChange(filtered);
+      } catch (e) {
+        console.error('PatchSelector: onAppliedChange error:', e);
+      }
+      try {
+        console.log('PatchSelector: setting applied patches in state');
         patchState.setApplied(filtered);
         const mergedLocale = filtered.reduce((acc, o) => ({ ...(acc || {}), ...(o.locale || {}) }), {});
         const mergedRules = filtered.reduce((acc, o) => ({ ...(acc || {}), ...(o.rules || {}) }), {});
@@ -254,7 +275,12 @@ export default function PatchSelector({ onAppliedChange = () => {}, onLocaleMapC
         if (Object.keys(mergedRules || {}).length) {
           patchState.setRulesMap(mergedRules);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('PatchSelector: state setting error:', e);
+      }
+      // After applying patches, notify parent but don't navigate automatically
+      // The parent (PatchPanel or NewList) can decide whether to close the panel
+      console.log('PatchSelector: patches applied successfully');
     }, 0);
   }
 

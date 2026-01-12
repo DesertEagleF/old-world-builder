@@ -118,7 +118,8 @@ export const Editor = ({ isMobile }) => {
       // Only set patchState when actually applying patches
       if (needToApplyPatches) {
         if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
-          const appliedPatches = list.patches.map(p => ({ id: p.id, type: 'patch' }));
+          // Load full patch objects from patchState if available, otherwise create basic objects
+          const appliedPatches = list.patches.map(p => ({ id: p.id, type: p.type || 'patch', displayName: p.displayName || p.id }));
           patchState.setApplied(appliedPatches);
         } else {
           patchState.setApplied([]);
@@ -134,6 +135,12 @@ export const Editor = ({ isMobile }) => {
         if (list.patches && Array.isArray(list.patches) && list.patches.length > 0) {
           const ids = list.patches.map((p) => p.id);
           await applySelectedRulePatches(ids);
+          // Also update the patchState with the loaded patch objects to ensure restrictions are applied
+          const currentApplied = patchState.getApplied() || [];
+          if (currentApplied.length > 0) {
+            // Ensure the applied patches are up to date in patchState
+            patchState.setApplied(currentApplied);
+          }
         } else {
           // no patches -> ensure base rules
           revertToBaseRules();
@@ -367,21 +374,21 @@ export const Editor = ({ isMobile }) => {
   }, [list?.armyComposition, list?.army, language]);
 
   if (redirect) {
-    return <Redirect to="/" />;
+    return <Redirect to="wiki/Editor" />;
   }
 
   if (!list) {
     if (isMobile) {
       return (
         <>
-          <Header to="?" />
+          <Header to="wiki/Editor" />
           <Main loading />
         </>
       );
     } else {
       return (
         <>
-          <Header to="/" isSection />
+          <Header to="wiki/Editor" isSection />
           <Main loading />
         </>
       );

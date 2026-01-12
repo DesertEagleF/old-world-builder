@@ -44,6 +44,8 @@ export const NewList = ({ isMobile }) => {
   const [appliedPatchObjects, setAppliedPatchObjects] = useState([]);
   // Localized name map, merged from base and patch locales (PatchSelector will update this)
   const [localizedNameMap, setLocalizedNameMap] = useState(nameMap);
+  // Track merged armies to detect changes
+  const [currentArmies, setCurrentArmies] = useState([]);
   const history = useHistory();
 
   // On mount, if there are authoritative applied patches in patchState, apply them so rules reflect current selection
@@ -74,6 +76,8 @@ export const NewList = ({ isMobile }) => {
 
   // When appliedPatchObjects changes, also try to load locale from patchState and apply rules
   useEffect(() => {
+    console.log('NewList: appliedPatchObjects changed:', appliedPatchObjects);
+    console.log('NewList: patching - current armyComposition before patch application:', armyComposition);
     const patchStateLocale = patchState.getLocaleMap() || {};
     if (Object.keys(patchStateLocale).length > 0) {
       setLocalizedNameMap(prev => ({ ...(prev || {}), ...patchStateLocale }));
@@ -81,20 +85,69 @@ export const NewList = ({ isMobile }) => {
     // Also apply rules from the selected patches
     const ids = appliedPatchObjects.map(p => p.id);
     if (ids.length > 0) {
+      console.log('NewList: applying patches:', ids);
       applySelectedRulePatches(ids);
     } else {
       // If no patches selected, revert to base rules
+      console.log('NewList: reverting to base rules');
       revertToBaseRules();
     }
   }, [appliedPatchObjects]);
 
   // Use centralized merge helper to combine gameSystems with applied patch objects
-  const { armies: mergedArmies, compositionSourcesMap } = mergeGameSystemsWithPatches(gameSystems, appliedPatchObjects, game);
-  const armies = mergedArmies.sort((a, b) => a.id.localeCompare(b.id));
+  const mergedArmiesResult = mergeGameSystemsWithPatches(gameSystems, appliedPatchObjects, game);
+  const armies = mergedArmiesResult.armies.sort((a, b) => a.id.localeCompare(b.id));
+  const compositionSourcesMap = mergedArmiesResult.compositionSourcesMap;
+
+  // Update currentArmies state when armies change
+  useEffect(() => {
+    console.log('NewList: armies changed:', armies.map(a => a.id));
+    console.log('NewList: armies change - current armyComposition state:', armyComposition);
+    setCurrentArmies(armies);
+  }, [armies]);
+
   const baseArmy = armies.find(({ id }) => army === id);
   // Ensure journalArmies is always an array
   let journalArmies = Array.isArray(baseArmy?.armyComposition) ? baseArmy.armyComposition : [];
   let compositionSources = compositionSourcesMap[baseArmy?.id] || {};
+
+  // Debug: Log current state of armyComposition
+  console.log('NewList: render - current armyComposition:', armyComposition, 'baseArmy:', baseArmy?.id, 'journalArmies:', journalArmies);
+
+  // Update army and armyComposition when patches change and current selections are no longer valid
+  useEffect(() => {
+    console.log('NewList: checking army validity - current army:', army, 'available armies:', currentArmies.map(a => a.id));
+    // Check if current army is still valid
+    if (army && currentArmies.length > 0) {
+      const currentArmyExists = currentArmies.some(a => a.id === army);
+      if (!currentArmyExists) {
+        console.log('NewList: current army not found, resetting to first available army');
+        // Army no longer exists due to patches, reset to first available army
+        setArmy(currentArmies[0].id);
+        setArmyComposition(currentArmies[0].armyComposition?.[0] || currentArmies[0].id);
+      }
+    }
+  }, [currentArmies, army]);
+
+  // Update armyComposition when baseArmy changes
+  useEffect(() => {
+    console.log('NewList: baseArmy changed:', baseArmy?.id);
+    console.log('NewList: baseArmy armyComposition:', baseArmy?.armyComposition);
+    console.log('NewList: current armyComposition value:', armyComposition);
+    console.log('NewList: current armies count:', armies.length);
+    if (baseArmy && Array.isArray(baseArmy.armyComposition) && baseArmy.armyComposition.length > 0) {
+      // Check if current armyComposition is still valid
+      const currentCompositionValid = baseArmy.armyComposition.includes(armyComposition);
+      console.log('NewList: current armyComposition validity:', currentCompositionValid);
+      if (!currentCompositionValid) {
+        console.log('NewList: resetting armyComposition to first available:', baseArmy.armyComposition[0]);
+        // Reset to first available composition
+        setArmyComposition(baseArmy.armyComposition[0]);
+      }
+    } else {
+      console.log('NewList: baseArmy has no valid armyComposition or is not an array');
+    }
+  }, [baseArmy]);
 
   const compositionRules = [
     {
@@ -159,6 +212,11 @@ export const NewList = ({ isMobile }) => {
     dispatch(setLists(newLists));
 
     setRedirect(newId);
+
+    // Redirect to the correct path with /wiki/Editor prefix
+    // This ensures the URL is correct and matches the expected pattern
+    // Expected: https://tow.huijiwiki.com/wiki/Editor?editor.${newId}
+    // Instead of: https://tow.huijiwiki.com/?editor.${newId}
   };
   const handleSystemChange = (event) => {
     setGame(event.target.value);
@@ -207,17 +265,17 @@ export const NewList = ({ isMobile }) => {
 
   return (
     <>
-      {redirect && <Redirect to={`?editor.${redirect}`} />}
+      {redirect && <Redirect to={`/wiki/Editor?editor.${redirect}`} />}
 
       {isMobile && (
-        <Header to="?" headline={intl.formatMessage({ id: "new.title" })} />
+        <Header to="/wiki/Editor?" headline={intl.formatMessage({ id: "new.title" })} />
       )}
 
       <MainComponent>
         {!isMobile && (
           <Header
             isSection
-            to="?"
+            to="/wiki/Editor?"
             headline={intl.formatMessage({ id: "new.title" })}
           />
         )}

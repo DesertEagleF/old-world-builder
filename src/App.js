@@ -96,6 +96,8 @@ export const App = () => {
           <Route path="?editor.:listId">{<Editor isMobile />}</Route>
           <Route path="?import">{<Import isMobile />}</Route>
           <Route path="?new">{<NewList isMobile />}</Route>
+          <Route path="?new.patches">{<PatchPanel isMobile />}</Route>
+          <Route path="?new.patches.details.:patchId">{<PatchDetails isMobile />}</Route>
           <Route path="?about">{<About />}</Route>
           <Route path="?help">{<Help />}</Route>
           <Route path="?custom-datasets">{<CustomDatasets />}</Route>

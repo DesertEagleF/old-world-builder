@@ -88,7 +88,7 @@ export const Header = ({
           {hasHomeButton && (
             <Button
               type="text"
-              to="/"
+              to="wiki/Editor"
               label={intl.formatMessage({ id: "misc.startpage" })}
               color="light"
               icon="home"

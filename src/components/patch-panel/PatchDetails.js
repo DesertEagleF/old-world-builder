@@ -8,7 +8,7 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { getJson } from '../../utils/resourceLoader';
 
-export default function PatchDetails() {
+export default function PatchDetails({ isMobile }) {
   const params = useParams() || {};
   let { patchId } = params;
   const location = useLocation();

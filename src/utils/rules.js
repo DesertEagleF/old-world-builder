@@ -4096,13 +4096,8 @@ export async function applySelectedRulePatches(selectedIds = []) {
       rules[key] = combinedMerged[key];
     }
 
-    // Update global patch state so other components can see the applied patches
-    if (selectedIds && selectedIds.length > 0) {
-      const appliedPatches = selectedIds.map(id => ({ id, type: 'patch' }));
-      patchState.setApplied(appliedPatches);
-    } else {
-      patchState.setApplied([]);
-    }
+    // Don't call patchState.setApplied here - let PatchSelector manage patch state
+    // This prevents circular updates and repeated loading of rules
 
     return combinedMerged;
   } catch (e) {
@@ -4127,8 +4122,8 @@ export function revertToBaseRules() {
       rules[key] = JSON.parse(JSON.stringify(_originalRulesSnapshot[key]));
     }
 
-    // Clear global patch state
-    patchState.setApplied([]);
+    // Don't call patchState.setApplied here - let PatchSelector manage patch state
+    // This prevents circular updates and repeated loading of rules
   } catch (e) {
     // noop
   }
