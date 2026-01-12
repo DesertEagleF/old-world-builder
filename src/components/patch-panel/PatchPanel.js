@@ -26,7 +26,14 @@ export default function PatchPanel() {
         headline={<FormattedMessage id="patches.title" defaultMessage="Select Patch" />}
       />
       <div style={{ padding: 12 }}>
-        <PatchSelector startExpanded onAppliedChange={() => { history.push('?new'); }} onLocaleMapChange={(m) => patchState.setLocaleMap(m)} />
+        <PatchSelector 
+          startExpanded 
+          onAppliedChange={() => { 
+            // Ensure proper navigation back to new list page
+            history.push('?new'); 
+          }} 
+          onLocaleMapChange={(m) => patchState.setLocaleMap(m)} 
+        />
       </div>
     </div>
   );

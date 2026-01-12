@@ -210,14 +210,14 @@ export const NewList = ({ isMobile }) => {
       {redirect && <Redirect to={`?editor.${redirect}`} />}
 
       {isMobile && (
-        <Header to="/" headline={intl.formatMessage({ id: "new.title" })} />
+        <Header to="?" headline={intl.formatMessage({ id: "new.title" })} />
       )}
 
       <MainComponent>
         {!isMobile && (
           <Header
             isSection
-            to="/"
+            to="?"
             headline={intl.formatMessage({ id: "new.title" })}
           />
         )}
